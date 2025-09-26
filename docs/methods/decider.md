@@ -7,7 +7,7 @@ format:
     toc-depth: 2
 ---
 
-This page describes the local **Decider** stub used during Milestone M1. The Python 3 server runs on localhost and returns deterministic placeholder decisions for the firm, bank, and wage endpoints.
+This page describes the local **Decider** stub used during Milestone M1. The Python 3 server runs on localhost and returns deterministic placeholder decisions for the firm, bank, and wage endpoints. All request payloads are validated against JSON Schemas before the stub replies so we can catch malformed inputs early.
 
 ## Start the server
 
@@ -39,9 +39,17 @@ Expected response:
 }
 ```
 
-## Stub decision endpoints
+## Request schemas & stub decision endpoints
 
-The stub mode implements three deterministic POST routes. Payloads are accepted but ignored for now; later milestones will replace these with schema validation and live LLM calls.
+Each endpoint validates its request against the schema stored under `tools/decider/schemas/`. The same files will be consumed by the Python 2 caller (for tests) and documented in the manuscript appendix.
+
+| Endpoint | Schema file | Description |
+| --- | --- | --- |
+| `POST /decide/firm` | `tools/decider/schemas/firm_request.schema.json` | Firm pricing & expectations decision |
+| `POST /decide/bank` | `tools/decider/schemas/bank_request.schema.json` | Bank loan approval & spread |
+| `POST /decide/wage` | `tools/decider/schemas/wage_request.schema.json` | Worker reservation / firm wage offer |
+
+> **Tip** — start from the schema when constructing payloads; the stub ignores the contents beyond validation, but the live Decider will rely on the same structure.
 
 | Endpoint | Description | Example response |
 | --- | --- | --- |
@@ -49,19 +57,56 @@ The stub mode implements three deterministic POST routes. Payloads are accepted 
 | `POST /decide/bank` | Bank loan approval & spread | `{ "approve": true, "credit_limit_ratio": 1.0, "spread_bps": 150, "explanation": "stub: approve with default spread" }` |
 | `POST /decide/wage` | Worker reservation / firm wage offer | `{ "direction": "hold", "wage_step": 0.0, "explanation": "stub: no wage adjustment" }` |
 
-Example call (firm endpoint):
+### Example: firm request
 
 ```bash
 curl -s -X POST \
   -H "Content-Type: application/json" \
-  -d '{"inventory": 100, "backlog": 5}' \
+  -d '{
+        "schema_version": "1.0",
+        "run_id": 0,
+        "tick": 0,
+        "country_id": 0,
+        "firm_id": "F0n0",
+        "price": 1.0,
+        "unit_cost": 1.0,
+        "inventory": 0,
+        "inventory_value": 0,
+        "production_effective": 0,
+        "production_capacity": 10.0,
+        "sales_last_period": 0,
+        "loan_demand": 0,
+        "loan_received": 0,
+        "net_worth": 10,
+        "expected_wage": 1.0,
+        "markup": 0.0,
+        "min_markup": 0.0,
+        "guards": {
+          "max_price_step": 0.04,
+          "max_expectation_bias": 0.04,
+          "price_floor": 1.0
+        }
+      }' \
   http://127.0.0.1:8000/decide/firm
 ```
 
-_Response (line-wrapped for readability):_
+### Friendly validation errors
+
+Malformed payloads return HTTP 400 with a short list of failing paths. Example (trimmed) response:
+
+```bash
+curl -s -X POST -H "Content-Type: application/json" -d '{}' \
+  http://127.0.0.1:8000/decide/firm | jq
+```
 
 ```json
-{"direction": "hold", "price_step": 0.0, "expectation_bias": 0.0, "explanation": "stub: hold price; baseline heuristic"}
+{
+  "error": "invalid_request",
+  "detail": [
+    { "path": [], "message": "'schema_version' is a required property" },
+    { "path": [], "message": "'run_id' is a required property" }
+  ]
+}
 ```
 
 ## Deterministic cache
@@ -81,7 +126,7 @@ On every request the server checks the cache before generating a response. The f
 
 ## Roadmap
 
-Upcoming M1 issues extend this stub:
+With schemas in place, upcoming M1 issues extend this stub as follows:
 
 1. **M1-02 (Schemas):** JSON schema validation and friendly error messages.
 2. **M1-03 (Cache):** Deterministic cache keyed by state hash.
