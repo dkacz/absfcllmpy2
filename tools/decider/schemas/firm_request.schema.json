@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Firm pricing & expectations request",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "tick",
+    "country_id",
+    "firm_id",
+    "price",
+    "unit_cost",
+    "inventory",
+    "inventory_value",
+    "production_effective",
+    "production_capacity",
+    "sales_last_period",
+    "loan_demand",
+    "loan_received",
+    "net_worth",
+    "expected_wage",
+    "markup",
+    "min_markup",
+    "guards"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0"]
+    },
+    "run_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "tick": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "country_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "firm_id": {
+      "type": "string",
+      "pattern": "^F\\d+n\\d+$"
+    },
+    "tradable": {
+      "type": ["boolean", "null"]
+    },
+    "price": {
+      "type": "number"
+    },
+    "unit_cost": {
+      "type": "number"
+    },
+    "inventory": {
+      "type": "number"
+    },
+    "inventory_value": {
+      "type": "number"
+    },
+    "production_effective": {
+      "type": "number"
+    },
+    "production_capacity": {
+      "type": "number"
+    },
+    "sales_last_period": {
+      "type": "number"
+    },
+    "loan_demand": {
+      "type": "number"
+    },
+    "loan_received": {
+      "type": "number"
+    },
+    "net_worth": {
+      "type": "number"
+    },
+    "expected_wage": {
+      "type": "number"
+    },
+    "markup": {
+      "type": "number"
+    },
+    "min_markup": {
+      "type": "number"
+    },
+    "guards": {
+      "type": "object",
+      "required": ["max_price_step", "max_expectation_bias", "price_floor"],
+      "additionalProperties": false,
+      "properties": {
+        "max_price_step": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max_expectation_bias": {
+          "type": "number"
+        },
+        "price_floor": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

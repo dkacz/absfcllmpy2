@@ -26,12 +26,10 @@ import signal
 import threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
-try:  # pragma: no cover - import style depends on execution context
-    from cache import DecisionCache
-except ImportError:  # pragma: no cover
-    from .cache import DecisionCache  # type: ignore
+import jsonschema
 
 LOGGER = logging.getLogger("decider.server")
 
@@ -55,7 +53,25 @@ STUB_RESPONSES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-CACHE = DecisionCache()
+SCHEMA_DIR = Path(__file__).with_name("schemas")
+SCHEMA_FILES = {
+    "/decide/firm": "firm_request.schema.json",
+    "/decide/bank": "bank_request.schema.json",
+    "/decide/wage": "wage_request.schema.json",
+}
+
+
+def _load_validators() -> Dict[str, jsonschema.Draft7Validator]:
+    validators: Dict[str, jsonschema.Draft7Validator] = {}
+    for endpoint, filename in SCHEMA_FILES.items():
+        schema_path = SCHEMA_DIR / filename
+        with open(schema_path, "r") as handle:
+            schema = json.load(handle)
+        validators[endpoint] = jsonschema.Draft7Validator(schema)
+    return validators
+
+
+VALIDATORS = _load_validators()
 
 
 def parse_args() -> argparse.Namespace:
@@ -134,12 +150,23 @@ def make_handler(stub_mode: bool):
                 self._send_json(HTTPStatus.BAD_REQUEST, {"error": "invalid_json", "detail": error})
                 return
 
-            cache_key, cached_response = CACHE.get(self.path, payload)
-            if cached_response is not None:
-                LOGGER.info("cache hit %s key=%s", self.path, cache_key[:8])
-                self._send_json(HTTPStatus.OK, cached_response)
-                return
-            LOGGER.debug("cache miss %s key=%s", self.path, cache_key[:8])
+            validator = VALIDATORS.get(self.path)
+            if validator is not None:
+                errors = sorted(validator.iter_errors(payload), key=lambda e: list(e.path))
+                if errors:
+                    detail = [
+                        {
+                            "path": list(err.path),
+                            "message": err.message,
+                        }
+                        for err in errors[:5]
+                    ]
+                    LOGGER.warning("schema validation failed: %s", detail)
+                    self._send_json(
+                        HTTPStatus.BAD_REQUEST,
+                        {"error": "invalid_request", "detail": detail}
+                    )
+                    return
 
             if not stub_mode:
                 LOGGER.error("non-stub mode requested but not implemented")
@@ -156,9 +183,8 @@ def make_handler(stub_mode: bool):
                 return
 
             LOGGER.info("stub response for %s", self.path)
-            response_copy = json.loads(json.dumps(response))
-            CACHE.set(cache_key, response_copy)
-            self._send_json(HTTPStatus.OK, response_copy)
+            # Return a copy so callers cannot mutate the global template.
+            self._send_json(HTTPStatus.OK, json.loads(json.dumps(response)))
 
     return DeciderRequestHandler
 
