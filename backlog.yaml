@@ -1,0 +1,1261 @@
+# =============================================================================
+# Backlog: Caiani AB‑SFC (Py2 sim) with Live LLM (Py3) — Manuscript‑First Plan
+# Purpose: Every milestone/issue exists to produce a publishable manuscript
+# (Quarto project) with clearly traceable figures/tables and methods text.
+# Constraints: No Makefile, no bash issue-creator scripts, no CI/GH Actions.
+# Roles:
+#   - executor : Repo CLI agent doing all coding/runs inside the repo
+#   - writer   : External Writer LLM producing prose only (commits drafts)
+#   - signoff  : This agent; verifies milestone AC via concrete artifacts
+# Strategy:
+#   - Keep Caiani simulation in Python 2 unchanged except tiny hooks.
+#   - Live LLM “Decider” microservice runs in Python 3 (localhost).
+#   - Py2 calls Decider with hard timeout; strict bounds; fallback to baseline.
+#   - Long experiments (MC/sensitivity) are user-run; executor prepares configs.
+# Quarto:
+#   - Single Quarto project under docs/; manuscript is a set of .qmd pages.
+#   - All figures/tables saved under figs/ and data/ and referenced by .qmd.
+# =============================================================================
+
+meta:
+  repo: Caiani-Wage-Regimes
+  created_at_utc: "{{NOW}}"
+  default_assignee: executor
+  labels:
+    area: [bridge, firm, bank, wage, eval, docs, methods, results, robustness, release]
+    type: [code, docs, writing, qa]
+    role: [executor, writer, signoff]
+    priority: [P0, P1, P2, P3]
+    size: [XS, S, M, L]
+    run_by: [executor, user]
+
+milestones:
+  - id: M0
+    title: Manuscript Blueprint & Quarto Skeleton
+    goal: Lock a publishable outline, asset plan, and a minimal Quarto site that renders locally.
+
+  - id: M1
+    title: Live LLM Bridge (Py3) + Py2 Hooks (Scaffold)
+    goal: Local Decider server (stub + schema), Py2 HTTP client, toggles, minimal docs.
+
+  - id: M2
+    title: Equation Map & Data Taps for Manuscript
+    goal: Annotate code with eq. refs; expose variables; define tables/figures needed.
+
+  - id: M3
+    title: Firm Pricing & Expectations (eq. 12–14)
+    goal: Insert firm hook, bounds, counters; produce firm A/B tables/figures + Quarto page.
+
+  - id: M4
+    title: Bank Credit & Spreads (eq. 26–27)
+    goal: Insert bank hook, bounds, counters; produce bank A/B tables/figures + Quarto page.
+
+  - id: M5
+    title: Wages — Worker & Firm (eq. 1 & 15)
+    goal: Insert wage hooks, bounds, counters; produce wage A/B tables/figures + Quarto page.
+
+  - id: M6
+    title: A/B Runner & Overlays (Baseline vs LLM)
+    goal: One-button (python call) to run OFF→ON with same seed; overlays; Quarto A/B page.
+
+  - id: M7
+    title: Experiments A/B/C (Small Horizon) + Pages
+    goal: Configure three wage scenarios; generate small-horizon outputs; write pages. (Long runs: user-run)
+
+  - id: M8
+    title: Robustness & Sensitivity (β, K, bounds)
+    goal: Prepare robustness jobs & pages; small demos included; long grids user-run.
+
+  - id: M9
+    title: Manuscript Draft — Methods & Results
+    goal: Produce full Methods (LLM live), Results narrative with figures/tables, within Quarto.
+
+  - id: M10
+    title: Appendices, Repro Notes & Data Dictionary
+    goal: Appendices with schemas/equation map; data dictionary; reproducibility guidance.
+
+  - id: M11
+    title: Final Integration & Submission Package
+    goal: Title/abstract, references, figure/table numbering, compiled PDF/HTML, final sign-off.
+
+issues:
+
+# ================= M0 — Manuscript Blueprint & Quarto Skeleton (6) =================
+  - id: M0-01
+    milestone: M0
+    title: Manuscript outline & asset plan (IMRaD + figures/tables inventory)
+    role: writer
+    type: writing
+    area: docs
+    priority: P0
+    size: S
+    depends_on: []
+    description: Create outline with section headings, tentative word counts, and a numbered list of all figures/tables to be produced (IDs, sources, generating code paths).
+    acceptance_criteria:
+      - File papers/outline.md lists sections and a Figure/Table inventory with IDs and expected CSV/PNG sources.
+    deliverables: ["papers/outline.md"]
+
+  - id: M0-02
+    milestone: M0
+    title: Quarto project skeleton
+    role: executor
+    type: docs
+    area: docs
+    priority: P0
+    size: S
+    depends_on: [M0-01]
+    description: Create docs/_quarto.yml and docs/index.qmd; configure project title and default HTML output; ensure local render works.
+    acceptance_criteria:
+      - Running `quarto render docs` locally succeeds; index.qmd contains manuscript title and build date.
+    deliverables: ["docs/_quarto.yml", "docs/index.qmd"]
+
+  - id: M0-03
+    milestone: M0
+    title: AGENTS.md — Manuscript-first quickstart (Py2 sim + Py3 Decider)
+    role: executor
+    type: docs
+    area: methods
+    priority: P0
+    size: XS
+    depends_on: [M0-02]
+    description: Add a minimal quickstart: start Decider (stub), run a tiny sim, render Quarto, where outputs appear.
+    acceptance_criteria:
+      - AGENTS.md shows three commands (Decider stub start, tiny run, Quarto render) and expected artifacts.
+    deliverables: ["AGENTS.md"]
+
+  - id: M0-04
+    milestone: M0
+    title: Figure & table naming convention
+    role: executor
+    type: docs
+    area: docs
+    priority: P1
+    size: XS
+    depends_on: [M0-02]
+    description: Establish naming & folder conventions (figs/<section>/*, data/<section>/*.csv) and reference style in .qmd files.
+    acceptance_criteria:
+      - docs/conventions.md describes names and cross-references; at least one example fig and table referenced from index.qmd.
+    deliverables: ["docs/conventions.md", "figs/_examples/", "data/_examples/"]
+
+  - id: M0-05
+    milestone: M0
+    title: Ethics & scope disclaimer placeholder
+    role: writer
+    type: writing
+    area: docs
+    priority: P2
+    size: XS
+    depends_on: [M0-01]
+    description: 200–300 words clarifying that this is not a replication; Py2 baseline differs; LLM acts as bounded qualitative heuristic.
+    acceptance_criteria:
+      - docs/snippets/ethics_scope.md exists and is referenced in index.qmd.
+    deliverables: ["docs/snippets/ethics_scope.md", "docs/index.qmd:update"]
+
+  - id: M0-06
+    milestone: M0
+    title: Sign‑off — M0 Blueprint & Skeleton
+    role: signoff
+    type: qa
+    area: docs
+    priority: P0
+    size: XS
+    depends_on: [M0-01, M0-02, M0-03, M0-04]
+    description: Verify outline, Quarto render, quickstart clarity, and conventions doc exist and are referenced.
+    acceptance_criteria:
+      - Sign-off comment “M0 ✅” links to outline and rendered HTML.
+    deliverables: ["signoff-comment"]
+
+# ================== M1 — Live LLM Bridge + Py2 Hooks (Scaffold) (9) ==================
+  - id: M1-01
+    milestone: M1
+    title: Decider server (Py3) — stub mode + /healthz
+    role: executor
+    type: code
+    area: bridge
+    priority: P0
+    size: S
+    depends_on: [M0-03]
+    description: Localhost-only server (FastAPI/Flask) with deterministic --stub replies and /healthz.
+    acceptance_criteria:
+      - docs/methods/decider.md shows how to start; curl /healthz returns 200.
+    deliverables: ["tools/decider/server.py", "docs/methods/decider.md"]
+
+  - id: M1-02
+    milestone: M1
+    title: Decision schemas (firm, bank, wage) + validation errors
+    role: executor
+    type: code
+    area: bridge
+    priority: P0
+    size: XS
+    depends_on: [M1-01]
+    description: JSON Schemas and server-side validation returning readable 400 errors.
+    acceptance_criteria:
+      - tools/decider/schemas_*.json present; malformed payload example documented.
+    deliverables: ["tools/decider/schemas_firm.json", "tools/decider/schemas_bank.json", "tools/decider/schemas_wage.json", "docs/methods/decider.md:update"]
+
+  - id: M1-03
+    milestone: M1
+    title: Deterministic cache (state-hash) and logging
+    role: executor
+    type: code
+    area: bridge
+    priority: P1
+    size: S
+    depends_on: [M1-01]
+    description: Cache decisions by hash; enforce temperature=0; log cache hits.
+    acceptance_criteria:
+      - docs/methods/decider.md shows cache behavior and file location.
+    deliverables: ["tools/decider/cache.py", "tools/decider/server.py:update"]
+
+  - id: M1-04
+    milestone: M1
+    title: Timeout & per-tick budget config
+    role: executor
+    type: code
+    area: bridge
+    priority: P1
+    size: XS
+    depends_on: [M1-01]
+    description: Server-level deadline (e.g., 100ms) and optional per-tick call budget; return 504/429 on breach.
+    acceptance_criteria:
+      - Timeouts/budgets described in docs/methods/decider.md with examples.
+    deliverables: ["tools/decider/server.py:update"]
+
+  - id: M1-05
+    milestone: M1
+    title: Py2 HTTP client (urllib2) with hard timeout & baseline fallback
+    role: executor
+    type: code
+    area: bridge
+    priority: P0
+    size: S
+    depends_on: [M1-01, M1-02]
+    description: Minimal client returning dict or None; distinguish timeout vs 4xx/5xx.
+    acceptance_criteria:
+      - Example call snippet in docs/methods/py2_client.md; None triggers baseline path in examples.
+    deliverables: ["code/llm_bridge_client.py", "docs/methods/py2_client.md"]
+
+  - id: M1-06
+    milestone: M1
+    title: parameter.py toggles & URL/timeout settings
+    role: executor
+    type: code
+    area: bridge
+    priority: P0
+    size: XS
+    depends_on: [M1-05]
+    description: Add USE_LLM_FIRM_PRICING/BANK_CREDIT/WAGE=false, LLM_SERVER_URL, LLM_TIMEOUT_MS, LLM_BATCH=false.
+    acceptance_criteria:
+      - AGENTS.md includes toggle list and defaults; timing.log prints toggles on start.
+    deliverables: ["code/parameter.py", "AGENTS.md:update"]
+
+  - id: M1-07
+    milestone: M1
+    title: Docs — Baseline vs LLM fallback semantics (1 page)
+    role: writer
+    type: writing
+    area: methods
+    priority: P2
+    size: XS
+    depends_on: [M1-05, M1-06]
+    description: Plain-language explanation of fallback rules and their interpretation limits.
+    acceptance_criteria:
+      - docs/methods/fallbacks.md referenced in Quarto Methods.
+    deliverables: ["docs/methods/fallbacks.md", "docs/index.qmd:update"]
+
+  - id: M1-08
+    milestone: M1
+    title: Batch endpoints (optional) & note on when to use
+    role: executor
+    type: code
+    area: bridge
+    priority: P2
+    size: S
+    depends_on: [M1-02]
+    description: /firm.decide.batch, /bank.decide.batch, /wage.decide.batch; document use cases & payload format.
+    acceptance_criteria:
+      - docs/methods/decider.md shows batch example and limits.
+    deliverables: ["tools/decider/server.py:update", "docs/methods/decider.md:update"]
+
+  - id: M1-09
+    milestone: M1
+    title: Sign‑off — M1 Bridge Ready
+    role: signoff
+    type: qa
+    area: bridge
+    priority: P0
+    size: XS
+    depends_on: [M1-01, M1-02, M1-05, M1-06]
+    description: Confirm stub server starts, client calls succeed/fallback, toggles documented.
+    acceptance_criteria:
+      - Sign-off comment “M1 ✅” linking to methods pages and code paths.
+    deliverables: ["signoff-comment"]
+
+# ============== M2 — Equation Map & Data Taps for Manuscript (8) ==============
+  - id: M2-01
+    milestone: M2
+    title: Code annotations with equation references
+    role: executor
+    type: docs
+    area: methods
+    priority: P0
+    size: XS
+    depends_on: [M1-06]
+    description: Add inline comments in firm.py (eq.12–14), bank.py (eq.26–27), consumer.py (eq.1) and firm wage rule (eq.15) at decision points.
+    acceptance_criteria:
+      - Comments present and searchable; docs/methods/eq_map.md links to line anchors or file/func names.
+    deliverables: ["docs/methods/eq_map.md", "code/*:update"]
+
+  - id: M2-02
+    milestone: M2
+    title: Aggregator: export manuscript tables’ base metrics
+    role: executor
+    type: code
+    area: eval
+    priority: P0
+    size: S
+    depends_on: [M2-01]
+    description: Ensure aggregator writes minimal CSVs needed for manuscript: inflation_vol, price_dispersion, credit_growth, avg_spread, wage_dispersion, fill_rate.
+    acceptance_criteria:
+      - data/core_metrics.csv created with named columns; empty‑safe on tiny runs.
+    deliverables: ["code/aggregator.py:update", "data/core_metrics.csv"]
+
+  - id: M2-03
+    milestone: M2
+    title: Variable dictionary for manuscript tables
+    role: writer
+    type: writing
+    area: docs
+    priority: P1
+    size: XS
+    depends_on: [M2-02]
+    description: Short page mapping each metric to source CSV columns and formula descriptions.
+    acceptance_criteria:
+      - docs/methods/variables.md included in Methods menu; references data/core_metrics.csv column names.
+    deliverables: ["docs/methods/variables.md"]
+
+  - id: M2-04
+    milestone: M2
+    title: Minimal A/B runner function (inside timing.py)
+    role: executor
+    type: code
+    area: eval
+    priority: P0
+    size: XS
+    depends_on: [M1-06]
+    description: Add a callable function (not CLI) that runs OFF then ON with same seed and returns paths to outputs.
+    acceptance_criteria:
+      - docs/methods/runners.md shows Python snippet to call this function.
+    deliverables: ["code/timing.py:update", "docs/methods/runners.md"]
+
+  - id: M2-05
+    milestone: M2
+    title: Quarto Methods hub page
+    role: executor
+    type: docs
+    area: methods
+    priority: P1
+    size: S
+    depends_on: [M1-07, M2-01, M2-03, M2-04]
+    description: docs/methods/index.qmd aggregating Decider, client, fallbacks, equation map, variable dictionary, runner.
+    acceptance_criteria:
+      - Page renders locally and links to all method subpages.
+    deliverables: ["docs/methods/index.qmd"]
+
+  - id: M2-06
+    milestone: M2
+    title: Sample tiny dataset for Quarto previews
+    role: executor
+    type: docs
+    area: docs
+    priority: P1
+    size: XS
+    depends_on: [M2-02]
+    description: Save a 20‑period micro run’s outputs under docs/stubs/ for page demos.
+    acceptance_criteria:
+      - docs/stubs/* present and referenced by example figures/tables.
+    deliverables: ["docs/stubs/"]
+
+  - id: M2-07
+    milestone: M2
+    title: Writer: “Model overview” section (400–700 words)
+    role: writer
+    type: writing
+    area: methods
+    priority: P2
+    size: S
+    depends_on: [M2-01]
+    description: Non‑technical overview of agents/markets and timing per the codebase.
+    acceptance_criteria:
+      - docs/methods/model_overview.md committed and linked from Methods hub.
+    deliverables: ["docs/methods/model_overview.md", "docs/methods/index.qmd:update"]
+
+  - id: M2-08
+    milestone: M2
+    title: Sign‑off — M2 Map & Taps
+    role: signoff
+    type: qa
+    area: methods
+    priority: P0
+    size: XS
+    depends_on: [M2-01, M2-02, M2-04, M2-05]
+    description: Verify eq references, core_metrics.csv, runner function, and methods hub render.
+    acceptance_criteria:
+      - Sign-off “M2 ✅” with links to CSV and pages.
+    deliverables: ["signoff-comment"]
+
+# =========== M3 — Firm Pricing & Expectations (eq. 12–14), A/B (8) ===========
+  - id: M3-01
+    milestone: M3
+    title: Insert firm pricing LLM hook (live) with fallback
+    role: executor
+    type: code
+    area: firm
+    priority: P0
+    size: S
+    depends_on: [M1-05, M1-06, M2-01]
+    description: Call Decider at price/expectation update if USE_LLM_FIRM_PRICING; otherwise baseline; log reason on fallback.
+    acceptance_criteria:
+      - Tiny OFF run identical to pre-hook outputs; ON (stub) applies ≥1 decision without crash.
+    deliverables: ["code/firm.py:update"]
+
+  - id: M3-02
+    milestone: M3
+    title: Firm feature pack (≤20 fields) & docstring
+    role: executor
+    type: code
+    area: firm
+    priority: P0
+    size: XS
+    depends_on: [M3-01]
+    description: Provide unit_cost, inv_ratio, backlog, Δp_comp, last_sales, capacity, liquidity, sector code.
+    acceptance_criteria:
+      - Missing fields raise safe fallback; docstring lists ranges.
+    deliverables: ["code/firm.py:update"]
+
+  - id: M3-03
+    milestone: M3
+    title: Guards — step≤δ and p≥w/φ floor
+    role: executor
+    type: code
+    area: firm
+    priority: P0
+    size: XS
+    depends_on: [M3-01]
+    description: Clip step to δ; enforce unit-cost floor; ignore invalid direction; fallback with single-line log.
+    acceptance_criteria:
+      - No price < unit_cost in stub run.
+    deliverables: ["code/firm.py:update"]
+
+  - id: M3-04
+    milestone: M3
+    title: Firm counters summary (calls/timeouts/fallbacks)
+    role: executor
+    type: code
+    area: firm
+    priority: P1
+    size: XS
+    depends_on: [M3-01]
+    description: End-of-run counters appended to timing.log.
+    acceptance_criteria:
+      - OFF=0; ON>0 on stub run.
+    deliverables: ["code/firm.py:update", "code/timing.py:update"]
+
+  - id: M3-05
+    milestone: M3
+    title: Firm A/B table & figure generation
+    role: executor
+    type: code
+    area: eval
+    priority: P1
+    size: S
+    depends_on: [M2-04, M3-01]
+    description: Produce data/firm_ab_table.csv (inflation_vol, price_dispersion) and figs/firm_ab_overlay.png.
+    acceptance_criteria:
+      - Files created by running the A/B function at tiny horizon.
+    deliverables: ["data/firm_ab_table.csv", "figs/firm_ab_overlay.png"]
+
+  - id: M3-06
+    milestone: M3
+    title: Quarto page — Firm A/B
+    role: executor
+    type: docs
+    area: docs
+    priority: P1
+    size: S
+    depends_on: [M3-05, M0-02]
+    description: docs/firm_ab.qmd rendering table and overlay with caption.
+    acceptance_criteria:
+      - Page renders locally and is linked from index.qmd.
+    deliverables: ["docs/firm_ab.qmd", "docs/index.qmd:update"]
+
+  - id: M3-07
+    milestone: M3
+    title: Writer snippet — Firm LLM methods (300–500 words)
+    role: writer
+    type: writing
+    area: methods
+    priority: P2
+    size: XS
+    depends_on: [M3-06]
+    description: Explain qualitative triggers encoded in features; bounds; fallback; interpretability note.
+    acceptance_criteria:
+      - docs/methods/firm_method.md exists and is cited in firm_ab.qmd.
+    deliverables: ["docs/methods/firm_method.md", "docs/firm_ab.qmd:update"]
+
+  - id: M3-08
+    milestone: M3
+    title: Sign‑off — M3 Firm
+    role: signoff
+    type: qa
+    area: firm
+    priority: P0
+    size: XS
+    depends_on: [M3-01, M3-03, M3-05, M3-06]
+    description: Verify floor enforcement, counters presence, CSV/PNG generated and referenced.
+    acceptance_criteria:
+      - Sign-off “M3 ✅” with links to data/firm_ab_table.csv and docs/firm_ab.qmd (rendered).
+    deliverables: ["signoff-comment"]
+
+# ============== M4 — Bank Credit & Spreads (eq. 26–27), A/B (8) ==============
+  - id: M4-01
+    milestone: M4
+    title: Insert bank approval/spread LLM hook (live) with fallback
+    role: executor
+    type: code
+    area: bank
+    priority: P0
+    size: S
+    depends_on: [M1-05, M1-06, M2-01]
+    description: At loan decision, call Decider if USE_LLM_BANK_CREDIT; else baseline.
+    acceptance_criteria:
+      - OFF parity at tiny horizon; ON (stub) applies ≥1 decision without crash.
+    deliverables: ["code/bank.py:update"]
+
+  - id: M4-02
+    milestone: M4
+    title: Bank feature pack & docstring
+    role: executor
+    type: code
+    area: bank
+    priority: P0
+    size: XS
+    depends_on: [M4-01]
+    description: Provide leverage, arrears flag, sector, borrower size/profitability, collateral proxy.
+    acceptance_criteria:
+      - Missing fields → safe fallback; docstring lists ranges.
+    deliverables: ["code/bank.py:update"]
+
+  - id: M4-03
+    milestone: M4
+    title: Guards — clamp spread_bp; credit_limit ≤ demand; monotone vs leverage
+    role: executor
+    type: code
+    area: bank
+    priority: P0
+    size: XS
+    depends_on: [M4-01]
+    description: Enforce spread bounds and monotonicity; fallback + log on violation.
+    acceptance_criteria:
+      - No negative rates; no over-lending; monotone check logged.
+    deliverables: ["code/bank.py:update"]
+
+  - id: M4-04
+    milestone: M4
+    title: Bank counters summary (calls/timeouts/fallbacks)
+    role: executor
+    type: code
+    area: bank
+    priority: P1
+    size: XS
+    depends_on: [M4-01]
+    description: End-of-run counters appended to timing.log.
+    acceptance_criteria:
+      - OFF=0; ON>0 on stub run.
+    deliverables: ["code/bank.py:update", "code/timing.py:update"]
+
+  - id: M4-05
+    milestone: M4
+    title: Bank A/B table & figure generation
+    role: executor
+    type: code
+    area: eval
+    priority: P1
+    size: S
+    depends_on: [M2-04, M4-01]
+    description: Produce data/bank_ab_table.csv (credit_growth, avg_spread) and figs/bank_ab_overlay.png.
+    acceptance_criteria:
+      - A/B runner generates files on tiny horizon.
+    deliverables: ["data/bank_ab_table.csv", "figs/bank_ab_overlay.png"]
+
+  - id: M4-06
+    milestone: M4
+    title: Quarto page — Bank A/B
+    role: executor
+    type: docs
+    area: docs
+    priority: P1
+    size: S
+    depends_on: [M4-05, M0-02]
+    description: docs/bank_ab.qmd rendering the bank table and overlay with caption.
+    acceptance_criteria:
+      - Page renders locally and linked from index.qmd.
+    deliverables: ["docs/bank_ab.qmd", "docs/index.qmd:update"]
+
+  - id: M4-07
+    milestone: M4
+    title: Writer snippet — Bank LLM methods (300–500 words)
+    role: writer
+    type: writing
+    area: methods
+    priority: P2
+    size: XS
+    depends_on: [M4-06]
+    description: Soft information rationale; spread bounds; monotonicity; fallback text.
+    acceptance_criteria:
+      - docs/methods/bank_method.md exists; cited in bank_ab.qmd.
+    deliverables: ["docs/methods/bank_method.md", "docs/bank_ab.qmd:update"]
+
+  - id: M4-08
+    milestone: M4
+    title: Sign‑off — M4 Bank
+    role: signoff
+    type: qa
+    area: bank
+    priority: P0
+    size: XS
+    depends_on: [M4-01, M4-03, M4-05, M4-06]
+    description: Verify clamps/monotone enforcement, counters, CSV/PNG present and referenced.
+    acceptance_criteria:
+      - Sign-off “M4 ✅” with links to CSV and rendered page.
+    deliverables: ["signoff-comment"]
+
+# ================== M5 — Wages — Worker & Firm (eq. 1 & 15), A/B (8) ==================
+  - id: M5-01
+    milestone: M5
+    title: Insert worker reservation-wage LLM hook (eq.1)
+    role: executor
+    type: code
+    area: wage
+    priority: P0
+    size: S
+    depends_on: [M1-05, M1-06, M2-01]
+    description: Call Decider at worker reservation update when USE_LLM_WAGE; else baseline; fallback on error.
+    acceptance_criteria:
+      - OFF parity at tiny horizon; ON applies ≥1 decision; no negative wages.
+    deliverables: ["code/consumer.py:update"]
+
+  - id: M5-02
+    milestone: M5
+    title: Insert firm offered-wage LLM hook (eq.15)
+    role: executor
+    type: code
+    area: wage
+    priority: P0
+    size: S
+    depends_on: [M1-05, M1-06, M2-01]
+    description: Call Decider at firm wage offer update when USE_LLM_WAGE; else baseline.
+    acceptance_criteria:
+      - Hiring-shortfall logic preserved; no floor violation with p≥w/φ.
+    deliverables: ["code/firm.py:update"]
+
+  - id: M5-03
+    milestone: M5
+    title: Wage feature packs & docstrings (u, fill-rate, rejections)
+    role: executor
+    type: code
+    area: wage
+    priority: P0
+    size: XS
+    depends_on: [M5-01, M5-02]
+    description: Compact dicts for worker/firm calls; bounded ranges enforced.
+    acceptance_criteria:
+      - Missing keys → safe fallback; docstrings list ranges.
+    deliverables: ["code/consumer.py:update", "code/firm.py:update"]
+
+  - id: M5-04
+    milestone: M5
+    title: Guards — δ‑cap; price-floor compatibility
+    role: executor
+    type: code
+    area: wage
+    priority: P0
+    size: XS
+    depends_on: [M5-01, M5-02]
+    description: Clamp step≤δ; ensure p≥w/φ holds; fallback + log if breach.
+    acceptance_criteria:
+      - No floor breach in stub run; single-line logs on fallback.
+    deliverables: ["code/consumer.py:update", "code/firm.py:update"]
+
+  - id: M5-05
+    milestone: M5
+    title: Wage counters summary (calls/timeouts/fallbacks)
+    role: executor
+    type: code
+    area: wage
+    priority: P1
+    size: XS
+    depends_on: [M5-01, M5-02]
+    description: End-of-run wage counters appended to timing.log.
+    acceptance_criteria:
+      - OFF=0; ON>0 on stub run.
+    deliverables: ["code/consumer.py:update", "code/firm.py:update", "code/timing.py:update"]
+
+  - id: M5-06
+    milestone: M5
+    title: Wage A/B table & figure generation
+    role: executor
+    type: code
+    area: eval
+    priority: P1
+    size: S
+    depends_on: [M2-04, M5-01, M5-02]
+    description: Produce data/wage_ab_table.csv (wage_dispersion, fill_rate) and figs/wage_ab_overlay.png.
+    acceptance_criteria:
+      - Files produced on tiny A/B run.
+    deliverables: ["data/wage_ab_table.csv", "figs/wage_ab_overlay.png"]
+
+  - id: M5-07
+    milestone: M5
+    title: Quarto page — Wage A/B
+    role: executor
+    type: docs
+    area: docs
+    priority: P1
+    size: S
+    depends_on: [M5-06, M0-02]
+    description: docs/wage_ab.qmd rendering table and overlay with caption.
+    acceptance_criteria:
+      - Page renders locally and linked in index.qmd.
+    deliverables: ["docs/wage_ab.qmd", "docs/index.qmd:update"]
+
+  - id: M5-08
+    milestone: M5
+    title: Sign‑off — M5 Wage
+    role: signoff
+    type: qa
+    area: wage
+    priority: P0
+    size: XS
+    depends_on: [M5-01, M5-04, M5-06, M5-07]
+    description: Verify δ‑cap & floor compatibility; counters; CSV/PNG referenced by page.
+    acceptance_criteria:
+      - Sign-off “M5 ✅” with links to data/wage_ab_table.csv and docs/wage_ab.qmd (rendered).
+    deliverables: ["signoff-comment"]
+
+# =========== M6 — A/B Runner & Overlays (Baseline vs LLM) (7) ===========
+  - id: M6-01
+    milestone: M6
+    title: timing.py — A/B function returns file paths for OFF & ON
+    role: executor
+    type: code
+    area: eval
+    priority: P0
+    size: XS
+    depends_on: [M2-04]
+    description: The function returns dict with paths to core CSV/PNGs for OFF and ON; includes counters summary.
+    acceptance_criteria:
+      - docs/methods/runners.md shows return structure and example output.
+    deliverables: ["code/timing.py:update", "docs/methods/runners.md:update"]
+
+  - id: M6-02
+    milestone: M6
+    title: Overlay figures (OFF vs ON) — consolidated page
+    role: executor
+    type: docs
+    area: results
+    priority: P1
+    size: S
+    depends_on: [M3-05, M4-05, M5-06]
+    description: docs/ab_overview.qmd showing three overlays (firm/bank/wage) and a small explanatory caption.
+    acceptance_criteria:
+      - Page renders and links to the three detailed A/B pages.
+    deliverables: ["docs/ab_overview.qmd", "docs/index.qmd:update"]
+
+  - id: M6-03
+    milestone: M6
+    title: Narrative template snippets for overlays
+    role: writer
+    type: writing
+    area: results
+    priority: P2
+    size: XS
+    depends_on: [M6-02]
+    description: Short text blocks (150–250 words each) describing expected qualitative differences OFF vs ON.
+    acceptance_criteria:
+      - docs/snippets/ab_narratives.md committed and referenced.
+    deliverables: ["docs/snippets/ab_narratives.md", "docs/ab_overview.qmd:update"]
+
+  - id: M6-04
+    milestone: M6
+    title: “How to reproduce A/B” page (manual run)
+    role: executor
+    type: docs
+    area: docs
+    priority: P1
+    size: XS
+    depends_on: [M6-01]
+    description: docs/howto_ab.qmd with three steps: start stub, call A/B function, render docs.
+    acceptance_criteria:
+      - Page renders and is discoverable from index.qmd.
+    deliverables: ["docs/howto_ab.qmd", "docs/index.qmd:update"]
+
+  - id: M6-05
+    milestone: M6
+    title: Add figure/table cross-referencing IDs to all A/B pages
+    role: executor
+    type: docs
+    area: docs
+    priority: P2
+    size: XS
+    depends_on: [M3-06, M4-06, M5-07]
+    description: Insert figure/table labels consistent with M0-04 conventions.
+    acceptance_criteria:
+      - All A/B pages contain labeled figures/tables referenced in the manuscript.
+    deliverables: ["docs/*_ab.qmd:update"]
+
+  - id: M6-06
+    milestone: M6
+    title: Writer: Integrate overlay narratives into Results draft slots
+    role: writer
+    type: writing
+    area: results
+    priority: P2
+    size: XS
+    depends_on: [M6-03]
+    description: Paste and lightly adapt overlay snippets into papers/results.md placeholders.
+    acceptance_criteria:
+      - papers/results.md updated with overlay paragraphs and cross-references.
+    deliverables: ["papers/results.md:update"]
+
+  - id: M6-07
+    milestone: M6
+    title: Sign‑off — M6 A/B Runner & Overlays
+    role: signoff
+    type: qa
+    area: results
+    priority: P0
+    size: XS
+    depends_on: [M6-01, M6-02, M6-04]
+    description: Verify A/B function returns paths; overview page renders; how‑to page is clear.
+    acceptance_criteria:
+      - Sign-off “M6 ✅” with links to rendered pages.
+    deliverables: ["signoff-comment"]
+
+# ======== M7 — Experiments A/B/C (Small Horizon) + Pages (7, user‑run long) ========
+  - id: M7-01
+    milestone: M7
+    title: Experiment A config (single-country wage acceleration) OFF/ON
+    role: executor
+    type: code
+    area: results
+    priority: P1
+    size: XS
+    depends_on: [M5-01, M5-02, M6-01]
+    description: Parameter switch to lower υ in one country at t0; expose small-horizon demonstration run.
+    acceptance_criteria:
+      - Small-horizon outputs saved under data/expA_demo/* and figs/expA_demo/*.
+    deliverables: ["code/parameter.py:update", "data/expA_demo/", "figs/expA_demo/"]
+    run_by: user
+
+  - id: M7-02
+    milestone: M7
+    title: Experiment B config (single-country wage moderation) OFF/ON
+    role: executor
+    type: code
+    area: results
+    priority: P1
+    size: XS
+    depends_on: [M7-01]
+    description: Raise υ at t0; small-horizon demonstration run.
+    acceptance_criteria:
+      - Outputs saved under data/expB_demo/* and figs/expB_demo/*.
+    deliverables: ["code/parameter.py:update", "data/expB_demo/", "figs/expB_demo/"]
+    run_by: user
+
+  - id: M7-03
+    milestone: M7
+    title: Experiment C config (coordinated change) OFF/ON
+    role: executor
+    type: code
+    area: results
+    priority: P2
+    size: XS
+    depends_on: [M7-01]
+    description: Uniform υ shift; small-horizon demonstration run.
+    acceptance_criteria:
+      - Outputs saved under data/expC_demo/* and figs/expC_demo/*.
+    deliverables: ["code/parameter.py:update", "data/expC_demo/", "figs/expC_demo/"]
+    run_by: user
+
+  - id: M7-04
+    milestone: M7
+    title: Quarto experiment pages A/B/C (demo data)
+    role: executor
+    type: docs
+    area: results
+    priority: P1
+    size: M
+    depends_on: [M7-01, M7-02, M7-03, M0-02]
+    description: docs/exp_A.qmd, docs/exp_B.qmd, docs/exp_C.qmd showing panel figures and brief captions.
+    acceptance_criteria:
+      - Each page renders with demo data; linked from index.qmd.
+    deliverables: ["docs/exp_A.qmd", "docs/exp_B.qmd", "docs/exp_C.qmd", "docs/index.qmd:update"]
+
+  - id: M7-05
+    milestone: M7
+    title: Writer: Experiment narrative stubs (A/B/C)
+    role: writer
+    type: writing
+    area: results
+    priority: P2
+    size: S
+    depends_on: [M7-04]
+    description: 400–700 words per experiment; neutral tone; cite page figures/tables.
+    acceptance_criteria:
+      - docs/exp_writeups.md contains three stubs referenced by pages.
+    deliverables: ["docs/exp_writeups.md", "docs/exp_*.qmd:update"]
+
+  - id: M7-06
+    milestone: M7
+    title: Long-run guidelines for user (MC/sensitivity pointers)
+    role: executor
+    type: docs
+    area: robustness
+    priority: P2
+    size: XS
+    depends_on: [M7-01]
+    description: Add a section to AGENTS.md clarifying which experiments are long and how the user can run them manually.
+    acceptance_criteria:
+      - AGENTS.md “Long runs” section lists run commands and expected runtime bands.
+    deliverables: ["AGENTS.md:update"]
+    run_by: user
+
+  - id: M7-07
+    milestone: M7
+    title: Sign‑off — M7 Experiments Pages
+    role: signoff
+    type: qa
+    area: results
+    priority: P0
+    size: XS
+    depends_on: [M7-04, M7-05]
+    description: Verify pages render with demo data and narratives exist.
+    acceptance_criteria:
+      - Sign-off “M7 ✅” with links to exp pages.
+    deliverables: ["signoff-comment"]
+
+# ======= M8 — Robustness & Sensitivity (β, K, bounds) (6, user‑run long) =======
+  - id: M8-01
+    milestone: M8
+    title: Sensitivity: β grid (price sensitivity) — demo + instructions
+    role: executor
+    type: code
+    area: robustness
+    priority: P2
+    size: S
+    depends_on: [M3-05]
+    description: Provide a minimal demo (two β values) and instructions for a full grid (user-run).
+    acceptance_criteria:
+      - figs/robustness/beta_demo.png and docs/robustness.qmd section explaining how to extend.
+    deliverables: ["figs/robustness/beta_demo.png", "docs/robustness.qmd:update"]
+    run_by: user
+
+  - id: M8-02
+    milestone: M8
+    title: Sensitivity: K (number of countries) — demo + instructions
+    role: executor
+    type: code
+    area: robustness
+    priority: P2
+    size: S
+    depends_on: [M3-05]
+    description: Provide a minimal demo (K=2 vs K=5) and instructions for full sweep (user-run).
+    acceptance_criteria:
+      - figs/robustness/k_demo.png and docs/robustness.qmd updated.
+    deliverables: ["figs/robustness/k_demo.png", "docs/robustness.qmd:update"]
+    run_by: user
+
+  - id: M8-03
+    milestone: M8
+    title: Bounds stress tests (tight vs loose guards) — demo
+    role: executor
+    type: code
+    area: robustness
+    priority: P2
+    size: S
+    depends_on: [M3-03, M4-03, M5-04]
+    description: Show one example where tighter bounds reduce variance; include figure and short caption.
+    acceptance_criteria:
+      - figs/robustness/bounds_demo.png and docs/robustness.qmd updated.
+    deliverables: ["figs/robustness/bounds_demo.png", "docs/robustness.qmd:update"]
+
+  - id: M8-04
+    milestone: M8
+    title: Writer: Robustness commentary (400–700 words)
+    role: writer
+    type: writing
+    area: robustness
+    priority: P3
+    size: S
+    depends_on: [M8-01, M8-02, M8-03]
+    description: Summarize what changes qualitatively and caveats; do not over-claim.
+    acceptance_criteria:
+      - docs/robustness.qmd contains commentary section.
+    deliverables: ["docs/robustness.qmd:update"]
+
+  - id: M8-05
+    milestone: M8
+    title: Re-state “not a replication” caveat in robustness page
+    role: writer
+    type: writing
+    area: robustness
+    priority: P3
+    size: XS
+    depends_on: [M8-04]
+    description: Single paragraph box reminding differences vs. paper calibration.
+    acceptance_criteria:
+      - Boxed note present in docs/robustness.qmd.
+    deliverables: ["docs/robustness.qmd:update"]
+
+  - id: M8-06
+    milestone: M8
+    title: Sign‑off — M8 Robustness
+    role: signoff
+    type: qa
+    area: robustness
+    priority: P0
+    size: XS
+    depends_on: [M8-01, M8-02, M8-03]
+    description: Verify demo figures and instructions exist and are referenced.
+    acceptance_criteria:
+      - Sign-off “M8 ✅” with links to robustness page.
+    deliverables: ["signoff-comment"]
+
+# ========== M9 — Manuscript Draft — Methods & Results (6) ==========
+  - id: M9-01
+    milestone: M9
+    title: Methods (LLM live) — full section draft
+    role: writer
+    type: writing
+    area: methods
+    priority: P0
+    size: M
+    depends_on: [M1-07, M2-05, M3-07, M4-07, M5-08]
+    description: 1200–1600 words consolidating Decider, client, features, guards, fallbacks; references to A/B pages.
+    acceptance_criteria:
+      - papers/methods.md present; all internal links valid.
+    deliverables: ["papers/methods.md"]
+
+  - id: M9-02
+    milestone: M9
+    title: Results — integrate A/B pages and experiments
+    role: writer
+    type: writing
+    area: results
+    priority: P0
+    size: M
+    depends_on: [M6-02, M7-04]
+    description: 1200–1800 words weaving firm/bank/wage A/B and experiments A/B/C; include cross-refs to figures/tables.
+    acceptance_criteria:
+      - papers/results.md present; figure/table refs resolve.
+    deliverables: ["papers/results.md"]
+
+  - id: M9-03
+    milestone: M9
+    title: Discussion & limitations
+    role: writer
+    type: writing
+    area: results
+    priority: P1
+    size: S
+    depends_on: [M9-02]
+    description: 600–900 words on implications, boundaries of LLM decisions, and future work.
+    acceptance_criteria:
+      - papers/discussion.md present; cites robustness page.
+    deliverables: ["papers/discussion.md"]
+
+  - id: M9-04
+    milestone: M9
+    title: Quarto manuscript “spine” (main.qmd) stitching sections
+    role: executor
+    type: docs
+    area: docs
+    priority: P1
+    size: S
+    depends_on: [M9-01, M9-02, M9-03, M0-02]
+    description: Create docs/main.qmd that includes Methods, Results, Discussion, and links to appendices.
+    acceptance_criteria:
+      - docs/main.qmd renders locally; figures/tables appear with labels.
+    deliverables: ["docs/main.qmd"]
+
+  - id: M9-05
+    milestone: M9
+    title: Writer: Title & abstract (≤250 words)
+    role: writer
+    type: writing
+    area: results
+    priority: P2
+    size: XS
+    depends_on: [M9-02]
+    description: Produce concise abstract and finalized title.
+    acceptance_criteria:
+      - Title and abstract inserted at top of docs/main.qmd.
+    deliverables: ["docs/main.qmd:update"]
+
+  - id: M9-06
+    milestone: M9
+    title: Sign‑off — M9 Manuscript Draft (core)
+    role: signoff
+    type: qa
+    area: docs
+    priority: P0
+    size: XS
+    depends_on: [M9-01, M9-02, M9-04]
+    description: Verify main.qmd renders; Methods/Results coherent; figures/tables visible.
+    acceptance_criteria:
+      - Sign-off “M9 ✅” with rendered main HTML/PDF link (local artifact).
+    deliverables: ["signoff-comment"]
+
+# ======= M10 — Appendices, Repro Notes & Data Dictionary (6) =======
+  - id: M10-01
+    milestone: M10
+    title: Appendix A — Equation map & call-site anchors
+    role: executor
+    type: docs
+    area: methods
+    priority: P1
+    size: S
+    depends_on: [M2-01]
+    description: docs/appendix_eq_map.qmd with a table of equations and pointers to code locations.
+    acceptance_criteria:
+      - Renders and cross-links to methods pages.
+    deliverables: ["docs/appendix_eq_map.qmd"]
+
+  - id: M10-02
+    milestone: M10
+    title: Appendix B — JSON schemas (firm/bank/wage) excerpt
+    role: executor
+    type: docs
+    area: methods
+    priority: P2
+    size: XS
+    depends_on: [M1-02]
+    description: Pretty-print schema excerpts with brief explanation of each field and bounds.
+    acceptance_criteria:
+      - docs/appendix_schemas.qmd renders; schema fragments visible.
+    deliverables: ["docs/appendix_schemas.qmd"]
+
+  - id: M10-03
+    milestone: M10
+    title: Data dictionary (tables & figs sources)
+    role: writer
+    type: writing
+    area: docs
+    priority: P1
+    size: S
+    depends_on: [M2-03, M3-05, M4-05, M5-06]
+    description: docs/data_dictionary.qmd listing each figure/table, its CSV/PNG path, and metric definitions.
+    acceptance_criteria:
+      - Cross-references to figures/tables resolve.
+    deliverables: ["docs/data_dictionary.qmd"]
+
+  - id: M10-04
+    milestone: M10
+    title: Repro notes (manual) — how to rebuild all manuscript artifacts
+    role: executor
+    type: docs
+    area: docs
+    priority: P1
+    size: S
+    depends_on: [M9-04]
+    description: docs/repro_manual.qmd with commands to run tiny demos and instructions for user to run long jobs and re-render the manuscript.
+    acceptance_criteria:
+      - Page renders and appears in the nav.
+    deliverables: ["docs/repro_manual.qmd", "docs/_quarto.yml:update"]
+
+  - id: M10-05
+    milestone: M10
+    title: Writer: Related work / positioning (500–800 words)
+    role: writer
+    type: writing
+    area: results
+    priority: P3
+    size: S
+    depends_on: [M9-01]
+    description: Place the contribution relative to AB‑SFC literature and decision heuristics.
+    acceptance_criteria:
+      - docs/related_work.qmd committed and linked from main.
+    deliverables: ["docs/related_work.qmd", "docs/main.qmd:update"]
+
+  - id: M10-06
+    milestone: M10
+    title: Sign‑off — M10 Appendices & Repro
+    role: signoff
+    type: qa
+    area: docs
+    priority: P0
+    size: XS
+    depends_on: [M10-01, M10-03, M10-04]
+    description: Verify appendices render and repro notes are actionable.
+    acceptance_criteria:
+      - Sign-off “M10 ✅” with links to appendix pages.
+    deliverables: ["signoff-comment"]
+
+# ======= M11 — Final Integration & Submission Package (4) =======
+  - id: M11-01
+    milestone: M11
+    title: References & citation hygiene (BibTeX)
+    role: writer
+    type: writing
+    area: docs
+    priority: P1
+    size: XS
+    depends_on: [M9-04]
+    description: Prepare papers/references.bib; ensure all citations compile in main.qmd.
+    acceptance_criteria:
+      - main.qmd renders with no missing references.
+    deliverables: ["papers/references.bib", "docs/main.qmd:update"]
+
+  - id: M11-02
+    milestone: M11
+    title: Figure & table numbering consistency pass
+    role: executor
+    type: docs
+    area: docs
+    priority: P1
+    size: XS
+    depends_on: [M9-04, M10-03]
+    description: Ensure all labels are unique and ordered; update captions as needed.
+    acceptance_criteria:
+      - Cross-refs resolve; numbers sequential by section.
+    deliverables: ["docs/*.qmd:update"]
+
+  - id: M11-03
+    milestone: M11
+    title: Compile final manuscript (HTML + PDF if available)
+    role: executor
+    type: docs
+    area: release
+    priority: P1
+    size: S
+    depends_on: [M11-01, M11-02]
+    description: Render docs/main.qmd to HTML; if local PDF engine available, produce PDF; store under artifacts/manuscript/.
+    acceptance_criteria:
+      - artifacts/manuscript/main.html present; PDF optional and documented.
+    deliverables: ["artifacts/manuscript/main.html", "artifacts/manuscript/main.pdf?"]
+
+  - id: M11-04
+    milestone: M11
+    title: Sign‑off — M11 Final Package
+    role: signoff
+    type: qa
+    area: release
+    priority: P0
+    size: XS
+    depends_on: [M11-03]
+    description: Confirm title/abstract, references, figures/tables, and compiled manuscript exist and open.
+    acceptance_criteria:
+      - Sign-off “M11 ✅ FINAL” with links to final artifacts.
+    deliverables: ["signoff-comment"]

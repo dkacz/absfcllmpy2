@@ -1,0 +1,537 @@
+---
+title: "The Effects of Alternative Wage Regimes in a Monetary Union"
+author: "Alessandro Caiani, Ermanno Catullo, Mauro Gallegati"
+format:
+  html:
+    toc: true
+    number-sections: true
+    theme: cosmo
+---
+
+**Source**: [SSRN working paper 3118643](https://ssrn.com/abstract=3118643). Converted automatically from the source PDF (`docs/source/ssrn-3118643.pdf`) using `pdftotext` and `pandoc`; headings and metadata normalized programmatically—review for finer edits.
+
+---
+
+The Effects of Alternative Wage Regimes in a Monetary Union: a Multi-Country Agent Based-Stock Flow Consistent Model Alessandro Caiani[^caiani-corresponding], Ermanno Catullo, and Mauro Gallegati[^funding]
+
+### Abstract
+The eurozone crisis has revitalized the debate between economists on the role played by wages in open economies. Salaries paid to workers are at the same time a fundamental source of aggregate demand and a determinant of firms’ international cost competitiveness. After presenting the most relevant positions regarding the role of wages in the eurozone crisis, the paper investigates the impact of alternative wage growth patterns in an artificial Monetary Union, by means of simulation experiments conducted with the Agent Based-Stock Flow Consistent (AB-SFC) MultiCountry model presented in Caiani et al. (2017a). Changes in wage growth regimes impact in non-trivial ways on both the demand and supply sides of the economies, combining Keynesian and Schumpeterian effects. When pursued in isolation, both wage inflation and wage moderation strategies are characterized by a trade-off between the external and fiscal stance of the country and the dynamics of real GDP and labor productivity. On the contrary, coordinated wage increases in all member countries benefit the economy without compromising the external balance. Sensitivity experiments show that results are robust to different dimensions of the Monetary Union and that the efficacy of coordinated wage inflationary strategies is enhanced when consumers give more importance to price differentials in their consumption allocation decisions.
+
+**Keywords:** Agent Based Macroeconomics, Stock Flow Consistent Models,
+European Integration, Wages, Trade Imbalances.
+**JEL Codes:** F15, F16, C63
+
+[^caiani-corresponding]: Corresponding author: alessandro.caiani@unipv.it.
+[^funding]: The research leading to these results received funding from the EU Seventh Framework Programme (FP7) under grant agreement FinMaP no. 612955.
+[^code-platform]: The model code is written in Python; simulation results are analysed in R, and the full codebase is available from the authors upon request.
+
+## 1 Introduction
+
+The paper builds on Caiani et al. (2017a) in presenting an Agent Based-Stock Flow Consistent (ABSFC) Multi-Country model to analyze the impact of alternative wage growth patterns in a Monetary Union broadly comparable to the European Economic and Monetary Union (EMU).[^code-platform] The eurozone crisis broke out in May 2010, three years after the Global Financial Turmoil, and still many doubts remain about whether the recent positive outlooks can represent a turning point and the start of an enduring recovery. In many countries unemployment, in particular for the youngest, is still at unprecedented levels and the GDP is far from its pre-crisis levels. Concerns about the state of the public finance and the resilience of the financial sector are widespread. In the meanwhile, the economic malaise has favored the rise of populism with nationalistic and xenophobic tendencies across European countries. Despite the exceptional and unprecedented policy interventions launched to preserve the Euro, the European institutional architecture has revealed its inherent flaws and it is now widely recognized that many of the policy responses implemented in the aftermath of the euro-crisis were ill-designed to face the centrifugal forces that threatened the Union, if not contributing to feed them. However, economists are still divided on the explanation of why the Crisis broke out, got so bad, and lasted so long. As a consequence, little agreement has been also reached about what kind of policies and institutional interventions should be undertaken. In 2015 a dozen of leading economists with different backgrounds made an attempt to construct a ‘consensus’ narrative of the eurozone crisis (Baldwin et al., 2015). They pointed out that this should not be regarded as a government debt crisis in its origin, arguing that the real culprits were the 
+
+large capital flows that emerged in the decade before the crisis from eurozone core economies like Germany, France, and the Netherlands to eurozone periphery nations like Ireland, Portugal, Spain, Greece and, to a lesser extent, France and Italy. As a major share of these capital inflows were invested in non-traded sectors, typically housing and public consumption, no assets were created to pay off the borrowing. Furthermore, foreign-financed domestic spending tended to drive up wages and costs in a way that harmed the competitiveness of the receivers exports and encouraged a further worsening of their current accounts. When the global financial turmoil hit Europe, there was a sudden stop in cross-border lending which triggered the eurozone crisis. Compared to this ‘academic’ consensus interpretation, the ‘policy’ consensus view put forward within European institutions displayed both departure and convergence points. On the one hand, in contrast with Baldwin et al. (2015), the European narrative insisted on the alleged fiscal profligacy of peripheral countries, considered as the fundamental jeopardizing factor of the system. On the other hand, they agreed on contending the existence of a labor-cost competitiveness issue affecting Southern Europe, leading to unsustainable trade imbalances and amplified by the flow of cheap credit from core to peripheral countries. Strong fiscal consolidation programs were then imposed on countries in trouble, accompanied by a generalized tightening of fiscal austerity rules for all European countries. Structural reforms aiming to restore cost competitiveness through goods and labor market deregulation were implemented in many countries, feeding the wage deflation process already ongoing (Jaumotte and Sodsriwiboon, 2010). These policy prescriptions were then formalized in the provisions of the Stability and Growth Pact, the Fiscal Compact, and the Competitiveness Pact-Euro Plus Pact. Caiani et al. (2017a) aimed to put to test the rationale behind the adoption of tight fiscal rules common to all member countries, as provided by the Stability and Growth Pact, by analyzing in an extensive way the effects of alternative fiscal regimes within the artificial Monetary Union depicted by our Agent Based-Stock Flow Consistent (AB-SFC) Multi-Country model. The present work instead focuses on the second pillar of the ‘policy’ consensus view put forward by European institutions, by exploring the twofold role of wages as a source of aggregate demand and as a determinant of countries’ international competitiveness. For this sake, we employ the model to compare the effects of isolated changes in the growth pattern of wages occurring in single countries, as well as of coordinated changes occurring in all Union countries at the same time. Results show that changes in the wage growth pattern affect the dynamics of both demand and supply in non-trivial ways: by strengthening or lessening the pressure of wages on firms’ profit margins they influence the evolutionary selection of firms favoring the emergence of either oligopolistic markets, where only more productive firms survive and grow fostering a better allocation of R\&D investment (wage inflation case), or a more dispersed market structure characterized by many small producers having, on average, lower productivity levels and slower innovation dynamics (wage moderation). Initial experiments highlight that changes in the wage growth regime of individual countries are characterized by a trade-off between their external and fiscal stance on the one hand, and the dynamics of real GDP and labor productivity on the other. Nonetheless, a wage expansion in a single country tends to benefit the other members of the Union, resulting in a slight improvement of its global performance, whereas wage moderation tends to dampen the overall economic performance of the Union. Differently from what happens for a wage regime switch occurring in a single countries in isolation, a coordinated change in the wage growth pattern occurring simultaneously in all members countries leaves their relative competitive position unaltered: results in this scenario show that a coordinated wage inflationary strategy seems to be an effective way to spur real GDP growth, innovation dynamics, and labor productivity growth, and to reduce average public debt/GDP levels. In order to check the robustness of these results we re-execute these experiments considering a Monetary Union composed of a different number of countries, so that also the dimension of the common market relatively to national economies varies. Results appear to be robust under the specifications tested. Finally, we also perform a further sensitivity analysis to check the impact of coordinated wage regime changes when consumer demand is more or less sensitive to price differentials. Results show that effects previously highlighted for the coordinated wage expansionary and wage moderation regimes are reinforced when demand is more sensitive to price differentials. In the next subsection (1.1) we present an overview of the main interpretations provided to explain the Euro crisis, with particular reference to the dynamics of wages across eurozone countries and their role in determining demand and trade patterns. The policy implications of these alternative, and
+
+often conflicting, explanations are also discussed. Section 2 presents the model and provide a synthetic explanation of the initialization and validation procedure employed. Section 3 explains the experiment design employed to test the effect of alternative wage growth patterns, and then discusses the results of the simulation experiments performed. Finally, section 4 concludes with a summary of the main results and a brief discussion of current limitations and possible refinements of the model.
+
+## 1.1 Conflicting views on the causes and remedies of eurozone imbalances
+
+The structural reforms advocated by European policy makers found a theoretical support mainly in the work of Neoclassical scholars. According to Sinn (2014a,b) for example, over-regulated labor markets, strong unions and excessive labor protection in peripheral countries caused wages to grow faster than productivity. The consequent rise of unit labor costs caused export growth to fall and import growth to rise, generating persistent and growing current account deficits in the periphery, mirrored by rising trade surplus at the core, in particular by Germany. The funding of peripheral countries’ trade deficit required capital to flow in the opposite direction, in the form of credit granted by core countries to the private and public sectors of the periphery, so that countries in surplus also experienced an equal increase of their net foreign lending position vis-à-vis other European countries Lane (2013). A slightly amended version of this explanation (Chen et al., 2012) instead points to the process of international financial integration realized through the common currency. Coupled with over-optimistic expectations of convergence, this caused a decline in the credit constraints and real interest rates for periphery countries, leading to increases in domestic prices and unit labor costs eventually resulting in a real exchange rate appreciation which crowded out manufacturing and export activities. Unger (2017) contributes to shift the attention from trade-related factors to domestic demand and financial factors in explaining eurozone imbalances: using a panel error correction specification, he confirms that sustaining competitiveness is important for limiting the build-up of large current account deficits but also finds that the flow of bank loans to domestic non-financial private sectors of deficit countries constituted the most important factor driving the build-up of current account imbalances: as the credit boom pushed domestic demand above potential output, current account deficits surged. According to this interpretation Southern countries have lived beyond their means, thanks to the flow of cheap credit coming from Northern countries which allowed to keep unemployment low and wages high, thereby preventing the otherwise unavoidable devaluation process. As a consequence, Unger (2017) argues that preventing excessive private sector indebtedness can be a way to dampen the formation of current account imbalances. Despite these differences, the Neoclassical consensus view maintains that the rise of unemployment, the fall of aggregate demand, and the wage deflation process observed in peripheral countries should be interpreted as a necessary re-equilibrating process required to absorb international trade imbalances Blanchard (2007). In a policy perspective, this explanation prescribes that efforts should then be mainly dedicated to restore competitiveness in Southern countries by dampening wage growth (Jaumotte and Sodsriwiboon, 2010) through labor market deregulation aiming, as stated for example in the Euro Plus Pact, to “review the wage setting arrangements, and, where necessary, the degree of centralization in the bargaining process” (of the European Council, 2011, p.17). References to this explanation of the Euro crisis and to its related policy implications are found at the core of most of the economic outlooks, policy papers, and technical reports prepared by European research units, as well as in the public statements made by European institutional representatives (see for example Juncker et al. (2015)). Labor and product market deregulation aiming to restore cost competitiveness are always mentioned as a necessary step even when the empirical analysis presented does not seem to provide much ground in their favor, highlighting the weakness of the correlation between export market shares and nominal unit labor costs evolution (Centre, 2015), and suggesting an alternative interpretation of eurozone imbalances rooted in the dis-saving by the private sector. Many recent works has criticized the empirical ground of this explanation of the eurozone crisis and the policy interventions stemming from it. A first criticism has been related to the division of the responsibility for euro imbalances between surplus and deficit countries, and the consequent division of the burden to be borne for their correction. Hall (2012) for example, while partially adhering to the European consensus view in identifying trade and international cost competitiveness as the major determinants of eurozone imbalances, departs substantially in his policy prescriptions. The author identifies the main problem in the asymmetry between ‘varieties of capitalism’, as Northern European political economies entered the Euro with institutional frameworks well suited to operate an export-led growth strategy, whereas Southern Eu-
+
+ropean economies had institutional frameworks badly suited to effective competition within a union, and lost their capacity to devalue. This interpretation insists on the disproportionate imposition of the costs of the adjustment between core (lender) and periphery (borrower) countries and contends that export-led growth strategies commonly advocated for Southern countries were not practicable in those institutional contexts. A similar position has been expressed in several occasions by the Nobel Prize Paul Krugman on his column for the New York Times: while not departing from the Neoclassical consensus view in claiming that wages and prices in the periphery should fall relative to those at the core in order to unwind eurozone current account imbalances, he points to wages downward stickiness and to the impossibility of nominal devaluation within the Euro to explain why wage deflation in the periphery, however harsh it might be, is doomed to be ineffective unless accompanied by expansionary policies at the core, pushing up costs and wages. On the side of those attributing a primacy to trade-realted factors as a determinant of euro imbalances Flassbeck and Lapavitsas (2013) takes a stance very critical towards surplus countries’ export-led growth strategy. In his view, Germany’s persistent surplus against Mediterranean partners was the result of ‘beggar thy neighbor’ policy realized by squeezing workers’ wages, rather than the result of a wage inflation process, or fiscal profligacy, in the periphery. On the contrary, wages mostly stagnated also in the south, though this was not sufficient to prevent current account deficits from widening. Accordingly, they argue in favor of higher real wages and higher inflation in Germany. A similar interpretation is provided by Stockhammer (2011); Stockhammer et al. (2016) who point to the combination of an export-led growth strategy in the north faced by a credit-led strategy fed by capital inflows in the south to explain eurozone imbalances. Stockhammer and Sotiropoulos (2014) shows that wage moderation and wage flexibility may work for small individual countries but it is likely the recipe for stagnation if generalized, since it neglects the role of wages in demand formation. Conversely, an increase in the wage share in the Euro area as a whole would have expansionary effects (Stockhammer et al., 2009). On the same line, Onaran and Galanis (2012a) estimate the effects on growth of a change in the wage share in the G20 countries using a post-Keynesian model and calculates the global multiplier effects of a simultaneous decline in the wage share. Given that most developed countries are found to be characterized by a wage-led growth regime, strategies of international competitiveness based on wage competition in the context of a highly integrated global economy are likely to be highly detrimental, whereas a coordinated macroeconomic and wage inflationary policy may help to correct global imbalances and foster growth. Similarly, Onaran and Obst (2016) estimates a multi-country demand-led growth model for EU15 countries which is then employed to show that a decrease in the share of wages in national income in isolation generates a slowdown in eleven countries, including all major economies, whereas beneficial effects are found only for Austria, Belgium, Denmark, and Ireland. However, a simultaneous decline of the wage share in all countries exerts negative effects on the growth in the EU15 and supports the case of wage coordination. Other studies rose instead a different type of criticism against the consensus view, questioning the relevance of wages and unit labor costs for the international competitiveness and the net foreign position of a country. Christodoulopoulou and Tkacevs (2016), for example, analyzes the sensitivity of real exports and imports to various harmonized competitiveness indicators for Euro countries based on relative measures of prices and costs. They find that exports of goods and services are either insensitive to changes in price and cost competitiveness, or their sensitivity is lower than usually thought, suggesting that non-price competitiveness factors have an important role in explaining exports developments in several eurozone countries. They then conclude that, given the low marginal effect of labor costs on export dynamics, attempts to restore international competitiveness through retrenchment of labor costs would require to be so harsh to be economically and politically unfeasible. Diaz Sanchez and Varoudakis (2013) presents a panel-data vector autoregressive model over 1975 − 2011 to assess the contribution of several key factors usually associated with external imbalances in the eurozone, showing that changes in competitiveness, measured by real exchange rates or unit labor costs, have played a minor role. The work suggests that the policies of internal devaluation implemented in the European periphery, aimed at promoting external competitiveness, may have had only limited effectiveness in restoring the external balance to equilibrium. On a similar ground Gabrisch and Staehr (2014) employs Granger causality tests and vector autoregressive models to assess the short-term linkages between changes in relative unit labor costs and changes in the current account balance. Results show that changes in the external balance precedes changes in relative unit labor costs, while there is no significant effect in the opposite direction concluding that the measures in the Euro Plus Pact to restrain the growth of unit labor costs may not affect the current account balance in the short term.
+
+Storm and Naastepad (2015b,a) strongly reject on an empirical ground the idea that Europes trade imbalances are determined by the dynamics of relative unit labor costs across European countries, contending that eurozone’s growth can only be revived if eurozone demand growth is restored, whereas lowering wages in deficit countries or raising wages in surplus countries alone are doomed to failure. Furthermore, they argue that that strong deflationary adjustments forced on wage-led economies, such as those of Southern Europe, are not only self-destructive, but also likely to damage their productive base and productivity growth, thereby exacerbating productivity differentials between surplus and deficit countries. These positions thus partially overlap with those stressing the existence of a marked difference between the geography of financial flows and that of trade flow patterns, suggesting that eurozone countries’ surpluses and deficits were linked through financial rather than trade flow. Gaulier and Vicard (2012), for example, points out that exports are very weakly correlated with both current account balances and unit labor costs, noticing that deficit countries like Spain and Greece saw their exports of goods and services rising in line with Germany over 1999-2007, despite the dynamics of their unit labor costs deviated significantly from that of Germany. Instead, they point to capital flows to explain the origin of eurozone current account imbalances. The emergence of a gap between unit labor costs in periphery countries and Germany would then be the “signature” of a demand shock affecting domestic non-tradable sectors, rather than of a competitiveness shock affecting the tradable sector: indeed, inflows of domestic, and especially, foreign capital to the non-tradable sectors of periphery countries both boosted demand for imports and fueled increases in prices of goods and services, in particular non-tradable goods and services, such as constructions. Similar results are presented by M. and Hessel (2014): differences in export performance are largely determined by differences in the external demand faced by the country, depending on the composition of its exports, rather than by differences in unit labor costs. Furthermore, differences in domestic demand driven by the financial cycle are found to be another fundamental driver of trade imbalances in the eurozone. A similar argument is proposed by Hobza and Zeugner (2014) who show that core countries played a dominant role in financing the periphery’s current account deficits before the financial crisis, both directly and through intermediating financial flows from outside of the Euro area. In a policy perspective this evidence suggests the need to monitor the financial cycle, the dynamics of credit, and the evolution of non-tradable prices (in particular in the real estate sector) in order to avoid excessive imbalances between eurozone countries. Finally, besides trade and financial factors, one should not neglect also the possible effects of alternative wage growth patterns on firms’ innovative performance and labor productivity dynamics. Storm and Naastepad (2012) for example, show that higher employment protection and more extensive labor market regulation are associated with higher labor productivity growth whereas unregulated markets, weak employment protection, low taxes, high earnings inequalities, and weak unions are detrimental to technological dynamism. A similar conclusion is reached by Kleinknecht (1998); Kleinknecht et al. (2014); Vergeer and Kleinknecht (2014) who show that weaker wages tend to cause a slowdown of labor productivity growth, as they lessen the process of Schumpeterian competition allowing less innovative firms to survive by exploiting the lower labor costs, while abstaining from investing in R\&D. The paper aims to contribute to the field of research discussed in this section by investigating how changes in the growth patterns of wages affect the evolution of countries belonging to a Monetary Union. For this sake, we employ the Agent Based-Stock Flow Consistent multi country model first presented in Caiani et al. (2017a) which was designed and initialized in order to represent an artificial Monetary Union broadly comparable to the EMU. Obviously, the model is simplified under many respects compared to the complexity of economic systems observed in reality and cannot account for many important historical and country-specific factors. In particular, the financial side is still simplified so that our analysis deals more with the trade-related factors discussed above, than with financialrelated ones. However, the structure of the model provides an exhaustive framework to analyze both the ‘static’ effects of wages on demand and international price competitiveness, and the ‘dynamic’ effects on markets evolution, R\&D, and technological progress. Furthermore, computer simulation techniques have an important advantage which makes them an interesting and useful complimentary tool to econometric and statistical analysis. While these latter are bound to work with data originated by history, computational models also allow to test counterfactual or hypothetical scenarios in a controlled-environment, thus possibly allowing to attain a deeper understanding of the interactions between different economic factors in shaping the phenomena at stake, and a more comprehensive assessment of the robustness of the explanations and policy prescriptions
+
+drawn, with respect to several possible alternative scenarios. In order to investigate the role of wages as a source of domestic demand and as a cost factor affecting countries’ international competitiveness we carry out several different experiments: first, we analyze the effects of slowdowns or accelerations of wage growth in a single, randomly sampled, country. Second, we consider the case of a coordinated change in the wage growth regime which involves all the Union members at the same time. Then, we check if and how the dimension of the Union and of its common market for tradables affect the results of these experiments. Finally, we investigate the possible impact of a higher or lower elasticity of consumers’ final demand to prices, so to analyze the effect of alternative wage strategies when cost competitiveness plays a major or minor role.
+
+## 2 Model Description International Tech.Spillovers
+
+> _Figure 1 (original article): Flow Diagram of a national economy versus the rest of the Union. Plot not reproduced here; see the surrounding text for discussion._
+
+International transactions involve a transfer of goods, deposits, and bank reserves. Firms can ask for credit to both domestic and foreign banks. The bond market, where bonds issued by member countries can be purchased by commercial banks, is internationally integrated. For simplicity reasons, labor cannot move across countries and equity investment by households is allowed only in domestic firms and banks.[^equity-risk] Governments collect taxes on income and profits and provide public spending in the form of a lump-sum monetary transfer to households. Countries have a maximum deficit-to-GDP ratio that they commit to comply by tuning spending and tax rates. The Union Central Bank set the policy rate (i.e. the interest paid on cash advances asked by commercial banks to fulfill mandatory liquidity constraints). National Central Banks accommodate commercial banks’ demand for cash advances through the marginal lending facility and buy bonds issued by their country’s government if these have not been exhausted by private banks. Firms invest in R\&D in order to achieve innovations that increase the labor productivity of their employees, reducing unit costs of production. Furthermore they are allowed to imitate the technology of their competitors so to catch up with the industry standards. This gives rise to sectoral spillovers. Following the tradition of Riccetti et al. (2015, 2016); Caiani et al. (2016, 2017c,b) the model dynamics is driven by agents’ adaptive reactions and decentralized interactions through specific matching protocols on the various markets modeled. Six types of markets are considered: national non-tradable good markets, national labor markets and national deposit markets, a common tradable good market, and common credit and bond markets. As extensively discussed in Caiani et al. (2017a), the model displays a number of novelties with respect to the Agent Based macro-modeling literature. Above all, this was likely the first fully fledged multi-country Agent Based model presented in the literature. Indeed, till some months ago models developed within this stream of research either displayed a closed-economy or, at most, a two-country economy. Our model instead can be initialized with a variable number of countries. To our knowledge, there are only two models, both presented in the last months, which share this property: the open version of the Eurace model (Deissenberg et al., 2008) presented in Petrovic et al. (2017) and the multicountry model presented in Dosi et al. (2017), inspired by the ‘Schumpeter+Keynes’ family of models descending from Dosi et al. (2010). Other important novelty aspects encompassed by the model are: the adoption of a Stock Flow Consistent framework Godley and Lavoie (2007) so to provide a rigorous, comprehensive, and fully integrated representation of the real and financial sides of the economy; the endogenization of the entry-exit process of firms and banks based on a stylized mechanism to model households’ equity investment; the adoption of an intuitive “generative” procedure to initialize the model in a Stock Flow Consistent manner; the adoption of Salop’s (1979) circular specification of Hotelling’s (1929) locational model to differentiate consumers’ preferences and firms’ products.[^hotelling-distance] Next subsections sketch out in a synthetic way the behaviors of agents and the structure of their interactions on the markets.
+
+## 2.1 Agents
+
+## 2.1.1 Households
+
+Households play three main roles in the model: they supply labour, hold equity, and consume. On the labour market each worker samples \(\psi\) potential employers and offers a unit endowment \(l^S = 1\). The quantity sold to firm \(i\) at wage \(w_{hi,t}\) is denoted by \(l_{hi,t}\); the worker’s total employment is
+\n$$\n l_{h,t} = \sum_{i : l_{hi,t} > 0} l_{hi,t}.\n$$\n\nPart-time outcomes with \(0 < l_{h,t} < 1\) arise whenever labour demand is fractional or firms face financing limits that prevent full-time hires.[^part-time] Workers accept vacancies only if the offered wage exceeds their reservation wage, which adapts according to\n\n$$\nw_{h,t} =
+\begin{cases}
+w_{h,t-1} \left(1 + U[0,\delta]\right), & \text{if } l^S - l_{h,t-1} = 0 \text{ with probability } \upsilon_H e^{-\upsilon u_{t-1}},\\[0.6em]
+w_{h,t-1} \left(1 - U[0,\delta]\right), & \text{if } l^S - l_{h,t-1} > 0 \text{ with probability } 1 - \upsilon_H e^{-\upsilon u_{t-1}}.\n\end{cases}\n\tag{1}\n$$\n\nHere \(U[0,\delta]\) denotes a draw from the uniform distribution on \([0,\delta]\). The unemployment rate \(u_{t-1}\) shapes bargaining power through the exponential term, so wage claims become more cautious when unemployment is high.[^bargaining] The scaling factor \(\upsilon_H\) keeps worker adjustment aligned with firms’ wage-setting rule in Section 2.1.2.[^heuristic-refinement]
+\nGross household income aggregates wages, financial returns, dividends, and the share of firms’ R\&D spending paid to the worker: \n\n$$\n y_{h,t} = \sum_{i : l_{hi,t} > 0} w_{hi,t} l_{hi,t} + r_{d,t} D_{h,t} + Div_{h,t} + \sum_{i : l_{hi,t} > 0} R\&D_{i,t} \frac{l_{hi,t}}{l_{i,t}}.\n\tag{2}\n$$\n\nDisposable income excludes labour and profit taxes but includes the tax-exempt public transfer: \n\n$$\n y_{h,t}^D = (1 - \tau_{k,t}) \; y_{h,t} + \frac{G_{k,t}}{H}.\n\tag{3}\n$$\n\nNominal consumption follows a linear propensity to consume out of disposable income and deposits: \n\n$$\n C_{h,t}^D = c_y y_{h,t}^D + c_d D_{h,t}.\n\tag{4}\n$$\n\nExpenditure is split between tradable and non-tradable bundles using a fixed share \(c_T\): \n\n$$\n C_{h,t}^{DT} = c_T C_{h,t}^D.\n\tag{5}\n$$\n\n$$\n C_{h,t}^{DNT} = (1 - c_T) C_{h,t}^D.\n\tag{6}\n$$\n\nOn the tradable and non-tradable markets, households sample \(\psi\) potential suppliers and rank them according to a circular Hotelling distance before allocating demand sequentially.[^method]
+\n[^method]: For further methodological details see Caiani et al. (2017a).
+[^part-time]: Labour demand is modelled as a positive real number, so individual firms may hire a worker only for the fractional part of their requirement; additionally, binding financial constraints can prevent full-time contracts.
+[^bargaining]: Additional discussion of the unemployment-sensitive bargaining term is provided in Section 3.1.
+[^heuristic-refinement]: Relative to Caiani et al. (2017a), the reservation-wage rule now applies the unemployment-dependent probability to both upward and downward revisions and introduces the scaling factor \(\upsilon_H\) to keep worker and firm adjustments balanced.
+[^hotelling-distance]: Consumers and firms are placed on a unit circle; distance is computed as $d_{hi} = \sin\!\left(\min\{|\omega_h - \omega_i|, 2\pi - |\omega_h - \omega_i|\}/2\right)$.
+[^equity-risk]: Equity stakes in banks and firms are treated with the same risk profile for tractability.
+[^equity-illiquidity]: Households cannot liquidate equity; if goods supply is binding, unused consumption plans remain as deposits while equity allocations persist.
+[^firm-wage-rule]: Firms apply the unemployment-sensitive probability with their own scale factor $\upsilon_F$.
+[^setup-refinement]: See Section 2.1.1 for a discussion of these refinements.
+## 2.1.2 Firms
+
+Firms’ desired output level \(q_{i,t}^{D}\) depends on expected sales \(q_{i,t}^{e}\) and the inventories they carry over \(inv_{i,t}\). They target a buffer stock equal to a share \(\theta\) of expected sales (Steindl, 1952; Lavoie, 1992):
+
+Firms’ desired output level \(q_{i,t}^{D}\) depends on expected sales \(q_{i,t}^{e}\) and the inventories they carry over \(inv_{i,t}\). They target a buffer stock equal to a share \(\theta\) of expected sales (Steindl, 1952; Lavoie, 1992):
+
+$$
+q_{i,t}^{D} = q_{i,t}^{e} (1 + \theta) - inv_{i,t}.
+\tag{11}
+$$
+
+Prices \(p_{i,t}\) and expected sales \(\hat q_{i,t}^{\,e}\) adjust adaptively according to the gap between realised sales \(\hat q_{i,t-1}\) and the quantity that was available for sale \(q_{i,t-1}^{tot} = q_{i,t-1} + inv_{i,t-1}\).
+
+When realised sales meet or exceed expectations, both variables increase proportionally:
+
+$$
+\begin{aligned}
+\hat q_{i,t}^{\,e} &= \hat q_{i,t-1}^{\,e} \left(1 + U[0,\delta]\right),\\
+p_{i,t} &= p_{i,t-1} \left(1 + U[0,\delta]\right).
+\end{aligned}
+\tag{12}
+$$
+
+If sales fall short while inventories remain, expectations and prices are revised downward:
+
+$$
+\begin{aligned}
+\hat q_{i,t}^{\,e} &= \hat q_{i,t-1}^{\,e} \left(1 - U[0,\delta]\right),\\
+p_{i,t} &= p_{i,t-1} \left(1 - U[0,\delta]\right).
+\end{aligned}
+\tag{13}
+$$
+
+Conversely, when sales fall short because supply was fully exhausted, firms leave both variables unchanged:
+
+$$
+\hat q_{i,t}^{\,e} = \hat q_{i,t-1}^{\,e}, \qquad
+p_{i,t} = p_{i,t-1}.
+\tag{14}
+$$
+
+Prices have a lower bound given by unit costs, \(p_{i,t} \ge w_{i,t} / \phi_{i,t}\), and desired labour demand is \(l_{i,t}^{D} = q_{i,t}^{D} / \phi_{i,t}\). Wage offers follow an analogous adaptive rule.[^firm-wage-rule]
+
+$$
+w_{i,t} =
+\begin{cases}
+w_{i,t-1} \left(1 + U[0,\delta]\right), & \text{if } l_{i,t-1}^{D} - l_{i,t-1} > 0 \text{ with probability } \upsilon_F e^{-\upsilon u_{t-1}},\\[0.6em]
+w_{i,t-1} \left(1 - U[0,\delta]\right), & \text{if } l_{i,t-1}^{D} - l_{i,t-1} = 0 \text{ with probability } 1 - \upsilon_F e^{-\upsilon u_{t-1}}.
+\end{cases}
+\tag{15}
+$$
+
+Firms dedicate a share \(\gamma\) of the expected wage bill to research and development:
+
+$$
+R\&D_{i,t}^{D} = \gamma\, w_{i,t}\, l_{i,t}^{D}.
+\tag{16}
+$$
+
+The probability that R\&D delivers an innovation for a tradable firm is
+
+$$
+\Pr^{\text{success}}_{i,t,T} = 1 - \exp\!\left(-\nu \, \frac{R\&D_{i,t}^{T}}{P_t^{T} \Phi_t^{T}}\right),
+\tag{17}
+$$
+
+where \(P_t^{T}\) is the average international price of tradables and \(\Phi_t^{T}\) the average labour productivity of tradable firms, both computed as market-share-weighted means. Similarly, for non-tradable firms:
+
+$$
+\Pr^{\text{success}}_{i,t,NT} = 1 - \exp\!\left(-\nu \, \frac{R\&D_{i,t}^{NT}}{P_t^{NT} \Phi_t^{NT}}\right).
+\tag{18}
+$$
+
+Equations (17) and (18) show that the success probabilities are a non-linear increasing function of real R\&D effort—that is, R\&D outlays deflated by the relevant price index and scaled by sectoral average productivity.[^sector-correction] When successful in innovating, firms update their labor productivity according to
+
+$$
+\phi_{i,t+1} = \phi_{i,t} \left(1 + U[0,\delta]\right).
+\tag{19}
+$$
+
+Firms whose productivity lags behind the sector average can exploit spillovers. For tradable firms:
+
+$$
+\phi_{i,t+1} = \phi_{i,t} + U\left[0, \Phi_t^{T} - \phi_{i,t}\right], \quad \text{if } \phi_{i,t} < \Phi_t^{T}.
+\tag{20}
+$$
+
+For non-tradable firms:
+
+$$
+\phi_{i,t+1} = \phi_{i,t} + U\left[0, \Phi_t^{NT} - \phi_{i,t}\right], \quad \text{if } \phi_{i,t} < \Phi_t^{NT}.
+\tag{21}
+$$
+
+The productivity gains achieved through innovation or imitation apply from the subsequent period. Firms finance production and R\&D with internal funds and, when necessary, external credit. Desired loan demand is
+
+$$
+L_{i,t}^{D} =
+\begin{cases}
+w_{i,t} l_{i,t}^{D} + R\&D_{i,t}^{D} - D_{i,t}, & \text{if } w_{i,t} l_{i,t}^{D} + R\&D_{i,t}^{D} > D_{i,t},\\[0.4em]
+0, & \text{otherwise}.
+\end{cases}
+\tag{22}
+$$
+
+If loan demand exceeds supply (\(L_{i,t} < L_{i,t}^{D}\)) the firm gives priority to production expenses over R\&D. Loans are assumed to be attractive only when they allow firms to generate additional expected revenues net of financing costs,[^loan-demand] and, once granted, are repaid within the same period following the Monetary Circuit tradition (Graziani, 2003). Deposits earn the rate \(r_{d,t}\). Operating profits combine sales revenues, financial income, inventory changes, and financing costs:
+
+$$
+\pi_{i,t} = p_{i,t} q_{i,t} + r_{d,t} D_{i,t} + \Delta INV_{i,t} - w_{i,t} l_{i,t} - R\&D_{i,t} - r_{i,t} L_{i,t}.
+\tag{23}
+$$
+
+Net operating cash flow \(\pi_{i,t}^{*}\) subtracts the variation in inventories from \(\pi_{i,t}\). Positive cash flow triggers taxes and dividends, with payments scheduled for the following period:[^payout-timing]
+
+$$
+T_{i,t} =
+\begin{cases}
+\tau_{k,t} \pi_{i,t}^{*}, & \text{if } \pi_{i,t}^{*} > 0,\\[0.4em]
+0, & \text{otherwise},
+\end{cases}
+\tag{24}
+$$
+
+$$
+Div_{i,t} =
+\begin{cases}
+\rho\, \bigl(\pi_{i,t}^{*} - T_{i,t}\bigr), & \text{if } \pi_{i,t}^{*} > 0,\\[0.4em]
+0, & \text{otherwise}.
+\end{cases}
+\tag{25}
+$$
+
+Dividends are distributed to equity holders proportionally to their participation in the firm’s capital.
+
+[^sector-correction]: This correction keeps success probabilities from drifting upward purely because sector-wide productivity rises over time (see Caiani et al., 2017a).
+[^loan-demand]: Given the cost of bank credit, firms borrow only when the incremental expected revenue from production exceeds the financing cost.
+[^payout-timing]: Taxes on profits earned in period \(t\) are paid in period \(t+1\), and the same timing applies to dividend distributions.
+
+2.1.3
+
+Banks
+
+Banks offer demand deposit accounts to households and firms, paying an interest rate \(r_{d,t} = \zeta r_t\) that moves with the monetary union discount rate. Credit is created endogenously, yet the balance-sheet exposure of each bank \(z\) is capped at
+
+$$
+L_{z,t}^{S} = \mu_1 A_{z,t},
+$$
+
+where \(A_{z,t}\) denotes bank equity. For every credit application received from firm \(i\), the bank evaluates both the probability of granting the loan and the interest rate to charge. Both depend on the firm’s target leverage \(L_{i,t}^{D} / A_{i,t}\):
+
+$$
+\Pr(\text{Loan}_{i,t}) = \exp\!\left(-\iota_l \, \frac{L_{i,t}^{D}}{A_{i,t}}\right),
+\tag{26}
+$$
+
+$$
+r_{i,t} = \chi \, \frac{L_{i,t}^{D}}{A_{i,t}} + r_t.
+\tag{27}
+$$
+
+Banks must also satisfy a minimum reserve requirement proportional to deposits:
+
+$$
+MR_{z,t} = \mu_2 D_{z,t}.
+\tag*{}
+$$
+
+If reserves fall short, the bank borrows \(L_{z,t}^{CB}\) from its national central bank at the prevailing discount rate \(r_t\); excess reserves can be invested in sovereign bonds \(B_{z,k,t}\) issued by country \(k\) and yielding \(r_{b,k,t}\). Profits combine loan income, government bonds, remuneration on reserves, and funding costs:
+
+$$
+\pi_{z,t} = \sum_{i : L_{i,z,t} > 0} r_{i,t} L_{i,z,t} + \sum_{k : B_{z,k,t} > 0} r_{b,k,t} B_{z,k,t} + r_{re} R_{z,t} - BD_{i,z,t} - r_{d,t} D_{z,t} - r_t L_{z,t}^{CB},
+\tag{28}
+$$
+
+where \(BD_{i,z,t}\) denotes bad debt stemming from borrower defaults. Positive profits are taxed and the residual is partially distributed to shareholders:
+
+$$
+T_{z,t} =
+\begin{cases}
+\tau_{k,t} \pi_{z,t}, & \text{if } \pi_{z,t} > 0,\\[0.4em]
+0, & \text{otherwise},
+\end{cases}
+\tag{29}
+$$
+
+$$
+Div_{z,t} =
+\begin{cases}
+\rho\, \bigl(\pi_{z,t} - T_{z,t}\bigr), & \text{if } \pi_{z,t} > 0,\\[0.4em]
+0, & \text{otherwise}.
+\end{cases}
+\tag{30}
+$$
+
+Dividends are allocated to equity holders proportionally to their stake in the bank.
+
+2.1.4
+
+Central Banks
+
+The Union Central Bank sets the discount rate using a Taylor-rule reaction to union-wide inflation (Taylor, 1993; Smets and Wouters, 2007; Gerali et al., 2010):
+
+$$
+r_t = \bar r (1 - \xi) + \xi r_{t-1} + (1 - \xi) \xi_{\Delta P} \bigl(\Delta P_{t-1} - \Delta \bar P\bigr).
+\tag{31}
+$$
+
+Here \(\bar r\) denotes the long-run target rate, \(\xi\) the smoothing parameter, \(\xi_{\Delta P}\) the inflation-response coefficient, \(\Delta P_{t-1}\) the average inflation observed in the previous period, and \(\Delta \bar P\) the inflation target. National central banks hold commercial-bank reserves \(R_{CB,k,t}\), supply emergency liquidity \(L_{CB,k,t}\), and absorb the residual supply of domestic government bonds \(B_{CB,k,t}\). Their profits—immediately rebated to national treasuries—are
+
+$$
+\pi_{CB,k,t} = r_{b,k,t} B_{CB,k,t} + r_t L_{CB,k,t} - r_{re} R_{CB,k,t}.
+\tag*{}
+$$
+
+2.1.5
+
+Government
+
+National governments collect income taxes from households \(h\) and levy profit taxes on firms \(i\) and banks \(z\). Aggregate tax revenues therefore equal\n\n$$\nT_{k,t} = \sum_{h : y_{h,t} > 0} \tau_{k,t} y_{h,t} + \sum_{i : \pi_{i,t-1}^{*} > 0} \tau_{k,t} \pi_{i,t-1}^{*} + \sum_{z : \pi_{z,t-1} > 0} \tau_{k,t} \pi_{z,t-1}.\n\tag{32}\n$$\n\nPublic expenditure \(G_{k,t}\) is distributed equally across households as a lump-sum transfer \(G_{k,t} / H\). Governments compare realised deficits \(DEF_{k,t}\) with a policy ceiling \(d_{\max}\) on the deficit-to-GDP ratio \(d_{k,t} = DEF_{k,t} / Y_{k,t}\). They also track a desired spending level\n\n$$\nG_{k,t}^{D} = P_{k,t} \Phi_{k,t} G,\n$$\n\nwhich rescales the initial calibration \(G\) by current prices and productivity. Drawing uniform shocks \(U[0,\delta]\), fiscal instruments are updated as follows:\n\n- If \(d_{k,t-1} \ge d_{\max}\): cut spending, \(G_{k,t} = G_{k,t-1} (1 - U[0,\delta])\), and raise taxes, \((\tau_{k,t+1} = \tau_{k,t} (1 + U[0,\delta]))\).\n- If \(d_{k,t-1} \ge d_{\max}\) and \(G_{k,t}^{D} > G_{k,t-1}\): keep spending unchanged, \(G_{k,t} = G_{k,t-1}\), while still setting \(\tau_{k,t+1} = \tau_{k,t} (1 + U[0,\delta])\).\n- If \(d_{k,t-1} < d_{\max}\) and \(G_{k,t}^{D} \le G_{k,t-1}\): moderate both instruments, \(G_{k,t} = G_{k,t-1} (1 - U[0,\delta])\) and \(\tau_{k,t+1} = \tau_{k,t} (1 - U[0,\delta])\).\n- If \(d_{k,t-1} < d_{\max}\) and \(G_{k,t}^{D} > G_{k,t-1}\): expand outlays via \(G_{k,t} = G_{k,t-1} (1 + U[0,\delta])\) while leaving taxes unchanged \(\tau_{k,t+1} = \tau_{k,t}\).\n\nParameter bounds prevent extreme policies: \(\tau_{k,t} \in [\tau_{\min}, \tau_{\max}]\) and \(G_{k,t} \in [g_{\min} Y_{k,t}, g_{\max} Y_{k,t}]\). Each period the government redeems outstanding bonds and pays interest. The new issuance rate inherits a risk premium that increases with the debt ratio:\n\n$$\n r_{b,k,t} = \chi \frac{B_{k,t}}{Y_{k,t}} + r_t.\n\tag{37}\n$$\n\nFresh debt \(B_{k,t}\) is split into one hundred tranches \(b_{k,t} = B_{k,t} / 100\); commercial banks purchase them first, with national central banks absorbing any residual. In the rare event of a domestic bank default, the government issues additional bonds—bought directly by the central bank—to compensate depositors for their losses.
+
+2.1.6
+
+Firms’ and banks’ endogenous entry and exit
+
+Part of households’ savings is invested in the creation of new firms and new banks (see section 2.1.1). The entrant becomes a bank when either the ratio between the number of banks and firms, or the ratio between their aggregate net worth, falls below a threshold \(\eta\); otherwise, a firm is created. New firms are tradable with probability \(c_T\) and non-tradable otherwise. The organisation samples its initial equity within the range spanned by incumbent firms; the first \(h\) investors that supply the required funds become shareholders. If households contribute less than the sampled equity, no entrant is created and the earmarked savings remain on deposit for the next period.[^equity-illiquidity] New firms initialise productivity \(\phi\), price \(p_{i,t}\), and wage \(w_{i,t}\) within the incumbent range. Sales expectations \(\hat q_{i,t}^{\,e}\) are drawn from the same range but capped at feasible production \(A_{i,t} \phi_{i,t}\), ensuring that entrants do not plan to sell more than their initial equity, productivity, and wage offers allow. Firms whose net worth falls below the wage they promise to workers (\(F_{i,t} = w_{i,t}\)) default. Banks with net worth below the national average wage also default. Firm defaults create non-performing loans for creditors; bank defaults trigger government intervention that issues additional bonds to reimburse depositors.
+
+## 2.2 Simulation scheduling and simulations setup
+
+The sequence of events taking place within each period of the simulations follows Caiani et al. (2017b):
+
+1. Firms determine their desired production, labour demand, output prices, wage offers, and planned R\&D investment.
+2. Firms interact with banks on the credit market and may request loans; banks can obtain central-bank cash advances to satisfy the liquidity ratio.
+3. Firms match with workers on the labour market.
+4. Workers are paid to produce goods and execute R\&D; dividends generated in the previous period are distributed to equity holders.
+5. Governments compute tax revenues (on past profits and current household income), set next-period public spending and tax rates, service outstanding bonds, and decide the new issuance size.
+6. Bonds are auctioned on the bond market; commercial banks purchase them, with national central banks absorbing any residual amount.
+7. After paying taxes and receiving transfers, households allocate consumption demand across tradable and non-tradable goods.[^schedule-footnote]
+8. Firms and banks record profits, update net worth, and schedule the taxes and dividends payable in the following period.
+9. Defaulted firms and banks leave the market. When households accumulate enough savings they finance the creation of new firms and banks.
+
+The calibration of the model largely resembles that employed in Caiani et al. (2017b). Only a few parameter values have been changed, partly to improve the realism of our simulations, but mostly as a consequence of the amendments made to the wage revision rules of workers (equation 1) and firms (equation 15).15 Table 2 in the appendix displays the value of the parameters employed in the baseline specification, which were the result of a combination of empirically grounded calibration and tentative investigation of the parameter space: with this configuration the model yields a quite stable dynamics over the timespan considered and the properties of key economic variables—such as real GDP and productivity growth rates, inflation rates, unemployment rates, debt-to-GDP ratios, exports, and imports—are broadly consistent with their empirical counterparts.
+
+[^schedule-footnote]: This filtering step removes firms with negligible positive net worth whose contribution would otherwise be purely computational noise.
+
+Table 3 in the appendix, which presents a battery of statistics on key economic variables generated by the model and compares them with data for the European Monetary Union, highlights that our artificial Monetary Union is broadly comparable to the EMU (last column) under many respects. In addition, before executing the experiments described in the next sections we followed the same procedure presented in Caiani et al. (2017c) - in line with the well-established macro AB validation routine started with Dosi et al. (2010) - verifying the consistency between the properties of the times series generated by the model and a selection of key stylized facts concerning: • the relative volatility of real GDP, consumption, investment, unemployment, exports and imports; • the cyclicality of consumption, exports, imports, public spending and public spending over GDP, and unemployment (Uribe and Schmitt-Grohé, 2017); • the differential between inflation and labor productivity growth in the tradable and non-tradable sectors (De Gregorio et al., 1993; Bernard and Jensen, 1999; Bernard et al., 2003, 2007); • the distribution of firm and bank size(Stanley et al., 1995); • the persistency of countries real GDP and labor productivity differentials. Finally, the model employs a simple and intuitive procedure to carry out the task of setting up in a Stock Flow Consistent manner the initial values of stocks and flows for individual agents and for the economy as a whole, so to respect Copeland’s quadruple entry principle (Copeland, 1949; Godley and Lavoie, 2007). The rationale of this procedure, explained in detailed in Caiani et al. (2017c), is that instead of setting these initial values exogenously, we let them to be progressively created and accumulated in the initial phase of the simulation. To be more precise, we start from a situation where there are no stocks in the economy, and no firms and banks as well. Following a procedure inspired by the ‘SIM’ model presented in Godley and Lavoie (2007), the initialization phase is then triggered by public spending, as the government makes an initial transfer to resident households. National Central Banks buy government bonds, thereby injecting legal currency in the economic system. This money is saved by households (since there are initially no goods to purchase) and invested in the creation of new firms which start to employ workers, produce goods which are then sold to households, and invest in R\&D. The government then starts to collect taxes on income and profits. As firms’ number increases also banks are created. Households and firms then deposit their legal currency at these newly created banks. Banks start to grant credit to firms so that the system starts to display both legal and private money. Banks start to purchase bonds. With rising tax revenues and GDP increasing - as more and more firms are in business - the public debt-to-GDP ratio rapidly declines and stabilizes to reasonable levels. International flows of goods, deposits and reserves between countries arise. Supranational credit-debt relationships, generating international flows of interests also arise since commercial banks grant loans also to foreign firms and purchase public debt bonds of foreign countries. Defaults and new entries tend to offset each other and firms’ and banks’ number stabilizes. Firms and countries become more and more heterogeneous as a consequence of path-dependent processes triggered by their past.[^setup-refinement]
+
+Table 1: Experiment Design — Alternative Wage Growth Regimes
+
+| Scenario         | υ (workers) | υ (firms) | exp(−υ·0.10) workers | exp(−υ·0.10) firms |
+|------------------|-------------|-----------|-----------------------|--------------------|
+| Wage inflation   | 0.512       | 1.054     | 95 %                  | 90 %               |
+| Baseline         | 1.625       | 1.625     | 85 %                  | 85 %               |
+| Wage compression | 2.231       | 2.877     | 85 %                  | 75 %               |
+
+The dual values reflect the scaling applied to workers (parameter $\upsilon_H$) and firms ($\upsilon_F$) in the wage-adjustment heuristics; the corresponding probabilities are evaluated at an unemployment rate of 10 %.
+
+R\&D and past economic performance. Eventually, the model progressively exits its transition phase and starts to display stable properties. After the model stabilizes, its consistency with empirical stylized facts can be checked, as we explained here above, and policy experiments can be carried out: the next section is dedicated to their analysis.
+
+## 3 Results
+
+## 3.1 Experiment Design
+
+In the next sub-sections we present and discuss the results of our simulation experiments designed to study the impact of alternative wage growth patterns on the economic performance of individual countries, and of the Monetary Union as a whole. For convenience, recall that workers’ reservation wages follow Equation (1) while firms revise their offered wages according to Equation (15). These rules highlight that the direction of the possible revision undertaken by workers and firms depends on an agent-specific condition: workers compare the quantity of labor sold with the quantity supplied, whereas firms compare the quantity purchased with the quantity demanded. However, the revision only occurs with a probability depending on the aggregate rate of unemployment, thus reflecting the endogeneity of workers’ and firms’ bargaining power: upward revisions are less likely when unemployment is high, convincing workers to adopt a more cautious behavior, while they become more likely if unemployment is low, inducing workers to increase their wage claims. Similarly, on the other side of the labor market employers know that workers are more willing to accept lower wages when they are overabundant, and that wages should instead rise to make vacant position more attractive to workers when these latter are a scarce resource. This probability depends on the exponential function e−υut−1 and the value set for the parameter υ: a higher υ reduces the probability of rising wages and increases the probability of wage reductions. In a policy perspective, a reduction of υ represents a parsimonious and intuitive way to mimic the effect of institutional reforms aiming to strengthen workers’ bargaining power, while an increase of the parameter shifts the bargaining power in favor of employers. Wage expansionary scenarios thus take the form of a decrease of υ occurring at period 500. An increase at period 500 of υ instead is assumed to analyze the consequences of a slowdown in wages. Table 1 displays all the values of υ employed in the simulation experiments, and the corresponding values assumed by the exponential term e−υut−1 at a past level of unemployment equal to 10%. Table 1 shows that values of υ were set so that the value attained by e−υut at ut−1 = 10% changes by five percentage points between two subsequent scenarios.16 For the sake of providing an exhaustive analysis of the twofold role of wages in driving the dynamics of the economic system, as they represent at the same time a major source of nominal aggregate demand and a determinant of firms’ international cost competitiveness, we perform several different simulation experiments: section 3.2 considers the case of a sharp change in the wage growth pattern favoring workers in a single randomly-chosen country. Section 3.3 considers the opposite scenario, that 16 This factor is then scaled by the paramaters υ H and υF for housholds and firms respectively. The rationale of these scaling paramaters has been already discussed in section 2.1.1.
+
+is a sharp increase of υ in a single randomly-chosen country.17 Section 3.4 investigates the effect of alternative wage growth patterns under the assumption that all Union member countries follow the same strategy towards wages. Section 3.5 enriches the analysis checking in which measure the results discussed in section 3.4 are affected by a change in the elasticity of consumers’ demand to prices, or by a different number of countries. For each of the simulation experiments presented 50 Monte Carlo simulations have been run. The calibration have been made so that each period ideally represent a quarter. Simulations last 1000 periods.
+
+## 3.2 Experiment: wage acceleration in one randomly-chosen country
+
+In this sub-section we consider the effects of a reduction of the parameter υ from 1.625 to 0.512 occurring in a randomly sampled country at period 500. As table 1 shows, this shock increases the value assumed by e−υut−1 from 85% to 95% at an unemployment rate of 10% so that the probability of an upward revision at that level of unemployment (and provided that the agent-specific condition is statisfied) increases by υH · 10% percentage points for housholds and υF · 10% percentage points for firms, whereas the probability of a downward revisision decreses by the same amount. Due to space constraints, we refer to the case of a Monetary Union composed of K = 5 countries. Results are qualitatively robust under scenarios with 2 and 10 countries. This experiment is particularly useful since it allows to highlight the main processes triggered by the wage growth regime switch on both the demand and supply sides of the economy: on the demand side, wages exert a direct effect on the domestic demand for non-tradable and tradable goods, part of the latter taking the form of imports from abroad. On the supply side, wages concur to determine firms’ unit costs of production, thereby affecting their profit margins and the international competitiveness of tradable firms. The evolution of wages, unit costs, and profit margins influences the process of Schumpeterian competition between firms by shaping a more or less selective competitive environment which steers the evolution of the industry towards more or less concentrated market structures. In turn, the number and average dimension of firms affect the productivity dynamics, R\&D investment and technological progress. Figures in panel 2 display the dynamics of key economic variables. As a consequence of the acceleration in wage growth occurring in period 500, firms’ unit costs of production, measured by wages/productivity, initially rise (right side on the top of panel 2). Since prices are adaptive, the rise of unit costs is not perfectly offset by a proportional increase in prices. On the one hand this implies that workers’ real purchasing power increases, stimulating real demand for both tradable and nontadable goods. However, it also implies that the profit margin of firms shrinks as the realized markup is lower (right side on the fourth line of panel 2). Less productive firms may see their profit margin completely vanishing, or being forced to apply very high prices to avoid selling at a loss, as unit costs are increasing. However, this reduces the attractiveness of their output to consumers. Eventually, less productive firms will not survive under this scenario. Furthermore, as domestic demand grows, it stimulates a significant rise in the price of non-tradable goods which are sheltered from international competition, eroding the initial increase in the purchasing power of workers (right side on the second line of panel 2). Also firms producing for the tradable market, which now have less room to adapt prices due to the higher unit labor costs, will have on average higher prices compared to their foreign competitors, even though the international competition prevent them to rise prices too much (left side on the third of panel 2): again, less productive firms will either see their profit margin squeezed by the rise of wages, or hit the unit-cost lower bound of prices being forced to rise prices at the cost of seeing their market share shrinking. Less productive firms, which are less equipped to deal with the changed economic environment, thus tend to run out of business; exports of the country drop and imports rise due to an income effect, because higher wages increase total demand, including demand for imports, as well as to a substitution effect, because foreign tradables are slightly cheaper than those domestically produced. This can be appreciated by looking at the Net Foreign Asset Position (center figure in the third line of panel 2) of the country which significantly worsens, falling into a negative territory meaning that the country has become a net debtor. All in all, the positive income effect on the non-tradable sector seems to be outweighed by the negative external effect just outlined and by the increasing number of defaults by less productive firms which reduces the number of firms in business in both sectors (last two figures in panel 2).[^panel-extremes]
+
+−1
+
+−3
+
+−2
+
+Average R\&D/Y
+
+0.28 0.30 0.32 0.34 0.36 0.38
+
+> _Figure 2 (original article): Wage acceleration in one randomly-chosen country. Plot not reproduced here; see the surrounding text for discussion._
+
+Therefore, the economy initially experiences a slowdown of real GDP dynamics and a significant fall in employment levels (first and second figure in panel 2, respectively). As a consequence of the fall in tax revenues, public Debt-to-GDP ratio surges (right side of the third line of panel 2). However, the same short-run tendencies discussed above trigger the conditions which allow to revert or stabilize them in the medium and long-run, preventing the system from collapsing. In particular, two processes are relevant in this respect: first, the rise of unemployment observed in the country where the wage regime shift occurs partially counteracts the wage inflationary tendency. Secondly, the rise of unit costs of production exacerbates firms’ selection and Schumpeterian competition processes, forcing less productive firms to leave the market and thus exerting a direct positive impact on the average level of productivity. The market structure emerging from this process is more concentrated compared to the Union average and to the baseline scenario, being characterized by fewer firms of bigger dimension and with greater productivity. More productive firms, being no longer forced to split the take with less productive competitors, can grow in dimension. This, in turn, implies that resources devoted by firms to R\&D are now more efficiently allocated: R\&D investment per firm rises, as the figure on the left side of the fourth line in panel 2 displays. Since R\&D is now concentrated on fewer big firms, rather than be distributed across many small ones, R\&D tends to be more effective and the number of innovations achieved increases (second figure in the fourth line of panel 2). As a consequence, labor productivity tends to grow faster in the random country where wages are allowed to grow faster (first and second figure in the second line of panel 2). Eventually, the rise of productivity is such to outweigh the rise of wages, thereby reducing unit labor costs of production (right side on the top of panel 2). The rise in productivity levels, however, tends to reduce the quantity of labor required for production purposes, contributing to keeping unemployment high. Furthermore, the fall of unit costs of production allowed by the enhanced technological progress dynamics tends to translate into grater profit margins (right side of the fourth line of panel 2) rather than in price reductions. This explains why the dynamics of the Net Foreign Asset Position is stabilized but not reverted, as the country is now characterized by a balanced (on average) current account, while continuing to roll-over the debt cumulated in the aftermath of the regime switch. Similarly, also the dynamics of public debt appears to fluctuate around stable levels in the medium and long run. Finally, the market structure tends to stabilize (last two figures in 2) with core firms dominating the market thanks to their dimension and technological advantage which guarantees greater profit margins, giving them the flexibility required to face the possible entry of new competitors. Eventually, the rise of labor productivity allows real GDP to recover and catching up with (or even overtaking) other countries, as displayed by the first figure in panel 2. This observation is particularly interesting because it shows that, as a consequence of the dynamic processes triggered on both the demand and supply sides of the economy by the wage inflationary process, the system ends up displaying hysteresis in the dynamics of unemployment, but not in that of real GDP.
+
+## 3.3 Experiment: wage compression in one randomly-chosen country
+
+This sub-section discusses the effects of a change in the parameter υ in the opposite direction with respect to section 3.2, from 1.625 to 2.876, which corresponds to a reduction of e−υut−1 from 85% to 75% at an unemployment rate of 10%. Hence, we are now investigating the effects of a slowdown in wages growth pattern which starts from period 500. Also in this case, we present results obtained with five countries, whose robustness have been nonetheless confirmed by simulation experiments performed under scenarios with 2 and 10 countries. The panel 3 presents the same selection of variables discussed in the previous section. As in the former case, we can distinguish between short and medium-long term effects. Much of the dynamics emerging from this simulation experiment can be explained by making reference to the same processes analyzed before, though they now work in the opposite direction. A relative slowdown in the growth of wages has the immediate effect of reducing unit labor costs (right side on the top of panel 3) and increasing profit margins (right side on the bottom of panel 3). However, since prices are set in an adaptive way, it takes some time before the reduction of unit costs translates in an actual reduction of prices. In the very first periods after period 500, the slowdown in wages translates in a reduction of aggregate demand and GDP, accompanied by a slight increase of unemployment (first and second figures in panel 3). However, as prices adapt, the enhanced competitiveness of domestic tradable firms and the fall of imports due to the income effect allow the country to register current account surpluses. The external position of the country improves as testified by its Net Foreign Asset Position, since
+
+−1
+
+−3
+
+−2
+
+80 60 40
+
+Average R\&D/Y
+
+0.00014 0.00016 0.00018 0.00020
+
+> _Figure 3 (original article): Wage moderation in one randomly-chosen country. Plot not reproduced here; see the surrounding text for discussion._
+
+the country has been accumulating funds that are then re-invested abroad, becoming a net creditor (second figure of the third line of panel 3). This positive external effect tends to offset the depressing effects on domestic demand, allowing real GDP to recover and unemployment to drop. However, the milder pressure of wages on firms’ profit margins allows even those characterized by lower productivity levels, that would have otherwise gone bankrupt, to survive. This is particularly true for firms operating in the non-tradable sector, which are sheltered from international competition. The number of firms tends to increase in the country where the wage moderation strategy is pursued and its industry converges towards a less concentrated structure characterized by many small firms. R\&D investment, as a consequence, ends up being dispersed across a myriad of small firms: the investment in R\&D per firm drops and R\&D investment looses efficacy (left and center figures in the fourth line of panel 3). Innovation dynamics and labor productivity growth thus slowdown (left and center figures in the second line of panel 3). This allows to keep unemployment low by dampening the labor-saving effect of technological progress, but also prevents real GDP growth from keeping the pace with other countries (second and first figure on the top of 3, respectively). As far as public finance is concerned, the positive effect on employment and the inflow of funds thanks to foreign trade seem to balance the fall in GDP, allowing public debt-to-GDP ratio to remain stable or even slightly below the average values of other countries (third graph on the third line of panel 3). Eventually the slowdown in labor productivity growth, coupled with low unemployment levels which somewhat counteract wage moderation, partially realign firms’ average profit margins to that of other countries, contributing to stabilizing the number of firms in business. However, while profit margins in the tradable sector remain slightly above that of foreign competitors (left figure in the fifth line of panel 3), because foreign demand sustains domestic tradable firms’ sales (i.e. country’s exports) while their productivity gap with foreign competitors remains tiny, profit margins of domestic non-tradable firms end up being lower than in other countries (right figure in the fourth line of panel 3) as a consequence of the severe slowdown in labor productivity growth in that sector (left figure in the second line of panel 3). While overall average unit costs of domestic firms remain somehow lower than elsewhere, allowing the country to maintain (or even slightly improve) its positive Net Foreign Asset Position, unit costs in the non-tradable sector tend to be higher. This also explains why prices in the domestic non-tradable sector are not only higher than in the tradable, but also higher than in other countries (third and second figure in the second line of panel 3). Before moving to the next experiment it must be noticed that the plots referring to the two experiments discussed above compare countries where υ changes with the other K − 1 countries which, in the same simulations, continue to stick to the baseline value of υ. However, one may wonder what are the global effects at the Union level of the regime switch occurring in a single country, compared to the baseline scenario where υ did not change. Figures in panel 4 compare the Union global average values for each variable in the baseline scenario with the Union averages in the two scenarios where υ has been modified for a random country. Interestingly, these figures highlight that a reduction of υ produces a slight improvement of the Union average performance: real GDP and labor productivity are slightly higher, while public debtto-GDP and unemployment levels are lower. This suggests that a faster increase of wages in a country tends to provide benefits to the rest of the Union, whereas a slowdown in wage growth seems to result in a slacker average economic performance at the global level. This observation rises an important question: what would then if countries were able to coordinate their wage strategies, that is if υ were changed in the same way and in all countries simultaneously? The experiment discussed in the next sub-section aims at investigating this possibility.
+
+## 3.4 Experiment: alternative wage growth patterns in all country
+
+In the previous sections we focused our attention on a change in the wage growth regime occurring in individual countries, while the other members of the Union stuck to the original wage regime. To provide a more exhaustive analysis we now consider the case where the structural break in the wage growth regime occurs in all countries at once. On the one hand, deregulation of labor markets aiming to avoid excessive growth of wages has been often proposed in the economic debate as the golden rule to which every country should conform. This view has been discussed in the introduction with particular reference to the Euro Crisis: the Neoclassical interpretation, well represented by the thesis presented in Sinn (2014a,b), contends that peripheral countries should deregulate their labor markets in order to embrace the wage moderation
+
+Productivity
+
+Average Price
+
+Profit Margin
+
+> _Figure 4 (original article): Wage acceleration vs wage moderation in one randomly-chosen country: global effects on the Union. Plot not reproduced here; see the surrounding text for discussion._
+
+strategy that has been the key of core countries’ success. This analysis was fiercely opposed by scholars - mainly, but not exclusively, in the Keynesian tradition - who believe Germany has pursued a ‘beggar thy neighbor’ strategy which could not work if generalized to all European economies, advocating instead a coordinated strategy of wage increases (see for example Flassbeck and Lapavitsas (2013); Stockhammer (2011); Stockhammer and Sotiropoulos (2014); Onaran and Obst (2016)). This debate provides the rationale for the simulation experiment presented in this section which aims at comparing the effects of coordinated wage strategies involving all the Union member countries. As usual, the wage regime switch takes the form of a change occurring at period 500 in the value of the parameter υ in workers’ and firms’ wage revision strategies. More precisely, we conducted four different simulation experiments employing the values presented in table 1, and we compare them with each other and with the baseline scenario. For each scenario, 50 Monte Carlo repetitions have been carried out. For space and explanatory reasons, in this section we refer to the case of a Monetary Union composed of five countries. However, section 3.5 shows that results are robust across simulation experiments conducted with 2, 5, 10, and 15 countries. Panel 5 presents the main results of the simulation experiments performed. Given the objective of this test and the fact that countries are now characterized by the same wage regime, graphs display the average trends of variables across countries and their confidence interval.[^panel-coordination] The explanation of results provided in sections 3.2 and 3.3 provides a useful conceptual map to interpret the results of this section. The main difference is represented by the fact that, when all countries follow a similar strategy towards wages, the relative advantages and disadvantages associated to each type of policy in terms of international competitiveness tend to be balanced out, leaving the relative international position of the Union member countries unaltered even after the wage regime switch occurs. In other words, a change in the wage regime does not affect international trade between countries as long as it occurs in a coordinated way: relative unit costs of production remain unaltered because wages accelerate or decelerate in the same proportion in different countries so that the total demand for tradable goods, which varies due to the income effects associated with different wage growth regimes, continues to be distributed across countries as before. As a consequence, variation of imports will be almost neutralized by a corresponding variation of exports, and vice-versa. This implies that when the regime switch occurs in all countries at once, the trade off arising from the twofold role of wages as a source of domestic aggregate demand and as a determinant of N° Firms
+
+0.28 0.30 0.32 0.34 0.36 0.38
+
+0.28 0.30 0.32 0.34 0.36 0.38 0.40
+
+Average R\&D/Y
+
+25 20 15
+
+8000 10000
+
+> _Figure 5 (original article): Alternative Wage Growth Patterns in all countries. Plot not reproduced here; see the surrounding text for discussion._
+
+the country’s external stance - through the effect they exert on imports and firms’ international cost competitiveness (i.e exports) - is solved. An enhanced wage dynamics not only favors the growth of domestic demand, improving firms’ expectations and stimulating domestic firms to increase their production levels, but the negative effect on the country’s external position discussed for the singlecountry case is now substituted by a positive feedback effects trough trade between countries: since imports are rising everywhere, each country concurs to foster the rise of the demand for tradable goods produced by other countries. Conversely, a slowdown in wages growth depresses demand and firms’ production levels, while also causing a generalized contraction of international trade. At the same time, different wage growth patterns continue to exert the same effects on the supply side of the economy that we have highlighted in sections 3.2 and 3.3, influencing firms’ profit margins, the evolution of market structure, and hence the dynamics of R\&D investment. Regimes which favor the growth of wages reduce firms’ profit margins, in particular in the immediate aftermath of the change in υ (left and center figure at the bottom of panel 5). This exacerbates the Schumpeterian selection process fostering the exit of less productive firms and a process of market concentration, testified by the fall in firms’ number (last figure in panel 5) which underpins the growth of more productive ones. As a consequence R\&D investment tends to be concentrated on fewer and bigger firms so that average investment per firm in productivity-enhancing activities rises, improving innovation dynamics (respectively, center and right figures in the third line of panel 5). This, in turn, enhances the dynamics of labor productivity both in the non-tradable and tradable sectors (right side on the top of panel 5 and left side in the second line) allowing firms’ to partially balance the squeeze of their profit margin caused by the rise of wages. Conversely, wage moderation allows less productive firms to survive by exploiting the low cost of labor. However, in a dynamic perspective, this leads to a market configuration characterized by a multitude of smaller enterprises which contributes to make the allocation of R\&D investment more 23
+
+disperse and less effective. Eventually, innovation dynamics and labor productivity growth start to slacken, partially offsetting the effect of lower wages on unit costs and firms’ profit margins. As a consequence of the enhanced demand and technological progress patterns, real GDP is markedly higher in the wage inflationary scenarios, whereas it is significantly lower in the wage moderation scenarios. The rise of output in the expansionary cases is such that the labor saving effect exerted by technological progress observed in the corresponding experiments focusing on individual countries is eliminated: the center figure on the top of panel 5 shows that unemployment is almost stable across scenarios. Conversely, the advantage in terms of lower unemployment brought by wage moderation regimes when applied to individual countries disappears when wage moderation is generalized, as a consequence of the fall in output levels. The dynamics of prices in the non-tradable and tradable sectors (second and third plots in the second line of panel 5) shows that part of workers additional purchasing power originated by the rise of wages translates in higher inflation rates, whereas wage moderation dampens the growth of prices. This, together with the dynamics of real GDP and employment, concurs to explain the reversal of the effect that alternative wage growth patterns exert on public finance with respect to the case of a regime switch in an individual country: wage inflationary scenarios tend to be associated with lower, rather than higher, public debt-to-GDP ratios when the regime switch occurs in a coordinated way, while the opposite holds when countries ‘agree’ to dampen the growth of wages. The results of this experiment seem to justify some skepticism about the effectiveness of generalized wage moderation policies across countries, and the possible mutual benefits originating instead from a coordinated policy of wage increases. Our artificial Monetary Union thus appears to be characterized by an overall ‘wage-led’ growth regime (Lavoie and Stockhammer, 2012), where a distribution more favorable to workers translates into an enhanced economic performance. The adoption of a coordinated wage growth regime across member countries produces effects not dissimilar from those we would obtain by applying the same strategy in a closed economic system. Wage-led growth regimes, in turn, are often a property displayed by relatively closed economic systems. Obviously, the fact that our artificial Monetary Union abstracts from international trade and financial flows with the rest of the world, contributes to embed a bias in the analysis of the effects of coordinated wage growth patterns just presented: countries characterized by a high degree of international openness towards economies outside the Union, may still suffer a slack in their international performance as a consequence of a wage inflationary strategy, even if agreed between Union partners, while they may find some advantage in pursuing a wage moderation strategy if this improves their cost competitiveness vis-à-vis countries outside the Union. While this argument do have some theoretical ground, two empirical observations partially limit its scope: first, there is general agreement that the Euro crisis has been mainly a story of intra-EU imbalances between member countries, rather than with the rest of the world. Second, given that much of the trade and financial exchanges of European countries take place with other European partners, the European Union as a whole can be considered as a relatively closed system at a first approximation. The prevalence of a wage-led growth regime emerging from these last simulation experiments seems to find a confirmation, for the European Union, in several empirical studies, such as Stockhammer (2011); Stockhammer and Sotiropoulos (2014); Stockhammer et al. (2016); Stockhammer and Onaran (2013); Onaran and Galanis (2012b); Onaran and Obst (2016)).
+
+## 3.5 Wage Growth Patterns, Country Numerosity, and Consumers’ Demand Elasticity to Prices
+
+We conclude the analysis with two robustness checks that extend the coordinated wage-scenario of Section 3.4.
+
+1. **Varying the number of countries.** Following Caiani et al. (2017a), we repeat the simulations with Monetary Unions comprising $K \in \{2, 5, 10, 15\}$ countries.[^19] Changing $K$ alters both the overall size of the union and the breadth of the shared tradable-goods market.
+2. **Varying demand elasticity.** Households rank suppliers using a price–distance heuristic: firm $i$ is preferred to firm $j$ whenever\n\n   $$\n   P_{i,t}^{-1} d_{hi}^{-\beta} > P_{j,t}^{-1} d_{hj}^{-\beta},\n   $$\n\n   where $P_{i,t}$ is the selling price and $d_{hi}$ the Hotelling distance between consumer $h$ and firm $i$. Lower $\beta$ increases price sensitivity; higher $\beta$ emphasises product variety. In addition to the baseline ($\beta = 2.0$), we test $\beta \in \{0.75, 1.0, 1.5, 2.5, 3.0, 4.0\}$.
+
+Panels 6 and 7 of Caiani et al. (not reproduced here) report the Monte Carlo averages across the $(\upsilon, K)$ and $(\upsilon, \beta)$ grids. Each grid point aggregates 50 runs, and the authors interpolate the resulting surfaces with a Kriging meta-model.[^20] The qualitative message is stable: lowering $\upsilon$ (i.e. coordinated wage acceleration) raises real GDP growth and labour productivity while improving fiscal balances, regardless of the number of member countries. Unemployment remains roughly unchanged because higher output growth is offset by efficiency gains.
+
+Adjusting $\beta$ changes the magnitude but not the direction of these effects. Wage acceleration continues to boost growth and reduce public debt, yet the response is stronger when demand is highly price-sensitive (low $\beta$) and milder when consumers prioritise variety over price (high $\beta$). Greater price sensitivity also reduces average profit margins and nudges unemployment slightly upward because intensified competition reallocates demand toward productive firms.
+
+[^panel-extremes]: Panels 2–4 report only the simulations that use the extreme values of $\upsilon$ from Table 1; intermediate settings deliver qualitatively similar results.
+[^panel-coordination]: When all countries share the same wage regime, the union-wide net foreign asset position sums to zero and unit-cost comparisons add no additional information, so the corresponding plots are omitted.
+[^rd-intensity]: An alternative specification where firms set $R\&D$ as a share of expected sales yields similar results, consistent with evidence of stable sectoral $R\&D$ intensities.
+[^19]: The same robustness check was also performed for the single-country regime-switch experiments.
+[^20]: See Salle and Yildizoglu (2014) for a discussion of Kriging meta-modelling in agent-based sensitivity analysis.
+
+## 4 Summary and refinements
+
+In this paper we have analyzed and compared the effects of changes in the wage growth patterns of countries belonging to a Monetary Union. Experiments have considered both the case in which these changes take place in a single country and the case of a coordinated change occurring in all member countries at the same time. Our results suggest that, in all the scenarios explored, a change in the wage growth pattern not only affects the dynamics of demand, but also produces non-trivial effects on the supply side of the economy: in particular, scenarios more favorable to the growth of wages seem to reinforce firms’ Schumpeterian selection process, pushing out of the market marginal firms and favoring the growth of more productive ones. This, in turn, produces positive effects on R\&D investment allocation and firms’ innovative performance, thereby fostering a faster growth of labor productivity. On the contrary, wage moderation scenarios allow less productive firms to survive, leading to market structure characterized by higher number of firms having smaller dimension, thereby causing a more disperse and less effective allocation of R\&D efforts. This effect is consistent with the theoretical insights and empirical evidence provided by Kleinknecht (1998); Kleinknecht et al. (2014); Vergeer and Kleinknecht (2014) who find that deregulation aiming to dampen wage growth and to increase wage flexibility may be advantageous in the short run but is detrimental from a Schumpeterian perspective, as it discourages R\&D in product and process innovation, allowing less innovative firms to survive by exploiting the lower labor costs. When the wage regime switch occurs in a single country, both wage moderation and wage inflation regimes seem to be characterized by a trade off between the external and fiscal stance of the country on the one hand, and the dynamics of other important macroeconomic indicators on the other: wage expansions are accompanied by a worsening of the country external position, an increase of public debtto-GDP ratio and a higher level of unemployment, but they also display a faster labor productivity growth which allow real GDP to recover relatively to other countries which were not hit by the wage regime switch. Conversely, wage moderation in a single country allows to lower unemployment, and to improve the Net Foreign Asset Position of the country and the fiscal stance of the government, but also causes a slowdown in the labor productivity dynamics which tends to weaken real GDP growth in the long run. On the contrary, this trade-off fades out when the change in the wage growth patterns occurs in a simultaneous and coordinated way in all members countries, thereby leaving their relative competitive position unaltered. In this case, a coordinated wage inflationary strategy seems capable of improving real GDP growth, innovation dynamics and labor productivity growth, public debt/GDP levels, while almost not affecting unemployment levels. This results, being consistent with the predominance of a wage-led growth regime in the Monetary Union, thus seems to make a case for a coordinated policy of wage increases across core and peripheral country as a possible way out of the recession which hit European economies after the global financial turmoil and the Euro crisis. The robustness of these results has been checked with respect to several different specifications of the number of countries in the Union, which determines the size of the Union itself and of its common market for tradabeles relatively to national economies. In the last section we presented the result of this sensitivity experiment for the case of a coordinated wage regime switch. Finally, we also analyzed the impact of coordinated wage regime switches in relation to different characterizations of consumers’ demand sensitivity to price differentials: results suggest that a higher sensitivity to prices determines on the process of selection of firms effects similar to those observed in the scenarios where wages are allowed to grow faster, though exerting on opposite pressure on the level of prices. Therefore, the efficacy of wage inflationary regimes seems to be reinforced when consumers give more importance to price differentials, and dampened in the opposite case. Despite the robustness of the results presented in this paper, we are well aware that some caution is advisable given the simplified nature of the model. First, one may wonder how a different specification of the R\&D investment may affect the results of the model. For this sake we have conducted a preliminary investigation by considering an alternative specification of R\&D investment, defined as a share of expected sales rather than a share of the planned wage bill.[^rd-intensity] This change does not seem to affect the result discussed in the paper in any significant way.
+
+Furthermore, the model focuses on incremental patterns of innovation resulting in a disembodied technological progress which progressively increases labor productivity. However, it would be worth exploring alternative characterizations of technological progress, considering for example a wave of radical innovations, or technological progress embodied in new capital vintages. Finally, a major limit of the model in its current version is the still simplified character of the financial side which completely neglects cross-border equity investment by households, and presents simplified, almost-random, matching procedures on the international credit and bond markets. As a consequence, the role of financial factors is somehow underestimated compared to the role of traderelated factors. In future refinements of the model efforts will then be dedicated to improve these aspects in order to give a better account of international credit and financial investment flows which, as discussed in the section 1.1, have played a crucial role in driving the evolution and mutual relationships of European economies, with strong implications for the resilience of the EMU.
+
+## References
+
+- Baldwin, R., Beck, T., Benassy-Quere, A., Blanchard, O., Corsetti, G., de Grauwe, P., den Haan, W., Giavazzi, F., Gros, D., Kalemli-Ozcan, S., Micossi, S., Papaioannou, E., Pesenti, P., Pissarides, C., Tabellini, G., and Weder di Mauro, B. (2015). Rebooting the eurozone: Step 1 agreeing a crisis narrative. *Centre for Economic Policy Research Policy Insight Series*, 85:15.
+- Bernard, A. B., Eaton, J. J., Jensen, B. J., and Kortum, S. (2003). Plants and productivity in international trade. *American Economic Review*, 93(4):1268-1290.
+- Bernard, A. B., Jensen, B. J., Redding, S. J., and Schott, P. K. (2007). Firms in international trade. *Journal of Economic Perspectives*, 21(3):105-130.
+- Bernard, A. B. and Jensen, J. B. (1999). Exceptional exporter performance: cause, effect, or both? *Journal of International Economics*, 47(1):1-25.
+- Blanchard, O. (2007). Adjustment within the euro: the difficult case of Portugal. *Portuguese Economic Journal*, 6(1):1-21.
+- Caiani, A., Catullo, E., and Gallegati, M. (2017a). The effects of fiscal targets in a monetary union: a multi-country agent based-stock flow consistent model. *Industrial and Corporate Change*, forthcoming.
+- Caiani, A., Godin, A., Caverzasi, E., Gallegati, M., Kinsella, S., and Stiglitz, J. E. (2016). Agent based-stock flow consistent macroeconomics: towards a benchmark model. *Journal of Economic Dynamics & Control*, 69:375-408.
+- Caiani, A., Russo, A., and Gallegati, M. (2017b). Are higher wages good for business? An assessment under alternative innovation and investment scenarios. SSRN Working Paper, 25 pp.
+- Caiani, A., Russo, A., and Gallegati, M. (2017c). Does inequality hamper innovation and growth? *Journal of Evolutionary Economics*, forthcoming.
+- Centre for European Policy Studies (2015). *The euro plus pact: How integration into the EU framework can give new momentum for structural reforms in the euro area*. Technical Report 3, European Commission.
+- Chen, R., Milesi-Ferretti, G. M., and Tressel, T. (2012). External imbalances in the euro area. *IMF Working Paper Series*, 12-236:51.
+- Christodoulopoulou, S. and Tkacevs, O. (2016). Measuring the effectiveness of cost and price competitiveness in external rebalancing of euro area countries: what do alternative HCIs tell us? *Empirica*, 43:487-531.
+- Copeland, M. A. (1949). Social accounting for moneyflows. *The Accounting Review*, 24(3):254-264.
+- De Gregorio, J., Giovannini, A., and Wolf, H. (1993). International evidence on tradable and nontradable inflation. *NBER Working Paper Series*, 4438.
+- Deissenberg, C., Van Der Hoog, S., and Dawid, H. (2008). Eurace: a massively parallel agent-based model of the European economy. *Applied Mathematics and Computation*, 204(2):541-552.
+- Diaz Sanchez, J. and Varoudakis, A. (2013). Growth and competitiveness as factors of eurozone external imbalances: evidence and policy implications. *World Bank Policy Research Working Paper Series*, 6732:33.
+- Dosi, G., Fagiolo, G., and Roventini, A. (2010). Schumpeter meeting Keynes: a policy-friendly model of endogenous growth and business cycles. *Journal of Economic Dynamics and Control*, 34(9):1748-1767.
+- Dosi, G., Roventini, A., and Russo, A. (2017). Endogenous growth and global divergence in a multicountry agent-based model. *LEM Working Paper Series*, 2017/32:34.
+- Flassbeck, H. and Lapavitsas, C. (2013). *The systemic crisis of the euro: true causes and effective therapies*. Rosa Luxemburg Stiftung Studien.
+- Gabrisch, H. and Staehr, K. (2014). The euro plus pact: cost competitiveness and external capital flows in the EU countries. *European Central Bank Working Paper Series*, 1650:34.
+- Gaulier, G. and Vicard, V. (2012). Current account imbalances in the euro area: competitiveness or demand shock? *Quarterly Selection of Articles – Bulletin de la Banque de France*, 27:5-26.
+- Gerali, A., Neri, S., Sessa, L., and Signoretti, F. (2010). Credit and banking in a DSGE model of the euro area. *Journal of Money, Credit and Banking*, 42:107-141.
+- Godley, W. and Lavoie, M. (2007). *Monetary Economics: An Integrated Approach to Credit, Money, Income, Production and Wealth*. Palgrave Macmillan, New York.
+- Graziani, A. (2003). *The Monetary Theory of Production*. Cambridge University Press.
+- Hall, P. (2012). The economics and politics of the euro crisis. *German Politics*, 21(4):355-371.
+- Hobza, A. and Zeugner, S. (2014). Current accounts and financial flows in the euro area. *Journal of International Money and Finance*, 48:291-313.
+- Hotelling, H. (1929). Stability in competition. *Economic Journal*, 39(153):41-57.
+- Jaumotte, F. and Sodsriwiboon, P. (2010). Current account imbalances in the southern euro area. *IMF Working Paper Series*, 10-139:49.
+- Juncker, J., Tusk, D., Dijsselbloem, J., and Draghi, M. (2015). *Preparing for next steps on better economic governance in the euro area*. Informal European Council Analytical Note.
+- Kleinknecht, A. (1998). Is labour market flexibility harmful to innovation? *Cambridge Journal of Economics*, 22(3):387-396.
+- Kleinknecht, A., Van Schaik, F., and Zhou, H. (2014). Is flexible labour good for innovation? Evidence from firm-level data. *Cambridge Journal of Economics*, 38:1207-1219.
+- Lane, P. (2013). Capital flows in the euro area. Directorate-General for Economic and Financial Affairs, *European Economy – Economic Papers*, 497:54.
+- Lavoie, M. (1992). *Foundations of Post-Keynesian Economic Analysis*. Edward Elgar, Aldershot.
+- Lavoie, M. and Stockhammer, E. (2012). Wage-led growth: concept, theories and policies. *International Labour Office, Conditions of Work and Employment Series*, 41.
+- Maddaloni, C. and Hessel, J. (2014). Current account imbalances in the euro area: competitiveness or financial cycle? *DNB Working Papers*, 443:51.
+- Myers, S. (1984). The capital structure puzzle. *Journal of Finance*, 39(3):575-592.
+- European Council (2011). Conclusions of the European Council, 24/25 March 2011: The euro plus pact. Annex I to European Council conclusions, 24-25 March 2011.
+- Onaran, O. and Galanis, G. (2012a). Is aggregate demand wage-led or profit-led? National and global effects. *International Labour Office, Conditions of Work and Employment Series*, 40:65.
+- Onaran, O. and Galanis, G. (2012b). Is aggregate demand wage-led or profit-led? National and global effects. *ILO Working Papers, Conditions of Work and Employment Branch*, 40:74.
+- Onaran, O. and Obst, T. (2016). Wage-led growth in the EU15 member states: the effects of income distribution on growth, investment, trade balance and inflation. *Cambridge Journal of Economics*, 40(6):1517-1551.
+- Petrovic, M., Ozel, B., Teglio, A., Raberto, M., and Cincotti, S. (2017). Eurace open: an agent-based multi-country model. *Working Paper Series of the Economics Department of the Universitat Jaume I*, 2017-09:76.
+- Riccetti, L., Russo, A., and Gallegati, M. (2015). An agent-based decentralized matching macroeconomic model. *Journal of Economic Interaction and Coordination*, 10(2):305-332.
+- Riccetti, L., Russo, A., and Gallegati, M. (2016). Financialisation and crisis in an agent based macroeconomic model. *Economic Modelling*, 52(PA):162-172.
+- Salle, I. and Yildizoglu, M. (2014). Efficient sampling and meta-modelling for computational economic models. *Computational Economics*, 44(4):507-536.
+- Salop, S. C. (1979). Monopolistic competition with outside goods. *The Bell Journal of Economics*, 10(1):141-156.
+- Sinn, H. (2014a). Austerity, growth and inflation: remarks on the eurozone's unresolved competitiveness problem. *World Economy*, 37(1):1-13.
+- Sinn, H. (2014b). *The Euro Trap: On Bursting Bubbles, Budgets, and Beliefs*. Oxford University Press.
+- Smets, F. and Wouters, R. (2007). Shocks and frictions in US business cycles: a Bayesian DSGE approach. *American Economic Review*, 97:586-606.
+- Stanley, M., Buldyrev, S., Havlin, S., Mantegna, R., Salinger, M., and Stanley, E. (1995). Zipf plots and the size distribution of firms. *Economics Letters*, 49:453-457.
+- Steindl, J. (1952). *Maturity and Stagnation in American Capitalism*. Blackwell.
+- Stockhammer, E. (2011). Peripheral Europe's debt and German wages: the role of wage policy in the euro area. *International Journal of Public Policy*, 7(1/2/3):83-96.
+- Stockhammer, E., Constantine, C., and Reissl, S. (2016). Explaining the euro crisis: current account imbalances, credit booms and economic policy in different economic paradigms. *Post Keynesian Economics Study Group Working Paper Series*, 1617.
+- Stockhammer, E. and Onaran, O. (2013). Wage-led growth: theory, evidence, policy. *Review of Keynesian Economics*, 1(1):61-78.
+- Stockhammer, E., Onaran, O., and Ederer, S. (2009). Functional income distribution and aggregate demand in the euro area. *Cambridge Journal of Economics*, 33(1):139-159.
+- Stockhammer, E. and Sotiropoulos, D. (2014). Rebalancing the euro area: the costs of internal devaluation. *Review of Political Economy*, 26(2):210-233.
+- Storm, S. and Naastepad, C. (2015a). Europe's hunger games: income distribution, cost competitiveness and crisis. *Cambridge Journal of Economics*, 39(3):959-986.
+- Storm, S. and Naastepad, C. (2015b). NAIRU economics and the eurozone crisis. *International Review of Applied Economics*, 29(6):843-877.
+- Storm, S. and Naastepad, C. W. M. (2012). *Macroeconomics Beyond the NAIRU*. Harvard University Press.
+- Taylor, J. B. (1993). Discretion versus policy rules in practice. *Carnegie-Rochester Conference Series on Public Policy*, 39(1):195-214.
+- Unger, R. (2017). Asymmetric credit growth and current account imbalances in the euro area. *Journal of International Money and Finance*, 73:435-451.
+- Uribe, M. and Schmitt-Grohe, S. (2017). *Open Economy Macroeconomics*. Princeton University Press.
+- Vergeer, R. and Kleinknecht, A. (2014). Do labour market reforms reduce labour productivity growth? A panel data analysis of 20 OECD countries (1960-2004). *International Labour Review*, 153(3):365-393.
+
+
+A
+
+**Baseline Setup (Table 2).** Parameters for the five-country calibration (source: Caiani et al., 2017, Table 2).
+
+| Parameter | Value | Parameter | Value |
+|:----------|------:|:----------|------:|
+| $K$ — number of countries | 5 | $\mu_2$ — minimal reserve requirement | 0.1 |
+| $H$ — number of households | 500 | $\psi$ — loan probability parameter | 0.5 |
+| Notional money supply $M^{S}$ | 1.0 | $\epsilon$ — loan markup parameter | 0.003 |
+| $\chi$ — matching parameter | 10 | $\iota_b$ — bond probability parameter | 0.1 |
+| $\nu_w$ — wage revision probability | 1.625 | $i^{res}$ — interest on reserves | 0.0 |
+| $\nu_H$ — household wage adjustment | 0.7 | $i^{bon}$ — initial bond rate | 0.01 |
+| $\nu_F$ — firm wage adjustment | 1.0 | $w_0$ — initial wage | 1.0 |
+| $\phi_0$ — initial productivity | 1.0 | $r^T$ — Taylor-rule long-run rate | 0.0075 |
+| $\delta_k$ — initial tax rate | 0.4 | $\gamma_y$ — Taylor-rule smoothing | 0.8 |
+| $c_p$ — propensity to consume out of income | 0.9 | $\gamma_{\pi}^{\Delta P}$ — inflation response | 2.0 |
+| $c_d$ — propensity to consume out of wealth | 0.1 | $\Delta P^T$ — inflation target | 0.005 |
+| $\xi^c$ — adaptive / impulsive parameter | 0.03 | $\delta^{\max}$ — max deficit-to-GDP ratio | 0.03 |
+| $\sigma_k^p$ — share of tradable goods | 0.4 | $tax_{\min}$ — minimum tax rate | 0.35 |
+| $\delta$ — Hotelling circle parameter | 2.0 | $tax_{\max}$ — maximum tax rate | 0.45 |
+| $\zeta$ — liquidity preference | 0.2 | $g_{\min}$ — minimum $G/Y$ | 0.1 |
+| $\theta$ — inventory share of sales | 0.2 | $g_{\max}$ — maximum $G/Y$ | 0.6 |
+| $\gamma$ — R\&D expenditure share | 0.03 | $\eta'$ — bank/firm minimum proportion | 0.1 |
+| $\sigma$ — R\&D success parameter | 0.8 | $\Xi$ — minimum investment threshold | 0.1 |
+| $\rho$ — profit distribution share | 0.95 | $K_0$ — initial firm net worth | 10.0 |
+| $c$ — deposit-rate / discount-rate ratio | 0.1 | $\Xi'$ — bank size threshold | 4.0 |
+| $\mu_1$ — total credit supply parameter | 20.0 |  |  |
+
+**Baseline summary (Table 3).** Final-period averages (standard errors in parentheses) versus Euro-area benchmarks.
+
+| Variable | 2 countries | 5 countries | 10 countries | Euro area (years) |
+|:---------|:-----------:|:-----------:|:------------:|:-----------------:|
+| Real GDP growth | 1.05 (0.051) | 1.02 (0.045) | 1.00 (0.046) | 0.98 (04–15) |
+| Labour productivity growth | 1.05 (0.051) | 1.02 (0.045) | 1.00 (0.046) | 0.90 (04–13) |
+| Inflation | 2.37 (0.084) | 2.15 (0.058) | 2.13 (0.055) | 1.74 (04–15) |
+| Unemployment | 13.1 (1.344) | 14.6 (0.668) | 14.8 (0.623) | 9.6 (98–15) |
+| Public debt / GDP | 116.9 (15.241) | 117.5 (27.004) | 116.4 (40.580) | 81.3 (06–15) |
+| Private loans / GDP | 138.5 (10.586) | 127.9 (8.780) | 68.2 (6.798) | 104.6 (06–15) |
+| Public deficit / GDP | 1.0 (0.165) | 0.9 (0.235) | 0.9 (0.352) | 3.2 (06–15) |
+| Exports / GDP | 18.5 (0.989) | 29.39 (0.353) | 33.0 (0.461) | 40.0 (04–15) |
+| Imports / GDP | 18.5 (0.969) | 29.44 (0.344) | 33.0 (0.263) | 38.1 (04–15) |
+| Public expenditure / GDP | 45.1 (1.021) | 46.6 (0.755) | 46.3 (0.650) | 46.7 (06–15) |
+| R\&D investment / GDP | 2.85 (0.087) | 2.8 (0.069) | 2.7 (0.071) | 2.0 (06–15) |
+| Household investment / GDP | 8.9 (0.161) | 8.7 (0.081) | 8.7 (0.085) | 6.1 (06–15) |
