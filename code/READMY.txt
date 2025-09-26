@@ -1,0 +1,73 @@
+The Multi-Country Monetary Union ABM: a Multi-Country Agent Based-Stock Flow Consistent Economic Model
+
+  What is it?
+  -----------
+
+  This is the code behind the paper The Effects of Fiscal Targets in a Monetary Union: a Multi-Country Agent Based-Stock Flow Consistent Model>
+  by  Alessandro Caiani, Ermanno Catullo, Mauro Gallegati
+  
+  Abstract
+  -----------
+  We present an Agent-Based Stock Flow Consistent Multi-Country model of a Currency Union
+  to analyze the impact of changes in the fiscal regime of member countries, that is permanent
+  changes in the deficit-to-GDP targets that governments commit to comply. Simulations are per-
+  formed under three scenarios differentiated for the number of member countries. The parametric
+  configuration of the model yields economically reasonable values for the dynamics of key variables,
+  broadly comparable with historical data and available stylized facts, in particular for the Euro Area
+  which constitutes the natural point of reference of our work. Our policy experiments show that
+  fiscal expansions generally allow to improve the dynamics of real GDP, labor productivity, and em-
+  ployment, though being associated with higher levels of public debt. On the contrary, permanent
+  fiscal contractions have always strong recessive effects and tend to be self-defeating exacerbating
+  real GDP volatility both in the short and long run, when the Currency Union includes a higher
+  number of countries and the dimension of international trade increases. The observed increase of
+  average debt-GDP ratios in these scenarios is mainly caused by the raise of public debt-to-GDP in
+  poorer and less productive countries, which is mirrored by a reduction of the countries’ net foreign
+  asset position.
+
+  The Latest Version
+  ------------------
+
+  you can find the latest version of the paper at  https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2904953
+  and later version of the code at: 
+
+ 
+
+  How to Run
+  ------------
+
+  Simulations are run interpreting the timing.py file which represents the simulation time schedule, thus
+  timing.py is the 'main' of the code.
+  In the file parameter.py are saved the model's parameters.
+  Aggregate Data are saved in a data folder that is created automatically. While individual firms' and banks' data
+  are saved if the printAgent parameter is equal to 'yes' 
+
+  Licensing
+  ---------
+
+  This is the code of the paper The Effects of Fiscal Targets in a Monetary Union: a Multi-Country Agent Based-Stock Flow Consistent Model
+  Copyright (C) 2017  Alessandro Caiani, Ermanno Catullo, Mauro Gallegati.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+
+  Contacts
+  --------
+
+    Alessandro Caiani alessandro.caiani@hotmail.it  
+
+    Ermanno Catullo ermanno.catullo@gmail.com
+
+
+    
+
+
