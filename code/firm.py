@@ -107,6 +107,7 @@ class Firm:
           
           
       def learning(self):       
+          # Eq. 12-14 (Caiani et al. 2016): pricing/expec update pre-LLM.
           if self.closing=='no':
              self.mind.alphaParameterSmooth16(self.phi,self.w,self.inventory,self.pastInventory,\
                                                self.price,self.productionEffective,self.xSold) 
@@ -347,6 +348,7 @@ class Firm:
               
 
       def wageOffered(self,McountryUnemployement,McountryPastUnemployement,McountryYL,McountryPastYL,t,McountryConsumer):
+          # Eq. 15 (Caiani et al. 2016): firm offered wage baseline rule.
           nWorkerDesired=self.nWorkerDesiredEffective
           l=self.l 
           p=self.price

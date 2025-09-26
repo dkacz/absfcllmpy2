@@ -64,12 +64,14 @@ class Bank:
              self.moneyCreated=self.loanAllocated-self.A-self.depositReceived
 
       def computeInterestRate(self,leverage):
+          # Eq. 27 (Caiani et al. 2016): spread-setting baseline before LLM.
           interestRate=self.xi*leverage+self.rDiscount 
           if interestRate<-0.001:
              print 'stop', stop 
           return interestRate
 
       def computeProbProvidingLoan(self,leverage,relPhi):
+          # Eq. 26 (Caiani et al. 2016): loan approval probability before LLM override.
           probLoan=math.exp(-1*self.iota*leverage)
           if relPhi<=1.0:
              probLoan=math.exp(-1*self.iotaRelPhi*leverage)

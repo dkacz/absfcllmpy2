@@ -273,6 +273,7 @@ class Consumer:
 
 
       def laborSupply(self,McountryUnemployement,McountryPastUnemployement,McountryYL,McountryPastYL):
+          # Eq. 1 (Caiani et al. 2016): reservation wage update before any LLM hook.
           #if self.laborSupplyAlreadyRevised=='no':
              u=McountryUnemployement[self.country]
              self.wageDirection=0 
