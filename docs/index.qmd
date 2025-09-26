@@ -1,0 +1,13 @@
+---
+title: "Live LLM-Enhanced Behavioral Decisions in a Stock-Flow Consistent Agent-Based Monetary Union"
+date: last-modified
+page-layout: article
+---
+
+Welcome to the manuscript workspace for the live LLM project. This Quarto site collects the pages, figures, and tables described in the working outline.
+
+- Build date: {{< meta date >}}
+- For the full blueprint, see [docs/blueprint.md](blueprint.md).
+- Upstream outline: `papers/outline.md`
+
+> This site will expand as we implement the milestone tasks (M0 through M11). The landing page stays short on purpose so new sections can surface in their own `.qmd` files.

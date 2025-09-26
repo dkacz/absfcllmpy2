@@ -1,0 +1,17 @@
+project:
+  type: website
+  output-dir: _site
+  title: "Live LLM-Enhanced Behavioral Decisions"
+
+website:
+  navbar:
+    left:
+      - text: "Home"
+        href: index.qmd
+      - text: "Blueprint"
+        href: blueprint.md
+
+format:
+  html:
+    theme: cosmo
+    toc: true
