@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bank credit decision request",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "tick",
+    "bank_id",
+    "country_id",
+    "capital",
+    "loan_supply",
+    "reserves",
+    "loan_book_value",
+    "deposits",
+    "non_allocated_money",
+    "borrower",
+    "guards"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0"]
+    },
+    "run_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "tick": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "bank_id": {
+      "type": "string",
+      "pattern": "^B\\d+n\\d+$"
+    },
+    "country_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "capital": {
+      "type": "number"
+    },
+    "loan_supply": {
+      "type": "number"
+    },
+    "reserves": {
+      "type": "number"
+    },
+    "loan_book_value": {
+      "type": "number"
+    },
+    "deposits": {
+      "type": "number"
+    },
+    "non_allocated_money": {
+      "type": "number"
+    },
+    "borrower": {
+      "type": "object",
+      "required": [
+        "firm_id",
+        "country_id",
+        "loan_request",
+        "leverage",
+        "relative_productivity",
+        "profit_rate"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "firm_id": {
+          "type": "string",
+          "pattern": "^F\\d+n\\d+$"
+        },
+        "country_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "loan_request": {
+          "type": "number"
+        },
+        "leverage": {
+          "type": "number"
+        },
+        "relative_productivity": {
+          "type": "number"
+        },
+        "profit_rate": {
+          "type": "number"
+        }
+      }
+    },
+    "guards": {
+      "type": "object",
+      "required": ["spread_min_bps", "spread_max_bps"],
+      "additionalProperties": false,
+      "properties": {
+        "spread_min_bps": {
+          "type": "number"
+        },
+        "spread_max_bps": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

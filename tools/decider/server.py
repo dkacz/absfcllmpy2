@@ -26,7 +26,10 @@ import signal
 import threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
+
+import jsonschema
 
 try:  # pragma: no cover - import style depends on execution context
     from cache import DecisionCache
@@ -55,6 +58,25 @@ STUB_RESPONSES: Dict[str, Dict[str, Any]] = {
     },
 }
 
+SCHEMA_DIR = Path(__file__).with_name("schemas")
+SCHEMA_FILES = {
+    "/decide/firm": "firm_request.schema.json",
+    "/decide/bank": "bank_request.schema.json",
+    "/decide/wage": "wage_request.schema.json",
+}
+
+
+def _load_validators() -> Dict[str, jsonschema.Draft7Validator]:
+    validators: Dict[str, jsonschema.Draft7Validator] = {}
+    for endpoint, filename in SCHEMA_FILES.items():
+        schema_path = SCHEMA_DIR / filename
+        with open(schema_path, "r") as handle:
+            schema = json.load(handle)
+        validators[endpoint] = jsonschema.Draft7Validator(schema)
+    return validators
+
+
+VALIDATORS = _load_validators()
 CACHE = DecisionCache()
 
 
@@ -133,6 +155,24 @@ def make_handler(stub_mode: bool):
                 LOGGER.warning("invalid payload: %s", error)
                 self._send_json(HTTPStatus.BAD_REQUEST, {"error": "invalid_json", "detail": error})
                 return
+
+            validator = VALIDATORS.get(self.path)
+            if validator is not None:
+                errors = sorted(validator.iter_errors(payload), key=lambda e: list(e.path))
+                if errors:
+                    detail = [
+                        {
+                            "path": list(err.path),
+                            "message": err.message,
+                        }
+                        for err in errors[:5]
+                    ]
+                    LOGGER.warning("schema validation failed: %s", detail)
+                    self._send_json(
+                        HTTPStatus.BAD_REQUEST,
+                        {"error": "invalid_request", "detail": detail}
+                    )
+                    return
 
             cache_key, cached_response = CACHE.get(self.path, payload)
             if cached_response is not None:
