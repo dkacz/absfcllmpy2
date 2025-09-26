@@ -17,6 +17,8 @@ website:
         href: conventions.md
       - text: "Decider Stub"
         href: methods/decider.md
+      - text: "Py2 Client"
+        href: methods/py2_client.md
 
 format:
   html:
