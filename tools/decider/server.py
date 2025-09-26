@@ -28,6 +28,11 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Dict, Optional, Tuple
 
+try:  # pragma: no cover - import style depends on execution context
+    from cache import DecisionCache
+except ImportError:  # pragma: no cover
+    from .cache import DecisionCache  # type: ignore
+
 LOGGER = logging.getLogger("decider.server")
 
 STUB_RESPONSES: Dict[str, Dict[str, Any]] = {
@@ -49,6 +54,8 @@ STUB_RESPONSES: Dict[str, Dict[str, Any]] = {
         "explanation": "stub: no wage adjustment"
     },
 }
+
+CACHE = DecisionCache()
 
 
 def parse_args() -> argparse.Namespace:
@@ -127,6 +134,13 @@ def make_handler(stub_mode: bool):
                 self._send_json(HTTPStatus.BAD_REQUEST, {"error": "invalid_json", "detail": error})
                 return
 
+            cache_key, cached_response = CACHE.get(self.path, payload)
+            if cached_response is not None:
+                LOGGER.info("cache hit %s key=%s", self.path, cache_key[:8])
+                self._send_json(HTTPStatus.OK, cached_response)
+                return
+            LOGGER.debug("cache miss %s key=%s", self.path, cache_key[:8])
+
             if not stub_mode:
                 LOGGER.error("non-stub mode requested but not implemented")
                 self._send_json(
@@ -142,8 +156,9 @@ def make_handler(stub_mode: bool):
                 return
 
             LOGGER.info("stub response for %s", self.path)
-            # Return a copy so callers cannot mutate the global template.
-            self._send_json(HTTPStatus.OK, json.loads(json.dumps(response)))
+            response_copy = json.loads(json.dumps(response))
+            CACHE.set(cache_key, response_copy)
+            self._send_json(HTTPStatus.OK, response_copy)
 
     return DeciderRequestHandler
 
