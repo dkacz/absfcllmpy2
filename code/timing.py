@@ -27,6 +27,7 @@ from aggregator import *
 #from aggregatorAle import *
 from time import *
 import random
+import os
 from bank import *
 from matchingCredit import *
 from matchingBonds import *
@@ -36,9 +37,42 @@ from printParameters import *
 from centralBankUnion import *
 from policy import *
 
+
+_LOG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'timing.log'))
+
+
+def _flag(value):
+    return 'on' if value else 'off'
+
+
+def log_llm_toggles(parameter):
+    """Append the current LLM toggle configuration to timing.log."""
+
+    timestamp = strftime('%Y-%m-%d %H:%M:%S', localtime())
+    line = (
+        '[%s] LLM toggles server=%s timeout_ms=%s batch=%s firm=%s bank=%s wage=%s\n'
+        % (
+            timestamp,
+            parameter.llm_server_url,
+            parameter.llm_timeout_ms,
+            _flag(parameter.llm_batch),
+            _flag(parameter.use_llm_firm_pricing),
+            _flag(parameter.use_llm_bank_credit),
+            _flag(parameter.use_llm_wage),
+        )
+    )
+    try:
+        handle = open(_LOG_PATH, 'a')
+        handle.write(line)
+        handle.close()
+    except Exception as exc:
+        print 'Warning: failed to write LLM toggle log (%s)' % exc
+    print line.strip()
+
 # parameter
 para=Parameter()
 para.directory()
+log_llm_toggles(para)
 printPa=PrintParameters(para.name,para.folder)
 
 for run in para.Lrun:

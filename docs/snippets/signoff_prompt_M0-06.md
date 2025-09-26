@@ -55,7 +55,7 @@ The table above is drawn from `data/_examples/sample_metrics.csv`; future Quarto
 
 ## Ethics & scope
 
-{{< include snippets/ethics_scope.md >}}
+{{< include ethics_scope.md >}}
 ```
 
 ### 3. Ethics & scope disclaimer (docs/snippets/ethics_scope.md)

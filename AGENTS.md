@@ -49,3 +49,10 @@ Run these from the repo root; keep the Decider stub in its own terminal while th
    ```
 
    - Output site lives under `docs/_site/`; cite figures from `figs/` and tables from `data/` in the manuscript pages.
+
+### LLM toggles & defaults
+- All toggles live in `code/parameter.py`. Defaults keep the legacy heuristics (`use_llm_* = False`).
+- `Parameter.llm_server_url` → default `http://127.0.0.1:8000` (matches the stub server).
+- `Parameter.llm_timeout_ms` → default `200` (ms); convert to seconds for the Py2 client (`timeout = ms / 1000.0`).
+- `Parameter.llm_batch` → default `False`; batch mode is a future milestone, leave off for now.
+- On every run `code/timing.py` appends the current toggle state to `timing.log` (and prints it to stdout) so artifacts show which configuration produced them.
