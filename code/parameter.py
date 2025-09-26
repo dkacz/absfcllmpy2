@@ -14,6 +14,13 @@ class Parameter:
           lastrun=49#
           self.Lrun=range(firstrun,lastrun+1)
           self.weSeedRun='yes'      
+          # LLM bridge configuration (defaults keep legacy heuristics)
+          self.use_llm_firm_pricing = False
+          self.use_llm_bank_credit = False
+          self.use_llm_wage = False
+          self.llm_server_url = 'http://127.0.0.1:8000'
+          self.llm_timeout_ms = 200
+          self.llm_batch = False
           # space and time
           self.ncycle=1001
           self.ncountry=5 #(K)
