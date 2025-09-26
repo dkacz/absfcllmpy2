@@ -64,6 +64,21 @@ _Response (line-wrapped for readability):_
 {"direction": "hold", "price_step": 0.0, "expectation_bias": 0.0, "explanation": "stub: hold price; baseline heuristic"}
 ```
 
+## Deterministic cache
+
+- Module: `tools/decider/cache.py`
+- Key = SHA‐256 of `{endpoint, payload, temperature=0.0}` (the server refuses any other temperature so cached decisions stay deterministic).
+- Responses are deep-copied on the way in/out so callers cannot mutate the stored values.
+- Log lines show hits and misses, for example:
+
+  ```text
+  INFO cache hit /decide/firm key=4f6c5a2b
+  ```
+
+  The `key` prefix (first 8 hex chars) is enough to correlate with logs when debugging.
+
+On every request the server checks the cache before generating a response. The first call produces a `cache miss …` debug entry; subsequent identical requests (same endpoint + payload) reuse the cached payload and skip the downstream call. Clearing the cache is as simple as restarting the stub (later milestones will expose an explicit CLI flag when live mode ships).
+
 ## Roadmap
 
 Upcoming M1 issues extend this stub:
