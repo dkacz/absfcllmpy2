@@ -26,9 +26,28 @@ import signal
 import threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any, Dict, Optional, Tuple
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 LOGGER = logging.getLogger("decider.server")
+
+SCHEMA_FILES = {
+    "/decide/firm": "schemas_firm.json",
+    "/decide/bank": "schemas_bank.json",
+    "/decide/wage": "schemas_wage.json",
+}
+
+
+def _load_schema(filename: str) -> Dict[str, Any]:
+    schema_path = Path(__file__).with_name(filename)
+    try:
+        with schema_path.open("r", encoding="utf-8") as handle:
+            return json.load(handle)
+    except FileNotFoundError as exc:  # pragma: no cover - configuration error
+        raise RuntimeError(f"Missing schema file: {schema_path}") from exc
+
+
+SCHEMAS = {endpoint: _load_schema(file) for endpoint, file in SCHEMA_FILES.items()}
 
 STUB_RESPONSES: Dict[str, Dict[str, Any]] = {
     "/decide/firm": {
@@ -81,7 +100,90 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
-def make_handler(stub_mode: bool):
+def _validate_payload(instance: Any, schema: Dict[str, Any], path: str = "payload") -> List[str]:
+    errors: List[str] = []
+
+    schema_type = schema.get("type")
+    if schema_type == "object":
+        if not isinstance(instance, dict):
+            errors.append(f"{path} must be an object")
+            return errors
+
+        for key in schema.get("required", []):
+            if key not in instance:
+                errors.append(f"{path}.{key} is required")
+
+        properties = schema.get("properties", {})
+        additional = schema.get("additionalProperties", True)
+        for key, value in instance.items():
+            if key in properties:
+                errors.extend(_validate_payload(instance[key], properties[key], f"{path}.{key}"))
+            else:
+                if additional is False:
+                    errors.append(f"{path}.{key} is not allowed")
+                elif isinstance(additional, dict):
+                    errors.extend(_validate_payload(instance[key], additional, f"{path}.{key}"))
+        return errors
+
+    if schema_type == "array":
+        if not isinstance(instance, list):
+            errors.append(f"{path} must be an array")
+            return errors
+        min_items = schema.get("minItems")
+        if min_items is not None and len(instance) < min_items:
+            errors.append(f"{path} must contain at least {min_items} items")
+        item_schema = schema.get("items")
+        if item_schema:
+            for index, item in enumerate(instance):
+                errors.extend(_validate_payload(item, item_schema, f"{path}[{index}]"))
+        return errors
+
+    if schema_type == "string":
+        if not isinstance(instance, str):
+            errors.append(f"{path} must be a string")
+            return errors
+        min_len = schema.get("minLength")
+        if min_len is not None and len(instance) < min_len:
+            errors.append(f"{path} must be at least {min_len} characters long")
+        enum = schema.get("enum")
+        if enum is not None and instance not in enum:
+            errors.append(f"{path} must be one of {enum}")
+        return errors
+
+    if schema_type == "integer":
+        if not (isinstance(instance, int) and not isinstance(instance, bool)):
+            errors.append(f"{path} must be an integer")
+            return errors
+        minimum = schema.get("minimum")
+        maximum = schema.get("maximum")
+        if minimum is not None and instance < minimum:
+            errors.append(f"{path} must be >= {minimum}")
+        if maximum is not None and instance > maximum:
+            errors.append(f"{path} must be <= {maximum}")
+        return errors
+
+    if schema_type == "number":
+        if not ((isinstance(instance, (int, float))) and not isinstance(instance, bool)):
+            errors.append(f"{path} must be a number")
+            return errors
+        minimum = schema.get("minimum")
+        maximum = schema.get("maximum")
+        if minimum is not None and instance < minimum:
+            errors.append(f"{path} must be >= {minimum}")
+        if maximum is not None and instance > maximum:
+            errors.append(f"{path} must be <= {maximum}")
+        return errors
+
+    if schema_type == "boolean":
+        if not isinstance(instance, bool):
+            errors.append(f"{path} must be a boolean")
+        return errors
+
+    # If the schema does not specify a known type, accept the value.
+    return errors
+
+
+def make_handler(stub_mode: bool, schemas: Dict[str, Dict[str, Any]]):
     """Factory that builds a request handler bound to the configuration."""
 
     class DeciderRequestHandler(BaseHTTPRequestHandler):
@@ -135,6 +237,17 @@ def make_handler(stub_mode: bool):
                 )
                 return
 
+            schema = schemas.get(self.path)
+            if schema is not None:
+                errors = _validate_payload(payload, schema)
+                if errors:
+                    LOGGER.warning("payload failed validation: %s", errors)
+                    self._send_json(
+                        HTTPStatus.BAD_REQUEST,
+                        {"error": "invalid_payload", "messages": errors}
+                    )
+                    return
+
             response = STUB_RESPONSES.get(self.path)
             if response is None:
                 LOGGER.warning("unknown path: %s", self.path)
@@ -149,7 +262,7 @@ def make_handler(stub_mode: bool):
 
 
 def run_server(host: str, port: int, stub_mode: bool, check_only: bool) -> int:
-    server = ThreadingHTTPServer((host, port), make_handler(stub_mode))
+    server = ThreadingHTTPServer((host, port), make_handler(stub_mode, SCHEMAS))
     LOGGER.info("Decider stub listening on http://%s:%s", host, port)
 
     # Graceful shutdown support for Ctrl+C / SIGTERM.

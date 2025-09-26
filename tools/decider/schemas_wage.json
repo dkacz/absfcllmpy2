@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WageDecisionRequest",
+  "type": "object",
+  "required": [
+    "request_id",
+    "tick",
+    "actor",
+    "agent_id",
+    "state",
+    "baseline"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tick": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "actor": {
+      "type": "string",
+      "enum": [
+        "worker",
+        "firm"
+      ]
+    },
+    "agent_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "state": {
+      "type": "object",
+      "required": [
+        "current_wage",
+        "target_wage"
+      ],
+      "properties": {
+        "current_wage": {"type": "number"},
+        "target_wage": {"type": "number"},
+        "vacancy_rate": {"type": "number"},
+        "unemployment_rate": {"type": "number"},
+        "productivity": {"type": "number"}
+      },
+      "additionalProperties": true
+    },
+    "bounds": {
+      "type": "object",
+      "properties": {
+        "wage_step_min": {"type": "number"},
+        "wage_step_max": {"type": "number"}
+      },
+      "additionalProperties": true
+    },
+    "baseline": {
+      "type": "object",
+      "required": [
+        "direction",
+        "wage_step"
+      ],
+      "properties": {
+        "direction": {
+          "type": "string",
+          "enum": [
+            "up",
+            "down",
+            "hold"
+          ]
+        },
+        "wage_step": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

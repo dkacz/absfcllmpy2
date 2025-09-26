@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FirmDecisionRequest",
+  "type": "object",
+  "required": [
+    "request_id",
+    "tick",
+    "firm_id",
+    "state",
+    "baseline"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tick": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "firm_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "state": {
+      "type": "object",
+      "required": [
+        "price",
+        "unit_cost",
+        "inventory",
+        "backlog"
+      ],
+      "properties": {
+        "price": {"type": "number"},
+        "unit_cost": {"type": "number"},
+        "inventory": {"type": "number"},
+        "backlog": {"type": "number"},
+        "expected_demand": {"type": "number"},
+        "target_inventory": {"type": "number"}
+      },
+      "additionalProperties": true
+    },
+    "bounds": {
+      "type": "object",
+      "properties": {
+        "price_step_min": {"type": "number"},
+        "price_step_max": {"type": "number"},
+        "expectation_bias_min": {"type": "number"},
+        "expectation_bias_max": {"type": "number"},
+        "price_floor": {"type": "number"}
+      },
+      "additionalProperties": true
+    },
+    "baseline": {
+      "type": "object",
+      "required": [
+        "direction",
+        "price_step",
+        "expectation_bias"
+      ],
+      "properties": {
+        "direction": {
+          "type": "string",
+          "enum": [
+            "up",
+            "down",
+            "hold"
+          ]
+        },
+        "price_step": {"type": "number"},
+        "expectation_bias": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

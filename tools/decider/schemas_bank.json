@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BankDecisionRequest",
+  "type": "object",
+  "required": [
+    "request_id",
+    "tick",
+    "bank_id",
+    "borrower_id",
+    "application",
+    "baseline"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tick": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "bank_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "borrower_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "application": {
+      "type": "object",
+      "required": [
+        "requested_credit",
+        "current_leverage",
+        "liquidity_ratio",
+        "capital_ratio"
+      ],
+      "properties": {
+        "requested_credit": {"type": "number"},
+        "current_leverage": {"type": "number"},
+        "liquidity_ratio": {"type": "number"},
+        "capital_ratio": {"type": "number"},
+        "collateral_value": {"type": "number"},
+        "sector": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "bounds": {
+      "type": "object",
+      "properties": {
+        "spread_bps_min": {"type": "integer"},
+        "spread_bps_max": {"type": "integer"},
+        "credit_limit_ratio_min": {"type": "number"},
+        "credit_limit_ratio_max": {"type": "number"}
+      },
+      "additionalProperties": true
+    },
+    "baseline": {
+      "type": "object",
+      "required": [
+        "approve",
+        "credit_limit_ratio",
+        "spread_bps"
+      ],
+      "properties": {
+        "approve": {"type": "boolean"},
+        "credit_limit_ratio": {"type": "number"},
+        "spread_bps": {"type": "integer"}
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
