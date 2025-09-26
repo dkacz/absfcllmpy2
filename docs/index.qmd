@@ -11,3 +11,20 @@ Welcome to the manuscript workspace for the live LLM project. This Quarto site c
 - Upstream outline: `papers/outline.md`
 
 > This site will expand as we implement the milestone tasks (M0 through M11). The landing page stays short on purpose so new sections can surface in their own `.qmd` files.
+
+## Artifact conventions
+
+For file naming, see the [Artifact Naming & Cross-Reference Conventions](conventions.md) page.
+
+![Example overlay from `_examples`](../figs/_examples/sample_overlay.png){#fig-example-overlay}
+
+::: {.table #tbl-example-metrics}
+| scenario | metric | value |
+| --- | --- | --- |
+| baseline | price_dispersion | 0.012 |
+| llm_on | price_dispersion | 0.009 |
+| baseline | inflation_volatility | 0.021 |
+| llm_on | inflation_volatility | 0.017 |
+:::
+
+The table above is drawn from `data/_examples/sample_metrics.csv`; future Quarto pages should cite the CSV when narrating results (for example, “see @tbl-example-metrics”).

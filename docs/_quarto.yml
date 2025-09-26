@@ -2,6 +2,9 @@ project:
   type: website
   output-dir: _site
   title: "Live LLM-Enhanced Behavioral Decisions"
+  resources:
+    - ../figs
+    - ../data
 
 website:
   navbar:
@@ -10,6 +13,8 @@ website:
         href: index.qmd
       - text: "Blueprint"
         href: blueprint.md
+      - text: "Conventions"
+        href: conventions.md
 
 format:
   html:
