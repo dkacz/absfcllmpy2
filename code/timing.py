@@ -16,6 +16,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# flake8: noqa
 from parameter import *
 from initialize import *
 from firm import *
@@ -36,6 +37,7 @@ from globalInnovation import *
 from printParameters import *
 from centralBankUnion import *
 from policy import *
+from llm_runtime import configure as configure_llm
 
 
 _LOG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'timing.log'))
@@ -77,6 +79,7 @@ def run_simulation(parameter=None, progress=True):
     para.directory()
     log_llm_toggles(para)
     printPa=PrintParameters(para.name,para.folder)
+    configure_llm(para)
 
     for run in para.Lrun:
         if para.weSeedRun=='yes':
@@ -125,14 +128,16 @@ def run_simulation(parameter=None, progress=True):
             print 'name ', para.name, '---- run', run, ' --- t ',  t
 
             maLaborCapital.bargaining(ite.McountryFirm,ite.McountryConsumer,\
-                                     aggrega.McountryUnemployement,aggrega.McountryPastUnemployement,aggrega.McountryYL,aggrega.McountryPastYL,t)
+                                 aggrega.McountryUnemployement,aggrega.McountryPastUnemployement,aggrega.McountryYL,aggrega.McountryPastYL,t)
 
             for country in ite.McountryFirm:
-                for firm in ite.McountryFirm[country]: 
-                    ite.McountryFirm[country][firm].learning()  
-                    #ite.McountryFirm[country][firm].wageOffered(aggrega.McountryAvPrice,\
+                for firm_key in ite.McountryFirm[country]: 
+                    firm_obj = ite.McountryFirm[country][firm_key]
+                    firm_obj.llm_tick = t
+                    firm_obj.learning()  
+                    #firm_obj.wageOffered(aggrega.McountryAvPrice,\
                     #                   aggrega.McountryUnemployement,para.nconsumer,aggrega.DcountryAvWage)          
-                    ite.McountryFirm[country][firm].productionDesired(ite.McountryBank,ite.McountryCentralBank,t,aggrega.McountryAvPrice)
+                    firm_obj.productionDesired(ite.McountryBank,ite.McountryCentralBank,t,aggrega.McountryAvPrice)
 
             maCredit.creditNetworkEvolution(ite.McountryFirm,ite.McountryBank,ite.McountryCentralBank,\
                                             gloInnovation.DglobalPhiNotTradable,gloInnovation.DglobalPhiTradable,aggrega.avPhiGlobalTradable)
@@ -145,8 +150,9 @@ def run_simulation(parameter=None, progress=True):
                                    ite.McountryBank,ite.McountryCentralBank,aggrega.McountryUnemployement)
 
             for country in ite.McountryFirm:
-                for firm in ite.McountryFirm[country]: 
-                    ite.McountryFirm[country][firm].effectiveSelling(gloInnovation.DglobalPhiNotTradable,aggrega.avPhiGlobalTradable,\
+                for firm_key in ite.McountryFirm[country]: 
+                    firm_obj = ite.McountryFirm[country][firm_key]
+                    firm_obj.effectiveSelling(gloInnovation.DglobalPhiNotTradable,aggrega.avPhiGlobalTradable,\
                                                aggrega.avPriceGlobalTradable,aggrega.McountryAvPriceNotTradable,gloInnovation.DglobalPhi,aggrega.McountryAvPrice)
 
             for country in ite.McountryConsumer:
