@@ -8,16 +8,9 @@
     "tick",
     "bank_id",
     "country_id",
-    "capital",
-    "loan_supply",
-    "reserves",
-    "loan_book_value",
-    "deposits",
-    "non_allocated_money",
     "borrower",
     "guards"
   ],
-  "additionalProperties": false,
   "properties": {
     "schema_version": {
       "type": "string",
@@ -62,12 +55,9 @@
       "required": [
         "firm_id",
         "country_id",
-        "loan_request",
-        "leverage",
-        "relative_productivity",
-        "profit_rate"
+        "loan_request"
       ],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "firm_id": {
           "type": "string",
@@ -94,7 +84,7 @@
     "guards": {
       "type": "object",
       "required": ["spread_min_bps", "spread_max_bps"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "spread_min_bps": {
           "type": "number"
