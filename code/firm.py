@@ -1,13 +1,10 @@
 # firm.py
 from mind import *
-#from technology import *
-#from pricing import *
-#from balance import *
 from lebalance import *
-#from innovation import *
 import csv
 from time import *
 import math
+from llm_runtime import firm_enabled, get_client, log_fallback
 
 class Firm:
       def __init__(self,ide,country,A,phi,Lcountry,w,folder,name,run,delta,dividendRate,xi,iota,\
@@ -49,6 +46,7 @@ class Firm:
           self.folder=folder
           self.name=name
           self.run=run
+          self.llm_tick=0
           self.omega=1*random.uniform(0,2*math.pi) 
           self.theta=theta
           self.jobDuration=jobDuration 
@@ -108,11 +106,153 @@ class Firm:
           
       def learning(self):       
           # Eq. 12-14 (Caiani et al. 2016): pricing/expec update pre-LLM.
-          if self.closing=='no':
-             self.mind.alphaParameterSmooth16(self.phi,self.w,self.inventory,self.pastInventory,\
-                                               self.price,self.productionEffective,self.xSold) 
-             self.pastPrice=self.price
-             self.price=self.mind.pSelling
+          if self.closing!='no':
+             return
+
+          previous_price=self.price
+          baseline=self._baseline_pricing_update()
+
+          if not firm_enabled():
+             return
+
+          client=get_client()
+          if client is None:
+             log_fallback('firm','client_unavailable')
+             self._apply_baseline(baseline)
+             return
+
+          payload=self._build_llm_payload(previous_price,baseline)
+          decision,error=client.decide_firm(payload)
+          if error:
+             reason='error'
+             detail=None
+             if isinstance(error,dict):
+                reason=error.get('reason','error')
+                detail=error.get('detail')
+             log_fallback('firm',reason,detail)
+             self._apply_baseline(baseline)
+             return
+
+          if not self._validate_llm_decision(decision):
+             log_fallback('firm','invalid_response')
+             self._apply_baseline(baseline)
+             return
+
+          self._apply_llm_decision(previous_price,baseline,decision)
+
+      def _baseline_pricing_update(self):
+          self.mind.alphaParameterSmooth16(self.phi,self.w,self.inventory,self.pastInventory,\
+                                           self.price,self.productionEffective,self.xSold)
+          self.pastPrice=self.price
+          self.price=self.mind.pSelling
+          unit_cost=self._unit_cost()
+          price_floor=max(unit_cost,(1.0+self.minMarkUp)*unit_cost)
+          return {
+              'price': self.price,
+              'expected_demand': getattr(self.mind,'xE',0.0),
+              'producing': getattr(self.mind,'xProducing',0.0),
+              'price_floor': price_floor,
+          }
+
+      def _apply_baseline(self,baseline):
+          self.price=baseline.get('price',self.price)
+          self.mind.pSelling=self.price
+          self.mind.xE=baseline.get('expected_demand',self.mind.xE)
+          self.mind.xProducing=baseline.get('producing',getattr(self.mind,'xProducing',0.0))
+
+      def _build_llm_payload(self,previous_price,baseline):
+          unit_cost=self._unit_cost()
+          price_floor=baseline.get('price_floor',unit_cost)
+          production_effective=getattr(self,'productionEffective',0.0)
+          expected=baseline.get('expected_demand',0.0)
+          payload={
+              'schema_version':'1.0',
+              'run_id':getattr(self,'run',0),
+              'tick':getattr(self,'llm_tick',0),
+              'country_id':self.country,
+              'firm_id':self.ide,
+              'price':previous_price,
+              'unit_cost':unit_cost,
+              'inventory':self.inventory,
+              'inventory_value':getattr(self,'inventoryValue',0.0),
+              'production_effective':production_effective,
+              'baseline':{
+                  'price':baseline.get('price'),
+                  'expected_demand':expected,
+              },
+              'guards':{
+                  'max_price_step':self.delta,
+                  'max_expectation_bias':self.delta,
+                  'price_floor':price_floor,
+              },
+          }
+          return payload
+
+      def _validate_llm_decision(self,decision):
+          if not isinstance(decision,dict):
+             return False
+          direction=decision.get('direction')
+          if direction not in ('up','down','hold'):
+             return False
+          try:
+             decision['price_step']=float(decision.get('price_step',0.0))
+          except (TypeError,ValueError):
+             return False
+          try:
+             decision['expectation_bias']=float(decision.get('expectation_bias',0.0))
+          except (TypeError,ValueError):
+             decision['expectation_bias']=0.0
+          return True
+
+      def _apply_llm_decision(self,previous_price,baseline,decision):
+          max_step=max(0.0,self.delta)
+          step=decision.get('price_step',0.0)
+          if step<0:
+             step=0.0
+          if step>max_step:
+             log_fallback('firm','price_step_clamped')
+             step=max_step
+
+          direction=decision.get('direction')
+          price_floor=baseline.get('price_floor',self._unit_cost())
+          baseline_price=baseline.get('price',previous_price)
+          if direction=='up':
+             new_price=previous_price*(1.0+step)
+          elif direction=='down':
+             new_price=previous_price*(1.0-step)
+          elif direction=='hold':
+             new_price=previous_price
+          else:
+             new_price=baseline_price
+          if new_price<price_floor:
+             new_price=price_floor
+          self.price=new_price
+          self.mind.pSelling=self.price
+
+          max_bias=max_step
+          bias=decision.get('expectation_bias',0.0)
+          if bias>max_bias:
+             log_fallback('firm','expectation_bias_clamped_high')
+             bias=max_bias
+          if bias<-max_bias:
+             log_fallback('firm','expectation_bias_clamped_low')
+             bias=-max_bias
+          baseline_expected=baseline.get('expected_demand',0.0)
+          target_expected=baseline_expected*(1.0+bias)
+          if target_expected<0.0:
+             target_expected=0.0
+          self.mind.xE=target_expected
+          theta=getattr(self.mind,'theta',0.0)
+          inventory=self.inventory
+          new_producing=target_expected*(1+theta)-inventory
+          if new_producing<0.0:
+             new_producing=0.0
+          self.mind.xProducing=new_producing
+
+      def _unit_cost(self):
+          if self.phi==0:
+             return 0.0
+          return self.w/float(self.phi)
 
       def changingInventory(self):
           if self.xOfferedEffective>=self.xSold:
