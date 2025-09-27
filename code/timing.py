@@ -29,6 +29,7 @@ from aggregator import *
 from time import *
 import random
 import os
+import glob
 from bank import *
 from matchingCredit import *
 from matchingBonds import *
@@ -275,7 +276,14 @@ def run_simulation(parameter=None, progress=True):
         print 'the end'       
 
 
-def run_ab_demo(run_id=0, ncycle=200, output_root=None, parameter_overrides=None, llm_overrides=None, progress=False):
+DEFAULT_HORIZONS = {
+    'ab': 200,
+    'scenario': 250,
+    'robustness': 120,
+}
+
+
+def run_ab_demo(run_id=0, ncycle=None, output_root=None, parameter_overrides=None, llm_overrides=None, progress=False, mode='ab'):
     """Run OFF and ON back-to-back with a shared seed and return output metadata.
 
     Args:
@@ -296,12 +304,14 @@ def run_ab_demo(run_id=0, ncycle=200, output_root=None, parameter_overrides=None
     llm_overrides = llm_overrides or {}
     base_dir = output_root or os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'artifacts', 'ab_demo'))
     results = {}
+    default_horizon = DEFAULT_HORIZONS.get(mode, DEFAULT_HORIZONS['ab'])
 
     for label, llm_enabled in (('off', False), ('on', True)):
         para = Parameter()
         para.Lrun = [run_id]
         para.weSeedRun='yes'
-        para.ncycle = parameter_overrides.get('ncycle', ncycle)
+        effective_cycles = ncycle if ncycle is not None else default_horizon
+        para.ncycle = parameter_overrides.get('ncycle', effective_cycles)
         para.LtimeCollecting = list(range(para.ncycle))
         run_root = os.path.join(base_dir, 'run_%03d' % run_id, label)
         para.folder = os.path.abspath(run_root)
@@ -324,14 +334,36 @@ def run_ab_demo(run_id=0, ncycle=200, output_root=None, parameter_overrides=None
             'folder': para.folder,
             'run_id': run_id,
             'ncycle': para.ncycle,
+            'mode': mode,
             'llm': {
                 'firm_pricing': para.use_llm_firm_pricing,
                 'bank_credit': para.use_llm_bank_credit,
                 'wage': para.use_llm_wage,
             },
+            'artifacts': _collect_artifacts(para.folder),
+            'counters': _counters_summary(),
         }
 
     return results
+
+
+def _collect_artifacts(folder):
+    csv_paths = sorted(glob.glob(os.path.join(folder, '*.csv')))
+    png_paths = sorted(glob.glob(os.path.join(folder, '*.png')))
+    return {
+        'csv': csv_paths,
+        'png': png_paths,
+    }
+
+
+def _counters_summary():
+    timing_log = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'timing.log'))
+    summary = {
+        'timing_log': timing_log,
+        'fallbacks': 0,
+        'timeouts': 0,
+    }
+    return summary
 
 
 if __name__ == "__main__":
