@@ -13,14 +13,7 @@
     "inventory",
     "inventory_value",
     "production_effective",
-    "production_capacity",
-    "sales_last_period",
-    "loan_demand",
-    "loan_received",
-    "net_worth",
-    "expected_wage",
-    "markup",
-    "min_markup",
+    "baseline",
     "guards"
   ],
   "additionalProperties": false,
@@ -86,6 +79,22 @@
     },
     "min_markup": {
       "type": "number"
+    },
+    "baseline": {
+      "type": "object",
+      "required": ["price", "expected_demand"],
+      "additionalProperties": false,
+      "properties": {
+        "price": {
+          "type": ["number", "null"]
+        },
+        "expected_demand": {
+          "type": "number"
+        },
+        "producing": {
+          "type": "number"
+        }
+      }
     },
     "guards": {
       "type": "object",
