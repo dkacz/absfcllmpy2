@@ -59,6 +59,14 @@ STUB_RESPONSES: Dict[str, Dict[str, Any]] = {
     },
 }
 
+BATCH_ENDPOINTS: Dict[str, str] = {
+    "/firm.decide.batch": "/decide/firm",
+    "/bank.decide.batch": "/decide/bank",
+    "/wage.decide.batch": "/decide/wage",
+}
+
+BATCH_MAX_ITEMS = 16
+
 SCHEMA_DIR = Path(__file__).with_name("schemas")
 SCHEMA_FILES = {
     "/decide/firm": "firm_request.schema.json",
@@ -183,26 +191,21 @@ def make_handler(stub_mode: bool, deadline_ms: int, tick_budget: int, stub_delay
             elapsed = time.monotonic() - start_time
             return elapsed > deadline_seconds
 
-        def _respond_timeout(self, start_time: float) -> None:
-            if deadline_seconds is None:
-                return
+        def _deadline_payload(self, start_time: float, endpoint: str) -> Dict[str, Any]:
             elapsed = time.monotonic() - start_time
             LOGGER.warning(
                 "deadline exceeded for %s (elapsed=%.1fms, limit=%dms)",
-                self.path,
+                endpoint,
                 elapsed * 1000.0,
                 deadline_ms,
             )
-            self._send_json(
-                HTTPStatus.GATEWAY_TIMEOUT,
-                {
-                    "error": "deadline_exceeded",
-                    "detail": {
-                        "elapsed_ms": int(elapsed * 1000.0),
-                        "deadline_ms": deadline_ms,
-                    },
+            return {
+                "error": "deadline_exceeded",
+                "detail": {
+                    "elapsed_ms": int(elapsed * 1000.0),
+                    "deadline_ms": deadline_ms,
                 },
-            )
+            }
 
         def _read_json(self) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
             length = int(self.headers.get("Content-Length", 0))
@@ -233,41 +236,26 @@ def make_handler(stub_mode: bool, deadline_ms: int, tick_budget: int, stub_delay
                 LOGGER.debug("unknown GET path %s", self.path)
                 self._send_json(HTTPStatus.NOT_FOUND, {"error": "not_found", "path": self.path})
 
-        def do_POST(self) -> None:  # noqa: N802 (HTTP verb name)
-            LOGGER.debug("POST %s", self.path)
-            start_time = time.monotonic()
-            payload, error = self._read_json()
+        def _handle_single(self, endpoint: str, payload: Dict[str, Any], start_time: float) -> Tuple[HTTPStatus, Dict[str, Any]]:
+            if deadline_seconds is not None and self._deadline_exceeded(start_time):
+                return HTTPStatus.GATEWAY_TIMEOUT, self._deadline_payload(start_time, endpoint)
 
-            if self._deadline_exceeded(start_time):
-                self._respond_timeout(start_time)
-                return
+            validator = VALIDATORS.get(endpoint)
+            if validator is None:
+                LOGGER.warning("unknown path: %s", endpoint)
+                return HTTPStatus.NOT_FOUND, {"error": "unknown_endpoint", "path": endpoint}
 
-            if error:
-                LOGGER.warning("invalid payload: %s", error)
-                self._send_json(HTTPStatus.BAD_REQUEST, {"error": "invalid_json", "detail": error})
-                return
-
-            validator = VALIDATORS.get(self.path)
-            if validator is not None:
-                errors = sorted(validator.iter_errors(payload), key=lambda e: list(e.path))
-                if errors:
-                    detail = [
-                        {
-                            "path": list(err.path),
-                            "message": err.message,
-                        }
-                        for err in errors[:5]
-                    ]
-                    LOGGER.warning("schema validation failed: %s", detail)
-                    self._send_json(
-                        HTTPStatus.BAD_REQUEST,
-                        {"error": "invalid_request", "detail": detail}
-                    )
-                    return
-
-            if self._deadline_exceeded(start_time):
-                self._respond_timeout(start_time)
-                return
+            errors = sorted(validator.iter_errors(payload), key=lambda e: list(e.path))
+            if errors:
+                detail = [
+                    {
+                        "path": list(err.path),
+                        "message": err.message,
+                    }
+                    for err in errors[:5]
+                ]
+                LOGGER.warning("schema validation failed: %s", detail)
+                return HTTPStatus.BAD_REQUEST, {"error": "invalid_request", "detail": detail}
 
             run_id = payload.get("run_id")
             tick = payload.get("tick")
@@ -277,60 +265,135 @@ def make_handler(stub_mode: bool, deadline_ms: int, tick_budget: int, stub_delay
                     LOGGER.warning(
                         "tick budget exceeded run_id=%s tick=%s limit=%s count=%s", run_id, tick, tick_budget, count
                     )
-                    self._send_json(
-                        HTTPStatus.TOO_MANY_REQUESTS,
-                        {
-                            "error": "tick_budget_exceeded",
-                            "detail": {
-                                "run_id": run_id,
-                                "tick": tick,
-                                "limit": tick_budget,
-                                "observed": count,
-                            },
+                    return HTTPStatus.TOO_MANY_REQUESTS, {
+                        "error": "tick_budget_exceeded",
+                        "detail": {
+                            "run_id": run_id,
+                            "tick": tick,
+                            "limit": tick_budget,
+                            "observed": count,
                         },
-                    )
-                    return
+                    }
 
-            if self._deadline_exceeded(start_time):
-                self._respond_timeout(start_time)
-                return
+            if deadline_seconds is not None and self._deadline_exceeded(start_time):
+                return HTTPStatus.GATEWAY_TIMEOUT, self._deadline_payload(start_time, endpoint)
 
-            cache_key, cached_response = CACHE.get(self.path, payload)
+            cache_key, cached_response = CACHE.get(endpoint, payload)
             if cached_response is not None:
-                LOGGER.info("cache hit %s key=%s", self.path, cache_key[:8])
-                self._send_json(HTTPStatus.OK, cached_response)
-                return
-            LOGGER.debug("cache miss %s key=%s", self.path, cache_key[:8])
+                LOGGER.info("cache hit %s key=%s", endpoint, cache_key[:8])
+                return HTTPStatus.OK, cached_response
+            LOGGER.debug("cache miss %s key=%s", endpoint, cache_key[:8])
 
             if not stub_mode:
                 LOGGER.error("non-stub mode requested but not implemented")
-                self._send_json(
-                    HTTPStatus.NOT_IMPLEMENTED,
-                    {"error": "not_implemented", "detail": "only stub mode is available"}
-                )
-                return
+                return HTTPStatus.NOT_IMPLEMENTED, {
+                    "error": "not_implemented",
+                    "detail": "only stub mode is available",
+                }
 
-            if stub_mode and stub_delay_seconds > 0:
+            if stub_delay_seconds > 0:
                 time.sleep(stub_delay_seconds)
-                if self._deadline_exceeded(start_time):
-                    self._respond_timeout(start_time)
-                    return
+                if deadline_seconds is not None and self._deadline_exceeded(start_time):
+                    return HTTPStatus.GATEWAY_TIMEOUT, self._deadline_payload(start_time, endpoint)
 
-            response = STUB_RESPONSES.get(self.path)
+            response = STUB_RESPONSES.get(endpoint)
             if response is None:
-                LOGGER.warning("unknown path: %s", self.path)
-                self._send_json(HTTPStatus.NOT_FOUND, {"error": "unknown_endpoint", "path": self.path})
-                return
+                LOGGER.warning("unknown path: %s", endpoint)
+                return HTTPStatus.NOT_FOUND, {"error": "unknown_endpoint", "path": endpoint}
 
-            LOGGER.info("stub response for %s", self.path)
+            LOGGER.info("stub response for %s", endpoint)
             response_copy = json.loads(json.dumps(response))
             CACHE.set(cache_key, response_copy)
 
-            if self._deadline_exceeded(start_time):
-                self._respond_timeout(start_time)
+            if deadline_seconds is not None and self._deadline_exceeded(start_time):
+                return HTTPStatus.GATEWAY_TIMEOUT, self._deadline_payload(start_time, endpoint)
+
+            return HTTPStatus.OK, response_copy
+
+        def _handle_batch(
+            self,
+            endpoint: str,
+            payload: Dict[str, Any],
+            start_time: float,
+        ) -> Tuple[HTTPStatus, Dict[str, Any]]:
+            if not isinstance(payload, dict):
+                LOGGER.warning("batch payload must be an object for %s", endpoint)
+                return HTTPStatus.BAD_REQUEST, {
+                    "error": "invalid_batch",
+                    "detail": "request body must be an object with a 'requests' list",
+                }
+
+            requests = payload.get("requests")
+            if not isinstance(requests, list):
+                LOGGER.warning("batch payload missing 'requests' list for %s", endpoint)
+                return HTTPStatus.BAD_REQUEST, {
+                    "error": "invalid_batch",
+                    "detail": "'requests' must be a list of decision payloads",
+                }
+
+            if len(requests) > BATCH_MAX_ITEMS:
+                LOGGER.warning(
+                    "batch payload too large for %s: %s items (limit %s)",
+                    endpoint,
+                    len(requests),
+                    BATCH_MAX_ITEMS,
+                )
+                return HTTPStatus.BAD_REQUEST, {
+                    "error": "batch_limit_exceeded",
+                    "detail": {
+                        "limit": BATCH_MAX_ITEMS,
+                        "observed": len(requests),
+                    },
+                }
+
+            results = []
+            for idx, item in enumerate(requests):
+                if deadline_seconds is not None and self._deadline_exceeded(start_time):
+                    return HTTPStatus.GATEWAY_TIMEOUT, self._deadline_payload(start_time, endpoint)
+                if not isinstance(item, dict):
+                    LOGGER.warning("batch entry %s is not an object for %s", idx, endpoint)
+                    return HTTPStatus.BAD_REQUEST, {
+                        "error": "invalid_batch_entry",
+                        "detail": {
+                            "index": idx,
+                            "message": "each entry must be an object",
+                        },
+                    }
+
+                status, body = self._handle_single(endpoint, item, start_time)
+                if status != HTTPStatus.OK:
+                    return status, {
+                        "error": "batch_item_failed",
+                        "detail": {
+                            "index": idx,
+                            "item_error": body,
+                        },
+                    }
+                results.append(json.loads(json.dumps(body)))
+
+            return HTTPStatus.OK, {"results": results, "count": len(results)}
+
+        def do_POST(self) -> None:  # noqa: N802 (HTTP verb name)
+            LOGGER.debug("POST %s", self.path)
+            start_time = time.monotonic()
+            payload, error = self._read_json()
+
+            if error:
+                LOGGER.warning("invalid payload: %s", error)
+                self._send_json(HTTPStatus.BAD_REQUEST, {"error": "invalid_json", "detail": error})
                 return
 
-            self._send_json(HTTPStatus.OK, response_copy)
+            if self.path in BATCH_ENDPOINTS:
+                base_endpoint = BATCH_ENDPOINTS[self.path]
+                status, body = self._handle_batch(base_endpoint, payload, start_time)
+            else:
+                status, body = self._handle_single(self.path, payload, start_time)
+
+            if status == HTTPStatus.GATEWAY_TIMEOUT and deadline_seconds is None:
+                status = HTTPStatus.INTERNAL_SERVER_ERROR
+                body = {"error": "internal_error", "detail": "deadline handling misconfigured"}
+
+            self._send_json(status, body)
 
     return DeciderRequestHandler
 
