@@ -25,6 +25,12 @@ python3 tools/decider/server.py --stub
 python3 tools/decider/server.py --stub --check
 ```
 
+Additional flags relevant for later milestones:
+
+- `--deadline-ms <int>` — per-request deadline (defaults to **200 ms**; use `<=0` to disable).
+- `--tick-budget <int>` — maximum calls allowed per `(run_id, tick)` pair (defaults to unlimited).
+- `--stub-delay-ms <int>` — testing helper that adds artificial latency to stub replies so you can exercise timeout behaviour.
+
 ## Health endpoint
 
 ```bash
@@ -120,6 +126,84 @@ curl -s -X POST -H "Content-Type: application/json" -d '{}' \
   The `key` prefix (first 8 hex chars) is enough to correlate with logs when debugging.
 
 On every request the server checks the cache before generating a response. The first call produces a `cache miss …` debug entry; subsequent identical requests (same endpoint + payload) reuse the cached payload and skip the downstream call. Clearing the cache is as simple as restarting the stub (later milestones will expose an explicit CLI flag when live mode ships).
+
+## Deadline & per-tick budget safeguards
+
+The stub enforces two guardrails so the live Decider cannot starve the Python 2 simulation:
+
+1. **Per-request deadline.** When `--deadline-ms` is positive, the handler returns HTTP 504 with code `{ "error": "deadline_exceeded" }` once the elapsed time crosses that bound. Use `--stub-delay-ms` to simulate slow replies during testing:
+
+   ```bash
+   # Terminal A — run the stub with a 10 ms deadline and a 20 ms artificial delay
+   python3 tools/decider/server.py --stub --port 8200 --deadline-ms 10 --stub-delay-ms 20
+   ```
+
+   ```bash
+   # Terminal B — trigger the timeout with a firm request
+   curl -s -X POST -H "Content-Type: application/json" \
+     -d '{
+           "schema_version": "1.0",
+           "run_id": 0,
+           "tick": 0,
+           "country_id": 0,
+           "firm_id": "F0n0",
+           "price": 1.0,
+           "unit_cost": 1.0,
+           "inventory": 0,
+           "inventory_value": 0,
+           "production_effective": 0,
+           "production_capacity": 10.0,
+           "sales_last_period": 0,
+           "loan_demand": 0,
+           "loan_received": 0,
+           "net_worth": 10,
+           "expected_wage": 1.0,
+           "markup": 0.0,
+           "min_markup": 0.0,
+           "guards": {
+             "max_price_step": 0.04,
+             "max_expectation_bias": 0.04,
+             "price_floor": 1.0
+           }
+         }' \
+     http://127.0.0.1:8200/decide/firm | jq
+   ```
+
+   Example response:
+
+   ```json
+   {
+     "error": "deadline_exceeded",
+     "detail": { "elapsed_ms": 21, "deadline_ms": 10 }
+   }
+   ```
+
+2. **Per-tick call budget.** When `--tick-budget` is greater than zero, the server tracks how many calls arrive for each `(run_id, tick)` pair and stops accepting new ones after the limit is reached. The over-budget request receives HTTP 429 with code `{ "error": "tick_budget_exceeded" }`:
+
+   ```bash
+   # Terminal A — limit to one call per tick
+   python3 tools/decider/server.py --stub --port 8200 --tick-budget 1
+   ```
+
+   ```bash
+   # Terminal B — first call succeeds, second call exceeds the budget
+   # (payload.json contains the firm request JSON from the example above)
+   curl -s -X POST -H "Content-Type: application/json" -d @payload.json \
+     http://127.0.0.1:8200/decide/firm > /dev/null
+   curl -s -X POST -H "Content-Type: application/json" -d @payload.json \
+     -o - -w "\nstatus=%{http_code}\n" http://127.0.0.1:8200/decide/firm
+   ```
+
+   Example body (status `429`):
+
+   ```json
+   {
+     "error": "tick_budget_exceeded",
+     "detail": { "run_id": 0, "tick": 0, "limit": 1, "observed": 1 }
+   }
+   ```
+
+Resetting the stub (Ctrl+C then relaunch) clears the per-tick counters and the deterministic cache.
 
 ## Roadmap
 

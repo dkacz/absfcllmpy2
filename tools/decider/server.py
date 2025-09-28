@@ -24,6 +24,7 @@ import json
 import logging
 import signal
 import threading
+import time
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -80,6 +81,36 @@ VALIDATORS = _load_validators()
 CACHE = DecisionCache()
 
 
+class TickBudgetTracker:
+    """Track per-tick call budgets in a thread-safe manner."""
+
+    def __init__(self, max_calls: int):
+        self.max_calls = max_calls
+        self._counts: Dict[Tuple[int, int], int] = {}
+        self._lock = threading.Lock()
+
+    def register(self, run_id: int, tick: int) -> Tuple[bool, int]:
+        """Record a call for ``(run_id, tick)`` and return allowance status.
+
+        Returns a tuple ``(allowed, count)`` where ``count`` is the recorded
+        number of calls for the pair *after* the increment. When the budget is
+        disabled (``max_calls <= 0``) the method short-circuits and reports
+        success.
+        """
+
+        if self.max_calls <= 0:
+            return True, 0
+
+        key = (run_id, tick)
+        with self._lock:
+            count = self._counts.get(key, 0)
+            if count >= self.max_calls:
+                return False, count
+            count += 1
+            self._counts[key] = count
+            return True, count
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Local Decider stub server")
     parser.add_argument("--host", default="127.0.0.1", help="Bind host (default: 127.0.0.1)")
@@ -96,6 +127,24 @@ def parse_args() -> argparse.Namespace:
         help="Serve deterministic stub responses (default behaviour)."
     )
     parser.add_argument(
+        "--deadline-ms",
+        type=int,
+        default=200,
+        help="Per-request deadline in milliseconds (<=0 disables the check)."
+    )
+    parser.add_argument(
+        "--tick-budget",
+        type=int,
+        default=0,
+        help="Maximum calls allowed per run/tick pair (0 disables the budget)."
+    )
+    parser.add_argument(
+        "--stub-delay-ms",
+        type=int,
+        default=0,
+        help="Testing helper: add artificial latency to stub replies (milliseconds)."
+    )
+    parser.add_argument(
         "--check",
         action="store_true",
         help="Run a one-shot health check and exit."
@@ -110,14 +159,50 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
-def make_handler(stub_mode: bool):
+def make_handler(stub_mode: bool, deadline_ms: int, tick_budget: int, stub_delay_ms: int):
     """Factory that builds a request handler bound to the configuration."""
+
+    deadline_seconds: Optional[float]
+    if deadline_ms <= 0:
+        deadline_seconds = None
+    else:
+        deadline_seconds = deadline_ms / 1000.0
+
+    stub_delay_seconds: float = max(stub_delay_ms, 0) / 1000.0
+    budget_tracker = TickBudgetTracker(tick_budget)
 
     class DeciderRequestHandler(BaseHTTPRequestHandler):
         server_version = "DeciderStub/0.1"
 
         def log_message(self, fmt: str, *args: Any) -> None:  # pragma: no cover - delegated to logging
             LOGGER.info("%s - %s", self.address_string(), fmt % args)
+
+        def _deadline_exceeded(self, start_time: float) -> bool:
+            if deadline_seconds is None:
+                return False
+            elapsed = time.monotonic() - start_time
+            return elapsed > deadline_seconds
+
+        def _respond_timeout(self, start_time: float) -> None:
+            if deadline_seconds is None:
+                return
+            elapsed = time.monotonic() - start_time
+            LOGGER.warning(
+                "deadline exceeded for %s (elapsed=%.1fms, limit=%dms)",
+                self.path,
+                elapsed * 1000.0,
+                deadline_ms,
+            )
+            self._send_json(
+                HTTPStatus.GATEWAY_TIMEOUT,
+                {
+                    "error": "deadline_exceeded",
+                    "detail": {
+                        "elapsed_ms": int(elapsed * 1000.0),
+                        "deadline_ms": deadline_ms,
+                    },
+                },
+            )
 
         def _read_json(self) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
             length = int(self.headers.get("Content-Length", 0))
@@ -150,7 +235,13 @@ def make_handler(stub_mode: bool):
 
         def do_POST(self) -> None:  # noqa: N802 (HTTP verb name)
             LOGGER.debug("POST %s", self.path)
+            start_time = time.monotonic()
             payload, error = self._read_json()
+
+            if self._deadline_exceeded(start_time):
+                self._respond_timeout(start_time)
+                return
+
             if error:
                 LOGGER.warning("invalid payload: %s", error)
                 self._send_json(HTTPStatus.BAD_REQUEST, {"error": "invalid_json", "detail": error})
@@ -174,6 +265,36 @@ def make_handler(stub_mode: bool):
                     )
                     return
 
+            if self._deadline_exceeded(start_time):
+                self._respond_timeout(start_time)
+                return
+
+            run_id = payload.get("run_id")
+            tick = payload.get("tick")
+            if isinstance(run_id, int) and isinstance(tick, int):
+                allowed, count = budget_tracker.register(run_id, tick)
+                if not allowed:
+                    LOGGER.warning(
+                        "tick budget exceeded run_id=%s tick=%s limit=%s count=%s", run_id, tick, tick_budget, count
+                    )
+                    self._send_json(
+                        HTTPStatus.TOO_MANY_REQUESTS,
+                        {
+                            "error": "tick_budget_exceeded",
+                            "detail": {
+                                "run_id": run_id,
+                                "tick": tick,
+                                "limit": tick_budget,
+                                "observed": count,
+                            },
+                        },
+                    )
+                    return
+
+            if self._deadline_exceeded(start_time):
+                self._respond_timeout(start_time)
+                return
+
             cache_key, cached_response = CACHE.get(self.path, payload)
             if cached_response is not None:
                 LOGGER.info("cache hit %s key=%s", self.path, cache_key[:8])
@@ -189,6 +310,12 @@ def make_handler(stub_mode: bool):
                 )
                 return
 
+            if stub_mode and stub_delay_seconds > 0:
+                time.sleep(stub_delay_seconds)
+                if self._deadline_exceeded(start_time):
+                    self._respond_timeout(start_time)
+                    return
+
             response = STUB_RESPONSES.get(self.path)
             if response is None:
                 LOGGER.warning("unknown path: %s", self.path)
@@ -198,13 +325,26 @@ def make_handler(stub_mode: bool):
             LOGGER.info("stub response for %s", self.path)
             response_copy = json.loads(json.dumps(response))
             CACHE.set(cache_key, response_copy)
+
+            if self._deadline_exceeded(start_time):
+                self._respond_timeout(start_time)
+                return
+
             self._send_json(HTTPStatus.OK, response_copy)
 
     return DeciderRequestHandler
 
 
-def run_server(host: str, port: int, stub_mode: bool, check_only: bool) -> int:
-    server = ThreadingHTTPServer((host, port), make_handler(stub_mode))
+def run_server(
+    host: str,
+    port: int,
+    stub_mode: bool,
+    check_only: bool,
+    deadline_ms: int,
+    tick_budget: int,
+    stub_delay_ms: int,
+) -> int:
+    server = ThreadingHTTPServer((host, port), make_handler(stub_mode, deadline_ms, tick_budget, stub_delay_ms))
     LOGGER.info("Decider stub listening on http://%s:%s", host, port)
 
     # Graceful shutdown support for Ctrl+C / SIGTERM.
@@ -246,7 +386,15 @@ def run_server(host: str, port: int, stub_mode: bool, check_only: bool) -> int:
 def main() -> None:
     args = parse_args()
     logging.basicConfig(level=getattr(logging, args.log_level.upper()), format="%(asctime)s %(levelname)s %(message)s")
-    exit_code = run_server(args.host, args.port, stub_mode=args.stub, check_only=args.check)
+    exit_code = run_server(
+        args.host,
+        args.port,
+        stub_mode=args.stub,
+        check_only=args.check,
+        deadline_ms=args.deadline_ms,
+        tick_budget=args.tick_budget,
+        stub_delay_ms=args.stub_delay_ms,
+    )
     raise SystemExit(exit_code)
 
 
