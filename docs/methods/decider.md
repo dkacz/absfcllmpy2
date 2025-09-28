@@ -205,6 +205,127 @@ The stub enforces two guardrails so the live Decider cannot starve the Python 2
 
 Resetting the stub (Ctrl+C then relaunch) clears the per-tick counters and the deterministic cache.
 
+## Batch decision endpoints
+
+When you need to amortise HTTP overhead, the stub exposes three batch routes that mirror the single-call endpoints:
+
+| Batch endpoint | Underlying single endpoint |
+| --- | --- |
+| `POST /firm.decide.batch` | `POST /decide/firm` |
+| `POST /bank.decide.batch` | `POST /decide/bank` |
+| `POST /wage.decide.batch` | `POST /decide/wage` |
+
+Constraints and behaviour:
+
+- Maximum **16** items per request; anything larger returns HTTP 400 (`batch_limit_exceeded`).
+- Payload schema is the same as the single-call version; the server validates every entry and stops on the first failure.
+- Deadlines and tick budgets apply to each item; if a single call would have timed out or tripped the budget, the batch returns the corresponding 504/429 with the failing index noted.
+- Responses reuse the deterministic cache, so repeated batches with the same payloads stay fast.
+
+Example: batch firm request (two items) and response
+
+```bash
+cat > firm_batch.json <<'JSON'
+{
+  "requests": [
+    {
+      "schema_version": "1.0",
+      "run_id": 0,
+      "tick": 0,
+      "country_id": 0,
+      "firm_id": "F0n0",
+      "price": 1.0,
+      "unit_cost": 1.0,
+      "inventory": 0,
+      "inventory_value": 0,
+      "production_effective": 0,
+      "production_capacity": 10.0,
+      "sales_last_period": 0,
+      "loan_demand": 0,
+      "loan_received": 0,
+      "net_worth": 10,
+      "expected_wage": 1.0,
+      "markup": 0.0,
+      "min_markup": 0.0,
+      "baseline": {
+        "price": 1.0,
+        "expected_demand": 0.0
+      },
+      "guards": {
+        "max_price_step": 0.04,
+        "max_expectation_bias": 0.04,
+        "price_floor": 1.0
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "run_id": 0,
+      "tick": 0,
+      "country_id": 0,
+      "firm_id": "F0n1",
+      "price": 1.1,
+      "unit_cost": 1.0,
+      "inventory": 2.0,
+      "inventory_value": 2.2,
+      "production_effective": 1.0,
+      "production_capacity": 9.5,
+      "sales_last_period": 0.8,
+      "loan_demand": 0,
+      "loan_received": 0,
+      "net_worth": 11,
+      "expected_wage": 1.0,
+      "markup": 0.1,
+      "min_markup": 0.0,
+      "baseline": {
+        "price": 1.05,
+        "expected_demand": 0.9
+      },
+      "guards": {
+        "max_price_step": 0.04,
+        "max_expectation_bias": 0.04,
+        "price_floor": 1.0
+      }
+    }
+  ]
+}
+JSON
+
+curl -s -X POST -H "Content-Type: application/json" \
+  --data @firm_batch.json \
+  http://127.0.0.1:8000/firm.decide.batch | python3 -m json.tool
+```
+
+Expected response:
+
+```json
+{
+  "count": 2,
+  "results": [
+    {
+      "direction": "hold",
+      "expectation_bias": 0.0,
+      "explanation": "stub: hold price; baseline heuristic",
+      "price_step": 0.0
+    },
+    {
+      "direction": "hold",
+      "expectation_bias": 0.0,
+      "explanation": "stub: hold price; baseline heuristic",
+      "price_step": 0.0
+    }
+  ]
+}
+```
+
+Errors bubble up with the index of the failing entry; for example, exceeding the 16-item limit returns:
+
+```json
+{
+  "error": "batch_limit_exceeded",
+  "detail": { "limit": 16, "observed": 17 }
+}
+```
+
 ## Roadmap
 
 With schemas in place, upcoming M1 issues extend this stub as follows:
