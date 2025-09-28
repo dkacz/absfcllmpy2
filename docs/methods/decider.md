@@ -68,26 +68,23 @@ curl -s -X POST \
         "tick": 0,
         "country_id": 0,
         "firm_id": "F0n0",
-        "price": 1.0,
+        "price": 1.05,
         "unit_cost": 1.0,
-        "inventory": 0,
-        "inventory_value": 0,
-        "production_effective": 0,
-        "production_capacity": 10.0,
-        "sales_last_period": 0,
-        "loan_demand": 0,
-        "loan_received": 0,
-        "net_worth": 10,
-        "expected_wage": 1.0,
-        "markup": 0.0,
-        "min_markup": 0.0,
+        "inventory": 2.5,
+        "inventory_value": 2.5,
+        "production_effective": 3.0,
+        "baseline": {
+          "price": 1.05,
+          "expected_demand": 3.2,
+          "producing": 2.8
+        },
         "guards": {
           "max_price_step": 0.04,
           "max_expectation_bias": 0.04,
           "price_floor": 1.0
         }
       }' \
-  http://127.0.0.1:8000/decide/firm
+  http://127.0.0.1:8000/decide/firm | jq
 ```
 
 ### Friendly validation errors
@@ -103,8 +100,8 @@ curl -s -X POST -H "Content-Type: application/json" -d '{}' \
 {
   "error": "invalid_request",
   "detail": [
-    { "path": [], "message": "'schema_version' is a required property" },
-    { "path": [], "message": "'run_id' is a required property" }
+    { "path": ["baseline"], "message": "'baseline' is a required property" },
+    { "path": ["guards"], "message": "'guards' is a required property" }
   ]
 }
 ```
