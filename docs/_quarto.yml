@@ -21,6 +21,8 @@ website:
         href: methods/decider.md
       - text: "Py2 Client"
         href: methods/py2_client.md
+      - text: "Fallback Semantics"
+        href: methods/fallbacks.qmd
 
 format:
   html:

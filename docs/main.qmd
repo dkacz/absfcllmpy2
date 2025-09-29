@@ -34,6 +34,7 @@ The introduction will situate the live LLM hooks within the Caiani agent-based, 
 - Python 3 Decider stub (`tools/decider/server.py --stub`) responds on `http://127.0.0.1:8000`; toggles live in `code/parameter.py`.
 - Py2 client wiring is covered in `docs/methods/py2_client.md`, including timeout conversion and JSON-schema enforcement.
 - Bank, firm, and wage prompts share the qualitative pattern recorded in `docs/methods/decider.md`; the cache design (Issue #68) will be summarized here when ready.
+- Baseline vs LLM fallback semantics (timeouts, guard clamps, logging) are detailed in `docs/methods/fallbacks.qmd` (Issue #13).
 
 ## Simulation workflow {#sec-methods-sim}
 
