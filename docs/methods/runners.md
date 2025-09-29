@@ -23,8 +23,8 @@ Key defaults:
   `output_root`.
 - `mode` selects the default horizon: `"ab"` → 200 ticks, `"scenario"` → 250,
   `"robustness"` → 120. Pass `ncycle` (or set `parameter_overrides['ncycle']`) to override.
-- `parameter_overrides` lets you tweak `Parameter` attributes. Example: tighten firm guards
-  by halving `delta` before a robustness sweep.
+- `parameter_overrides` lets you tweak `Parameter` attributes. Example: tighten firm guards by
+  setting `firm_guard_preset="tight"` (or `llm_guard_preset` to affect all blocks).
 - `llm_overrides` applies only to the ON run so you can exercise a subset of hooks.
 - The returned metadata now includes:
   - `artifacts`: lists of CSV/PNG files generated under each run folder.
@@ -37,11 +37,10 @@ Key defaults:
 
 ```python
 from code.timing import run_ab_demo
-from code.parameter import Parameter
 
 tight = {
     'ncycle': 250,  # optional, matches mode='scenario'
-    'delta': 0.5 * Parameter().delta,
+    'firm_guard_preset': 'tight',
 }
 
 result = run_ab_demo(
@@ -56,11 +55,9 @@ print(result['on']['artifacts']['csv'])
 **Robustness sweep (loose guards + firm/bank LLM)**
 
 ```python
-from code.parameter import Parameter
-
 loose = {
     'ncycle': 120,
-    'delta': 1.5 * Parameter().delta,
+    'llm_guard_preset': 'loose',
 }
 
 result = run_ab_demo(
