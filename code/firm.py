@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # firm.py
 from mind import *
 from lebalance import *
