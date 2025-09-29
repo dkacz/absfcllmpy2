@@ -71,3 +71,25 @@ print(result['off']['ncycle'], result['on']['llm'])
 
 > Both runs call into the legacy simulation directly; expect stdout noise from the
 > Python 2 model until we stabilize logging during Milestone M6.
+
+### Stub dataset for previews
+
+When you need a lightweight preview without waiting for the full 240-tick run, use the
+20-tick baseline bundle under `docs/stubs/`:
+
+- `docs/stubs/micro_run_core_metrics.csv` — summary values for the short run.
+- `docs/stubs/micro_run_metric_series.csv` — long-form time series for the headline metrics.
+- `docs/stubs/micro_run_manifest.json` — metadata (seed, toggle state, file list).
+
+Table&nbsp;1 shows the opening slices from `docs/stubs/micro_run_metric_series.csv`. Copy this
+file into your Quarto chunks when you need a fast table or line chart placeholder.
+
+| Tick | Metric       | Value              |
+|-----:|--------------|--------------------|
+| 0    | avg_spread   | 0.0000000000000000 |
+| 1    | avg_spread   | 0.0000000000000000 |
+| 2    | avg_spread   | 0.0009257498165182 |
+| 3    | avg_spread   | 0.0010199750196084 |
+| 4    | avg_spread   | 0.0011122849349782 |
+
+Table 1. Sample output pulled from `docs/stubs/micro_run_metric_series.csv`.

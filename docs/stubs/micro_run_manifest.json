@@ -1,0 +1,18 @@
+{
+  "description": "20-tick baseline stub run (LLM hooks disabled)", 
+  "files": {
+    "core_metrics": "micro_run_core_metrics.csv", 
+    "metric_series": "micro_run_metric_series.csv", 
+    "raw": [
+      "micro_run_raw/stub_micror0AggData.csv", 
+      "micro_run_raw/stub_micror0Para.csv"
+    ]
+  }, 
+  "llm": {
+    "bank_credit": false, 
+    "firm_pricing": false, 
+    "wage": false
+  }, 
+  "ncycle": 20, 
+  "seed": 0
+}
