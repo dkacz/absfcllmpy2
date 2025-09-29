@@ -17,6 +17,8 @@ website:
         href: blueprint.md
       - text: "Conventions"
         href: conventions.md
+      - text: "Repro Manual"
+        href: repro_manual.qmd
       - text: "Decider Stub"
         href: methods/decider.md
       - text: "Py2 Client"
