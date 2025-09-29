@@ -140,6 +140,11 @@ def run_simulation(parameter=None, progress=True):
                     #                   aggrega.McountryUnemployement,para.nconsumer,aggrega.DcountryAvWage)          
                     firm_obj.productionDesired(ite.McountryBank,ite.McountryCentralBank,t,aggrega.McountryAvPrice)
 
+            for country in ite.McountryBank:
+                for bank_key in ite.McountryBank[country]:
+                    bank_obj = ite.McountryBank[country][bank_key]
+                    bank_obj.llm_tick = t
+
             maCredit.creditNetworkEvolution(ite.McountryFirm,ite.McountryBank,ite.McountryCentralBank,\
                                             gloInnovation.DglobalPhiNotTradable,gloInnovation.DglobalPhiTradable,aggrega.avPhiGlobalTradable)
 

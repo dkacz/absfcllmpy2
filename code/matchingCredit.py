@@ -85,11 +85,17 @@ class MatchingCredit:
                                  leverage=self.MloanDemand[i][5] 
                                  relPhi=self.MloanDemand[i][6]
                                  countryBank=self.MloanSupply[j][2] 
-                                 probLoan=McountryBank[countryBank][ideBank].computeProbProvidingLoan(leverage,relPhi)
-                                 loanOffered=min(maxLoanFirm,supply) 
+                                 bank_obj=McountryBank[countryBank][ideBank]
+                                 firm_obj=McountryFirm[countryFirm][ideFirm]
+                                 loan_request=demand
+                                 decision=bank_obj.credit_decision(firm_obj,leverage,relPhi,loan_request,supply,maxLoanFirm)
+                                 probLoan=decision.get('probability',0.0)
+                                 loanOffered=decision.get('credit_limit',0.0)
+                                 if not decision.get('approve',True):
+                                    loanOffered=0.0
                                  a=random.uniform(0,1)
                                  if a>probLoan:
-                                    loanOffered=0                                 
+                                    loanOffered=0.0
                                  if demand>=loanOffered:
                                     loan=loanOffered
                                  if demand<loanOffered:
@@ -101,7 +107,7 @@ class MatchingCredit:
                                     self.MloanSupply[j][4]=self.MloanSupply[j][4]+loan                                    
                                     if  ideBank!=McountryBank[countryBank][ideBank].ide:
                                         print 'stop', stop   
-                                    interestRate=McountryBank[countryBank][ideBank].computeInterestRate(leverage)
+                                    interestRate=decision.get('interest_rate',bank_obj.computeInterestRate(leverage))
                                     interestRateDeposit=McountryBank[countryBank][ideBank].rDeposit 
                                     McountryFirm[countryFirm][ideFirm].receavingLoan(ideBank,loan,interestRate,\
                                                                      interestRateDeposit,countryBank,McountryBank,McountryCentralBank)
@@ -132,4 +138,3 @@ class MatchingCredit:
                               
                              
        
-

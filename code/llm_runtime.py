@@ -43,6 +43,11 @@ def firm_enabled():
     return bool(parameter and parameter.use_llm_firm_pricing)
 
 
+def bank_enabled():
+    parameter = get_parameter()
+    return bool(parameter and parameter.use_llm_bank_credit)
+
+
 def log_fallback(block, reason, detail=None):
     message = '[LLM %s] fallback: %s' % (block, reason)
     if detail:
@@ -50,4 +55,4 @@ def log_fallback(block, reason, detail=None):
     print message
 
 
-__all__ = ['configure', 'get_client', 'get_parameter', 'firm_enabled', 'log_fallback']
+__all__ = ['configure', 'get_client', 'get_parameter', 'firm_enabled', 'bank_enabled', 'log_fallback']
