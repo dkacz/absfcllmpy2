@@ -1,0 +1,94 @@
+---
+title: "Baseline vs LLM Fallback Semantics"
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+# Baseline vs LLM Fallback Semantics {#sec-fallbacks}
+
+This page explains how the Python 2 Caiani simulation decides whether to keep a Large Language Model (LLM) suggestion or revert to the legacy baseline heuristics. The same guardrails that protect stock-flow consistency also ensure the bridge remains a drop-in augmentation: whenever the LLM is unavailable, slow, or proposes an invalid adjustment, the baseline path continues to drive the simulation.
+
+## Bridge architecture
+
+- **Processes.** The simulation runs in Python 2, while the Decider service is a Python 3 microservice. The thin bridge client in `code/llm_bridge_client.py` serialises agent state to JSON, posts it to the Decider, and returns a `(decision, error)` tuple to the caller.
+- **Toggles.** The `Parameter` object (`code/parameter.py`) controls whether each block (firm, bank, wage) delegates to the LLM. All `use_llm_*` flags default to `False`, so the model behaves exactly like the baseline until an experiment enables them.
+- **Stub service.** During development the Decider runs in stub mode:
+
+```bash
+python3 tools/decider/server.py --stub
+```
+
+  The stub enforces per-request deadlines, schema validation, and optional call budgets so we can test failure paths deterministically.
+
+## Configuration and timeouts
+
+`code/llm_runtime.py` initialises the shared bridge client using the configured server URL (default `http://127.0.0.1:8000`) and converts `llm_timeout_ms` into seconds. The default timeout is 200 ms, matching the Milestone M1 agreement. When a request exceeds the deadline, `LLMBridgeClient` returns `(None, {"reason": "timeout", ...})`, the agent logs the fallback, and baseline heuristics execute for that tick. Other runtime knobs, such as guard presets, are also resolved here so they remain consistent across agents.
+
+## Guardrails and presets
+
+Guardrails ensure LLM suggestions remain inside the stock-flow safe region before state updates occur.
+
+- **Firms.** Price moves are capped by `max_price_step` (default 0.04) and expectation bias by `max_expectation_bias` (default 0.04). Every decision is checked against the unit-cost floor `p >= w/phi`.
+- **Banks.** Spread decisions are clamped between minimum and maximum basis points; credit limits cannot exceed either the loan request or the bank-specific limit.
+- **Wages.** Wage steps share the 0.04 cap.
+
+Guard presets (`llm_guard_preset`, `firm_guard_preset`, etc.) scale those caps: `baseline` keeps the defaults (1.0x), `tight` halves them, and `loose` applies a 1.5x factor. Even when a decision survives validation, guard clamps may still trim it to the safe region; the agent records that trim and continues.
+
+## Fallback pipeline
+
+Agent hooks follow the same decision tree for every LLM call. The code excerpts in `code/firm.py` and `code/bank.py` show the pattern.
+
+1. **LLM disabled or client unavailable.** If the relevant `use_llm_*` flag is off, or if `get_client()` cannot create a bridge client, the hook logs `client_unavailable` and applies the baseline result computed earlier in the tick.
+2. **Feature packing errors.** Payload builders (for example `Firm._build_llm_payload`) refuse to call the Decider if required inputs are missing or non-finite. The hook logs `feature_pack_missing` and keeps the baseline.
+3. **Network and transport errors.** `LLMBridgeClient._post_json` catches timeouts, connection failures, HTTP status codes other than 200, JSON decode errors, and any other exception. Each error becomes a tuple `(None, error_dict)` that includes a `reason` key. The hook logs the reason and runs the baseline logic.
+4. **Invalid response schema.** After a successful request, the agent validates the response (e.g., `Bank._validate_llm_decision`). If the schema check fails (missing keys, wrong types)-the hook logs `invalid_response` and applies the baseline values.
+5. **Guard clamps.** When the decision is valid but exceeds guard caps, the hook clamps the values, logs the specific clamp (e.g., `price_step_clamped`), and proceeds with the guarded version.
+
+### Error reasons returned by the bridge client
+
+| Reason | Description |
+| --- | --- |
+| `timeout` | Request exceeded `llm_timeout_ms`; common when the server or LLM is slow. |
+| `connection_error` | Network failure establishing the connection (server offline, refused). |
+| `http_error` | Decider returned a non-200 status (e.g., schema rejection, tick-budget enforcement). |
+| `decode_error` | Response body could not be parsed as JSON. |
+| `unexpected_error` | Catch-all for any other exception during the request lifecycle. |
+
+## Logging and telemetry
+
+`code/llm_runtime.py` exposes `log_fallback(block, reason, detail=None)`, which prints standardized messages such as:
+
+```
+[LLM firm] fallback: timeout (request to http://127.0.0.1:8000/decide/firm exceeded the configured timeout)
+[LLM bank] fallback: invalid_response
+```
+
+These messages give test harnesses and notebooks a lightweight way to count fallbacks. Agents such as the bank also persist structured state (`_llm_bank_last_decision`) so downstream analysis can tell whether the LLM was applied (`used_llm`) and why a fallback occurred (`fallback_reason`). Additionally, every simulation run appends the active toggle configuration to `timing.log`, making it easy to reconstruct the execution context for each artifact.
+
+## Testing the fallback paths
+
+The Decider stub exposes switches that let you exercise each fallback without touching production code:
+
+1. **Connection errors.** Do not start the stub and run a short simulation. Every LLM call produces a `connection_error` fallback.
+2. **Timeouts.** Add artificial latency greater than the configured timeout:
+
+   ```bash
+   python3 tools/decider/server.py --stub --stub-delay-ms 300
+   ```
+
+   The client reports `timeout`, and the simulation keeps the baseline decision.
+
+3. **Tick budgets and HTTP errors.** Start the stub with a per-tick budget:
+
+   ```bash
+   python3 tools/decider/server.py --stub --tick-budget 5
+   ```
+
+   Additional calls in the same `(run_id, tick)` pair receive HTTP 503 responses, which the client reports as `http_error` fallbacks.
+
+4. **Schema violations.** Edit the stub to return an invalid field (for example, drop `approve` from the bank decision). The agent logs `invalid_response` and reverts to baseline.
+
+Follow the smoke-run and A/B demo commands in `docs/repro_manual.qmd` to regenerate artifacts after each test. Finish by running `quarto render docs` so the new page and logs appear in the rendered site.
