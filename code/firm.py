@@ -122,7 +122,11 @@ class Firm:
              self._apply_baseline(baseline)
              return
 
-          payload=self._build_llm_payload(previous_price,baseline,guard_caps)
+          payload, feature_error=self._build_llm_payload(previous_price,baseline,guard_caps)
+          if payload is None:
+             log_fallback('firm','feature_pack_missing',feature_error)
+             self._apply_baseline(baseline)
+             return
           decision,error=client.decide_firm(payload)
           if error:
              reason='error'
@@ -162,12 +166,31 @@ class Firm:
           self.mind.xProducing=baseline.get('producing',getattr(self.mind,'xProducing',0.0))
 
       def _build_llm_payload(self,previous_price,baseline,guard_caps):
+          """Construct the Decider payload including guard caps and feature pack.
+
+          Feature ranges (pre-decision state):
+              - ``inv_ratio`` ≥ 0: inventory ÷ max(expected demand, 1e-9).
+              - ``backlog`` ≥ 0: max(0, expected demand − offered supply).
+              - ``delta_price_comp`` ∈ ℝ: baseline price − last-period price.
+              - ``last_sales`` ≥ 0: quantity sold in the previous tick.
+              - ``capacity`` ≥ 0: effective production carried from the last tick.
+              - ``liquidity`` ∈ ℝ: working capital flagged by the accounting block.
+              - ``sector_code`` ∈ {``tradable``, ``non_tradable``}.
+          Missing/non-finite values trigger a baseline fallback.
+          """
+
           unit_cost=self._unit_cost()
           price_floor=baseline.get('price_floor',unit_cost)
           production_effective=getattr(self,'productionEffective',0.0)
-          expected=baseline.get('expected_demand',0.0)
+          expected=self._safe_numeric(baseline.get('expected_demand',0.0))
+          if expected is None:
+             expected=0.0
           max_step=guard_caps.get('max_price_step',0.04)
           max_bias=guard_caps.get('max_expectation_bias',0.04)
+          baseline_price=baseline.get('price',previous_price)
+          features,missing=self._compute_feature_pack(previous_price,baseline_price,expected,production_effective)
+          if missing:
+             return None, ','.join(missing)
           payload={
               'schema_version':'1.0',
               'run_id':getattr(self,'run',0),
@@ -175,12 +198,12 @@ class Firm:
               'country_id':self.country,
               'firm_id':self.ide,
               'price':previous_price,
-              'unit_cost':unit_cost,
+              'unit_cost':features['unit_cost'],
               'inventory':self.inventory,
               'inventory_value':getattr(self,'inventoryValue',0.0),
               'production_effective':production_effective,
               'baseline':{
-                  'price':baseline.get('price'),
+                  'price':baseline_price,
                   'expected_demand':expected,
               },
               'guards':{
@@ -189,7 +212,16 @@ class Firm:
                   'price_floor':price_floor,
               },
           }
-          return payload
+          payload.update({
+              'inv_ratio':features['inv_ratio'],
+              'backlog':features['backlog'],
+              'delta_price_comp':features['delta_price_comp'],
+              'last_sales':features['last_sales'],
+              'capacity':features['capacity'],
+              'liquidity':features['liquidity'],
+              'sector_code':features['sector_code'],
+          })
+          return payload, None
 
       def _validate_llm_decision(self,decision):
           if not isinstance(decision,dict):
@@ -257,6 +289,69 @@ class Firm:
           if self.phi==0:
              return 0.0
           return self.w/float(self.phi)
+
+      def _compute_feature_pack(self,previous_price,baseline_price,expected,production_effective):
+          inventory=max(0.0,getattr(self,'inventory',0.0))
+          offered=getattr(self,'xOfferedEffective',production_effective+inventory)
+          offered=max(0.0,offered)
+          inv_ratio=0.0
+          if expected>0:
+             inv_ratio=inventory/expected
+          backlog=max(0.0,expected-offered)
+          delta_price_comp=baseline_price-previous_price
+          last_sales=max(0.0,getattr(self,'xSold',0.0))
+          capacity=max(0.0,production_effective)
+          liquidity=self._safe_numeric(getattr(self,'ResourceAvailable',0.0))
+          if liquidity is None:
+             liquidity=self._safe_numeric(getattr(self,'sellingMoney',0.0))
+          unit_cost=self._safe_numeric(self._unit_cost())
+          inv_ratio=self._safe_numeric(inv_ratio)
+          backlog=self._safe_numeric(backlog)
+          delta_price_comp=self._safe_numeric(delta_price_comp)
+          last_sales=self._safe_numeric(last_sales)
+          capacity=self._safe_numeric(capacity)
+          sector_code=self._resolve_sector_code()
+          numeric_map={
+              'unit_cost':unit_cost,
+              'inv_ratio':inv_ratio,
+              'backlog':backlog,
+              'delta_price_comp':delta_price_comp,
+              'last_sales':last_sales,
+              'capacity':capacity,
+              'liquidity':liquidity,
+          }
+          missing=[label for (label,value) in numeric_map.items() if value is None]
+          if sector_code is None:
+             missing.append('sector_code')
+          if missing:
+             return {}, missing
+          return {
+              'unit_cost':numeric_map['unit_cost'],
+              'inv_ratio':numeric_map['inv_ratio'],
+              'backlog':numeric_map['backlog'],
+              'delta_price_comp':numeric_map['delta_price_comp'],
+              'last_sales':numeric_map['last_sales'],
+              'capacity':numeric_map['capacity'],
+              'liquidity':numeric_map['liquidity'],
+              'sector_code':sector_code,
+          }, []
+
+      def _resolve_sector_code(self):
+          category=getattr(self,'tradable',None)
+          if category=='yes':
+             return 'tradable'
+          if category=='no':
+             return 'non_tradable'
+          return None
+
+      def _safe_numeric(self,value):
+          try:
+             numeric=float(value)
+          except (TypeError,ValueError):
+             return None
+          if math.isnan(numeric) or math.isinf(numeric):
+             return None
+          return numeric
 
       def changingInventory(self):
           if self.xOfferedEffective>=self.xSold:
