@@ -108,6 +108,13 @@ The Writer’s `papers/outline.md` must mirror this blueprint: IMRaD sections, t
 - Horizons: A/B comparisons 200 periods; scenario demos 250; robustness demos 120.  
 - Baseline parameter files stay untouched; horizons and scenario tweaks are passed as runtime overrides in the A/B runner function.
 
+### Horizon stability check (HSC) — one-off QA
+A single 1001-tick baseline (OFF only, seed=0) validates these short-horizon choices. Metrics are recomputed on tail
+windows `T ∈ {120,160,200,240,280,320,360,400,500,750,1000}`. Stability requires `|m(T) - m(T+40)| / |m(T+40)| ≤ 5%`
+(2% for average spread) for two consecutive steps. If `T = 200` passes, manuscript horizons stay A/B = 200, scenarios = 250,
+robustness = 120; otherwise we raise only the failing block to the smallest `T` that passes. Artifacts: `data/reference/hsc_stability_table.csv`,
+`figs/reference/hsc_convergence_<metric>.png`, and `docs/stability.qmd`.
+
 **Guard-stress presets (robustness demos only)**  
 - Tight: `δ_price = 0.5x`, `δ_wage = 0.5x`, `bp_min += 50bp`, monotonicity tolerance `ε = 0`.  
 - Loose: `δ_price = 1.5x`, `δ_wage = 1.5x`, `bp_min` unchanged, monotonicity tolerance `ε = 1e-6`.  

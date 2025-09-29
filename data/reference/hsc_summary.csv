@@ -1,0 +1,8 @@
+metric,recommended_window,note
+avg_spread,160,
+credit_growth,,No stable window ≤1000 (τ=5%)
+credit_growth_per_tick,,No stable window ≤1000 (τ=2%)
+fill_rate,120,
+inflation,120,
+price_dispersion,240,
+wage_dispersion,240,

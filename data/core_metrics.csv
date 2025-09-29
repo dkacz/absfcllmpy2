@@ -1,0 +1,13 @@
+scenario,metric,value
+llm_on,price_dispersion,0.024564519143809378
+llm_on,avg_spread,0.0015945341376612538
+llm_on,fill_rate,0.8896482793904481
+llm_on,wage_dispersion,0.01963069865046551
+llm_on,credit_growth,0.0
+llm_on,inflation_volatility,0.006427880449285039
+baseline,price_dispersion,0.024564519143809378
+baseline,avg_spread,0.0015945341376612538
+baseline,fill_rate,0.8896482793904481
+baseline,wage_dispersion,0.01963069865046551
+baseline,credit_growth,0.0
+baseline,inflation_volatility,0.006427880449285039

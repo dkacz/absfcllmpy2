@@ -1,0 +1,36 @@
+---
+title: "Horizon Stability Check"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+## Overview
+
+We ran a single 1001-tick baseline (OFF only, seed=0) to validate the short-horizon settings outlined in `docs/blueprint.md`. For each manuscript metric we recomputed tail-window estimates using windows `T ∈ {120,160,200,240,280,320,360,400,500,750,1000}`. A window is considered stable when two consecutive step comparisons satisfy the tolerance rule from the blueprint addition (`τ = 5%`, except `τ = 2%` for average spreads).
+
+## Stability summary
+
+```{r}
+library(readr)
+hsc <- read_csv("../data/reference/hsc_summary.csv", show_col_types = FALSE)
+hsc
+```
+
+Metrics that meet the tolerance rule by `T = 200` (inflation volatility, price dispersion, average spread, fill rate) confirm the existing A/B horizons. Credit growth and wage dispersion do not stabilise within 1 000 ticks; their series continue to trend, so keeping 200-tick snapshots would systematically understate their long-run behaviour.
+
+## Convergence plots
+
+```{r}
+library(fs)
+plots <- sort(dir_ls("../figs/reference", regexp = "hsc_convergence_.*\\.png$"))
+knitr::include_graphics(plots)
+```
+
+## Next steps
+
+* Maintain A/B horizon = 200, scenario = 250, robustness = 120 for the metrics that passed the tolerance test.
+* Raise the manuscript horizon for credit-growth and wage-dispersion reporting to the smallest window that satisfies the tolerance rule once we agree whether to rescale these metrics (e.g., relative dispersion / normalised credit growth) or accept a longer T (≥ 360). This decision should be confirmed with the architect before updating blueprint horizons.
+
+All raw series are stored in `data/reference/hsc_series.json` for future inspection.

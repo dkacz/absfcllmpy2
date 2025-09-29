@@ -77,6 +77,9 @@ These defaults will be consumed by runners (#19, #28, #36, #45, #55-#57, #62-#64
 - Scenarios: A/B target country index 0; C applies to all five.
 - Robustness: K = 5 only; beta in {beta0, 0.75beta0, 1.25beta0}; no heatmaps, no multi-K grid.
 - Tables: CSV raw; Quarto shows 2-decimal ratios/spreads; comma-separated counts; captions include units.
+- One-off Horizon Stability Check (HSC): 1001-tick baseline, OFF only, seed=0.
+- Stability rule: two-step tolerance test with tau = 5% (dispersions/volatility/growth/fill-rate) and tau = 2% (average spread).
+- Only the specific block that fails at T = 200 gets its manuscript horizon raised to the smallest passing T; others remain unchanged.
 
 ### Executor notes (for uniform implementation)
 
