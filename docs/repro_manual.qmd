@@ -1,0 +1,160 @@
+---
+title: "Repro Manual"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+## Overview
+
+This checklist explains how to rebuild the manuscript artifacts from a clean clone. It covers environment checks, quick smoke runs, the manuscript A/B pipeline, and how to re-render the Quarto site.
+
+## Environment checklist
+
+- OS: the workflows are tested on Linux (WSL2 works as well).
+- Python 2.7 (`python2`) and Python 3.10+ (`python3`) must be on `PATH`.
+- Quarto 1.4+ must be installed.
+- Optional: `gh` for GitHub issue automation.
+
+Verify the tools before running anything else:
+
+```bash
+python2 --version
+python3 --version
+quarto --version
+```
+
+If any command is missing, install it first. The repository does not ship with virtual environments; the simulation runs entirely with the standard library.
+
+## Repository layout
+
+Key directories you will touch during reproduction:
+
+| Directory | Purpose |
+| --- | --- |
+| `code/` | Python 2 simulation and helper scripts. |
+| `tools/` | Python 3 LLM stub (`decider/server.py`). |
+| `artifacts/` | Auto-created when demos run (default target for A/B runs). |
+| `data/` | CSV outputs consumed by the manuscript (for example `core_metrics.csv`). |
+| `figs/` | PNG overlays used in Quarto pages. |
+| `docs/` | Quarto manuscript sources (`main.qmd`, `repro_manual.qmd`, etc.). |
+
+## Step 1 - Start the Decider stub (Python 3)
+
+Launch the LLM stub in a dedicated terminal. Leave it running for the duration of your simulation sessions.
+
+```bash
+python3 tools/decider/server.py --stub
+```
+
+Health check (optional):
+
+```bash
+curl http://127.0.0.1:8000/healthz
+```
+
+A healthy stub returns `{ "status": "ok" }`.
+
+## Step 2 - Smoke test the baseline loop (under 5 minutes)
+
+Run a short OFF-only simulation to confirm Python 2 dependencies are in place. The helper below trims the horizon to 50 ticks and writes outputs under `artifacts/smoke/off`.
+
+```bash
+python2 - <<'PY'
+from code.timing import run_simulation, Parameter
+import os
+
+para = Parameter()
+para.Lrun = [0]
+para.ncycle = 50
+para.LtimeCollecting = list(range(para.ncycle))
+para.folder = os.path.abspath(os.path.join('artifacts', 'smoke', 'off'))
+para.use_llm_firm_pricing = False
+para.use_llm_bank_credit = False
+para.use_llm_wage = False
+run_simulation(para, progress=False)
+PY
+```
+
+Confirm the run produced CSVs:
+
+```bash
+ls artifacts/smoke/off
+```
+
+At least one `*.csv` file (for example `muxSnCo5...AggData.csv`) should exist. The script also refreshes `data/core_metrics.csv` with a baseline row.
+
+## Step 3 - Rebuild the manuscript A/B demo (240 ticks)
+
+The manuscript relies on paired OFF/ON runs with a shared seed. Use `run_ab_demo` to generate both scenarios and store their outputs under `artifacts/ab_demo/`.
+
+```bash
+python2 - <<'PY'
+from code.timing import run_ab_demo
+
+result = run_ab_demo(
+    run_id=0,
+    ncycle=240,
+    output_root='artifacts/ab_demo',
+    parameter_overrides={'weSeedRun': 'yes'},
+    llm_overrides={'llm_server_url': 'http://127.0.0.1:8000'},
+    progress=False,
+)
+for label, payload in sorted(result.items()):
+    print(label, payload['folder'])
+PY
+```
+
+Outputs:
+
+- OFF artifacts: `artifacts/ab_demo/run_000/off/`
+- ON artifacts: `artifacts/ab_demo/run_000/on/`
+- Core metrics CSV (OFF + ON rows): `data/core_metrics.csv`
+- Toggle log: `timing.log` (appended with the run configuration).
+
+If you need scenario or robustness horizons, pass `mode='scenario'` or `mode='robustness'` and adjust `ncycle` accordingly.
+
+## Step 4 - Update manuscript assets
+
+After simulations finish, verify the expected CSV/PNG outputs exist:
+
+```bash
+ls data
+ls figs
+```
+
+If you ran bespoke experiments, copy any new CSVs into `data/` and PNGs into `figs/` before rendering.
+
+## Step 5 - Render the Quarto site
+
+Regenerate the HTML site (and PDFs if your Quarto install is configured for it):
+
+```bash
+quarto render docs
+```
+
+The build writes to `docs/_site/`. The manuscript spine is `docs/_site/main.html`; the reproducibility page you are reading is `docs/_site/repro_manual.html`.
+
+## Step 6 - Record evidence in GitHub issues
+
+When closing an issue or PR:
+
+1. Note the exact command(s) you ran (copy from the blocks above).
+2. List the regenerated artifacts, e.g. `data/core_metrics.csv`, `artifacts/ab_demo/run_000/on/`.
+3. Mention the Quarto build command (`quarto render docs`).
+
+The sign-off template in `docs/snippets/signoff_prompt_M0-06.md` expects those references.
+
+## Troubleshooting
+
+- **Missing Python 2 interpreter:** Install `python2` or use a compatible container. The simulation code is not Python 3 ready.
+- **Stub connection errors:** Ensure the stub terminal shows request logs. If simulations hang, confirm `python3 tools/decider/server.py --stub` is still running.
+- **Large runs take too long:** For exploratory work, lower `ncycle` (for example 120) or restrict `Parameter.Lrun` to one seed before scaling up.
+- **Quarto render fails with R errors:** The site uses Python chunks only. Installers that ship a minimal R may emit warnings; they can be ignored if the HTML renders successfully.
+
+## Next steps
+
+- For schema details, see Issue #75 (JSON schema appendix).
+- For equation/code anchors, see Issue #74 once delivered.
+- Update the `docs/main.qmd` Results section whenever new A/B outputs land so they remain in sync with the CSVs produced above.
