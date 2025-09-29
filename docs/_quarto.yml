@@ -11,6 +11,8 @@ website:
     left:
       - text: "Home"
         href: index.qmd
+      - text: "Manuscript"
+        href: main.qmd
       - text: "Blueprint"
         href: blueprint.md
       - text: "Conventions"

@@ -1,0 +1,90 @@
+---
+title: "Live LLM-Enhanced AB-SFC Manuscript"
+date: last-modified
+page-layout: article
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+---
+
+::: {.callout-note}
+This spine pulls together the manuscript sections tracked across Milestones M8-M11. Writing issues (e.g. #68, #69, #70, #85, #86) will replace the placeholders below as those drafts land.
+:::
+
+# Abstract {#sec-abstract}
+
+_TBD — populated by Issue #72 once the abstract draft is ready._
+
+# Introduction {#sec-introduction}
+
+The introduction will situate the live LLM hooks within the Caiani agent-based, stock-flow consistent (AB-SFC) model. Draft lives in Issue #85; once merged, the text slots here and will cite the methodological blueprint (@sec-methods) and stability evidence (@sec-results-hsc).
+
+# Methods {#sec-methods}
+
+## Model and baseline guardrails {#sec-methods-model}
+
+- Canonical Caiani model remains intact (legacy Python 2 codebase); see `docs/blueprint.md` (§Model in brief) for the full equation map.
+- Guardrails (price floor, leverage clamps, timeout fallbacks) mirror the defaults documented in `docs/blueprint.md` (§Presentation & guard defaults).
+- Appendix A (Issue #74) will surface a dedicated equation-to-code table once delivered.
+
+## Live LLM instrumentation {#sec-methods-llm}
+
+- Python 3 Decider stub (`tools/decider/server.py --stub`) responds on `http://127.0.0.1:8000`; toggles live in `code/parameter.py`.
+- Py2 client wiring is covered in `docs/methods/py2_client.md`, including timeout conversion and JSON-schema enforcement.
+- Bank, firm, and wage prompts share the qualitative pattern recorded in `docs/methods/decider.md`; the cache design (Issue #68) will be summarized here when ready.
+
+## Simulation workflow {#sec-methods-sim}
+
+1. Launch the Decider stub (Python 3).
+2. Run the Py2 simulation (`python2 code/timing.py`) with the desired horizon (baseline OFF/ON windows = 240 ticks per PR #108).
+3. Persist aggregates under `data/` and figures under `figs/`; rerun `quarto render docs` once new artifacts land.
+
+Issue #77 will extend this section with reproducibility checklists and automation details.
+
+# Results {#sec-results}
+
+## Core manuscript metrics {#sec-results-core}
+
+```{python}
+import pandas as pd
+from pathlib import Path
+
+core = pd.read_csv(Path("../data/core_metrics.csv"))
+# Focus on baseline OFF run for the spine summary
+baseline = (
+    core.query("scenario == 'baseline'")
+        .pivot(index="metric", columns="scenario", values="value")
+        .rename_axis(None, axis=1)
+)
+baseline
+```
+
+::: {.callout-tip}
+A/B results will add comparative columns once Issue #69 (Results integration) lands. For now, the baseline run (seeded by PR #108) establishes the canonical reference values.
+:::
+
+## Horizon stability evidence {#sec-results-hsc}
+
+- Horizon Stability Check (HSC) OFF run: see `docs/stability.qmd` for full commentary.
+- Canonical artifacts: `data/reference/hsc_summary.csv`, `data/reference/hsc_stability_table.csv`, and the convergence plots under `figs/reference/`.
+
+Future subsections will cover the A/B overlays, robustness sweeps, and wage/bank tables once their CSV/PNG outputs are refreshed for the 240-tick horizon.
+
+# Discussion & outlook {#sec-discussion}
+
+Discussion threads (limitations, policy takeaways, open questions) map to Issues #70 and #86. Once drafted, this section will cite:
+
+- Narrative comparisons between baseline heuristics and LLM-mediated behaviours.
+- Implications for macro-financial stability, tying back to the guardrails noted in @sec-methods-model.
+- Future work on batch decision hooks and live LLM failover modes (tracked in blueprint roadmap).
+
+# Appendices & companion material {#sec-appendices}
+
+- **Appendix A (Equation map).** `docs/appendix_eq_map.qmd` (Issue #74).
+- **Appendix B (JSON schemas).** Issue #75 will capture schema excerpts for firm, bank, and wage endpoints.
+- **Repro Manual.** `docs/repro_manual.qmd` (Issue #77) to detail end-to-end rebuild instructions.
+- **Horizon Stability Notes.** See `docs/stability.qmd` for the full OFF-run analysis previously summarised in the architect brief.
+
+Once these pages exist, update this list with direct `@ref` cross-references so Quarto can number them alongside the main manuscript.
