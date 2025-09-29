@@ -4,7 +4,7 @@ from lebalance import *
 import csv
 from time import *
 import math
-from llm_runtime import firm_enabled, get_client, log_fallback
+from llm_runtime import firm_enabled, get_client, get_firm_guard_caps, log_fallback
 
 class Firm:
       def __init__(self,ide,country,A,phi,Lcountry,w,folder,name,run,delta,dividendRate,xi,iota,\
@@ -111,6 +111,7 @@ class Firm:
 
           previous_price=self.price
           baseline=self._baseline_pricing_update()
+          guard_caps=get_firm_guard_caps()
 
           if not firm_enabled():
              return
@@ -121,7 +122,7 @@ class Firm:
              self._apply_baseline(baseline)
              return
 
-          payload=self._build_llm_payload(previous_price,baseline)
+          payload=self._build_llm_payload(previous_price,baseline,guard_caps)
           decision,error=client.decide_firm(payload)
           if error:
              reason='error'
@@ -138,7 +139,7 @@ class Firm:
              self._apply_baseline(baseline)
              return
 
-          self._apply_llm_decision(previous_price,baseline,decision)
+          self._apply_llm_decision(previous_price,baseline,decision,guard_caps)
 
       def _baseline_pricing_update(self):
           self.mind.alphaParameterSmooth16(self.phi,self.w,self.inventory,self.pastInventory,\
@@ -160,11 +161,13 @@ class Firm:
           self.mind.xE=baseline.get('expected_demand',self.mind.xE)
           self.mind.xProducing=baseline.get('producing',getattr(self.mind,'xProducing',0.0))
 
-      def _build_llm_payload(self,previous_price,baseline):
+      def _build_llm_payload(self,previous_price,baseline,guard_caps):
           unit_cost=self._unit_cost()
           price_floor=baseline.get('price_floor',unit_cost)
           production_effective=getattr(self,'productionEffective',0.0)
           expected=baseline.get('expected_demand',0.0)
+          max_step=guard_caps.get('max_price_step',0.04)
+          max_bias=guard_caps.get('max_expectation_bias',0.04)
           payload={
               'schema_version':'1.0',
               'run_id':getattr(self,'run',0),
@@ -181,8 +184,8 @@ class Firm:
                   'expected_demand':expected,
               },
               'guards':{
-                  'max_price_step':self.delta,
-                  'max_expectation_bias':self.delta,
+                  'max_price_step':max_step,
+                  'max_expectation_bias':max_bias,
                   'price_floor':price_floor,
               },
           }
@@ -204,8 +207,8 @@ class Firm:
              decision['expectation_bias']=0.0
           return True
 
-      def _apply_llm_decision(self,previous_price,baseline,decision):
-          max_step=max(0.0,self.delta)
+      def _apply_llm_decision(self,previous_price,baseline,decision,guard_caps):
+          max_step=max(0.0,float(guard_caps.get('max_price_step',self.delta)))
           step=decision.get('price_step',0.0)
           if step<0:
              step=0.0
@@ -225,11 +228,12 @@ class Firm:
           else:
              new_price=baseline_price
           if new_price<price_floor:
+             log_fallback('firm','price_floor_enforced')
              new_price=price_floor
           self.price=new_price
           self.mind.pSelling=self.price
 
-          max_bias=max_step
+          max_bias=max(0.0,float(guard_caps.get('max_expectation_bias',max_step)))
           bias=decision.get('expectation_bias',0.0)
           if bias>max_bias:
              log_fallback('firm','expectation_bias_clamped_high')

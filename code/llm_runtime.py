@@ -13,6 +13,12 @@ _CONTEXT = {
     'client': None,
 }
 
+_GUARD_PRESET_FACTORS = {
+    'baseline': 1.0,
+    'tight': 0.5,
+    'loose': 1.5,
+}
+
 
 def configure(parameter):
     """Register the active ``Parameter`` instance for downstream hooks."""
@@ -55,4 +61,78 @@ def log_fallback(block, reason, detail=None):
     print message
 
 
-__all__ = ['configure', 'get_client', 'get_parameter', 'firm_enabled', 'bank_enabled', 'log_fallback']
+def get_firm_guard_caps():
+    """Return effective guard caps for firm price/expectation decisions."""
+
+    parameter = get_parameter()
+    if parameter:
+        custom = getattr(parameter, 'firm_guard_caps', None)
+        if isinstance(custom, dict):
+            return _sanitise_firm_caps(custom)
+
+    preset = 'baseline'
+    if parameter:
+        preset = _resolve_guard_preset(parameter, 'firm_guard_preset')
+    factor = _GUARD_PRESET_FACTORS.get(preset, 1.0)
+    base = {
+        'max_price_step': 0.04,
+        'max_expectation_bias': 0.04,
+    }
+    return _scale_caps(base, factor)
+
+
+def _resolve_guard_preset(parameter, attribute):
+    value = getattr(parameter, attribute, None)
+    if value:
+        return _normalise_preset(value)
+    fallback = getattr(parameter, 'llm_guard_preset', None)
+    if fallback:
+        return _normalise_preset(fallback)
+    return 'baseline'
+
+
+def _normalise_preset(value):
+    text = str(value).strip().lower()
+    if text in _GUARD_PRESET_FACTORS:
+        return text
+    return 'baseline'
+
+
+def _scale_caps(base_caps, factor):
+    scaled = {}
+    for key, value in base_caps.items():
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            continue
+        scaled[key] = max(0.0, numeric * factor)
+    return scaled
+
+
+def _sanitise_firm_caps(custom):
+    if not isinstance(custom, dict):
+        return {
+            'max_price_step': 0.04,
+            'max_expectation_bias': 0.04,
+        }
+
+    caps = {}
+    for key in ('max_price_step', 'max_expectation_bias'):
+        value = custom.get(key)
+        if value is None:
+            continue
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            continue
+        if numeric < 0.0:
+            numeric = 0.0
+        caps[key] = numeric
+    if 'max_price_step' not in caps:
+        caps['max_price_step'] = 0.04
+    if 'max_expectation_bias' not in caps:
+        caps['max_expectation_bias'] = 0.04
+    return caps
+
+
+__all__ = ['configure', 'get_client', 'get_parameter', 'firm_enabled', 'bank_enabled', 'log_fallback', 'get_firm_guard_caps']
