@@ -29,7 +29,7 @@ ls,1.0
 epsilon,0.1
 deltaInnovation,0.04
 theta,0.2
-folder,/mnt/c/Users/omare/caianipy2/data/reference/hsc_1001_seed0_rerun
+folder,/mnt/c/Users/omare/caianipy2/data/reference/hsc_1001_seed0
 taxRatio,0.4
 iota,0.5
 dividendRate,0.95

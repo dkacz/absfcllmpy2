@@ -292,7 +292,7 @@ def run_simulation(parameter=None, progress=True):
 
 
 DEFAULT_HORIZONS = {
-    'ab': 200,
+    'ab': 240,
     'scenario': 250,
     'robustness': 120,
 }
@@ -303,7 +303,7 @@ def run_ab_demo(run_id=0, ncycle=None, output_root=None, parameter_overrides=Non
 
     Args:
         run_id (int): Seed identifier mirrored into ``Parameter.Lrun``.
-        ncycle (int): Horizon for the short demo runs (defaults to 200).
+        ncycle (int): Horizon for the short demo runs (defaults to 240).
         output_root (str): Directory where OFF/ON subfolders are created.
         parameter_overrides (dict): Optional ``Parameter`` attribute overrides applied
             to both OFF and ON configurations (example: ``{"ncycle": 120}``).

@@ -109,6 +109,7 @@ class Aggregator:
               'avg_spread': [],
               'wage_dispersion': [],
               'fill_rate': [],
+              'loan_output_ratio': [],
           }
 
          
@@ -615,6 +616,12 @@ class Aggregator:
           self._metric_series['fill_rate'].append(fill_rate_value)
 
           self._metric_series['total_credit'].append(credit_total)
+          total_output = totalY
+          if total_output>0:
+             ratio=credit_total/float(total_output)
+          else:
+             ratio=0.0
+          self._metric_series['loan_output_ratio'].append(ratio)
 
           avg_spread=0.0
           if spread_loan_sum>0:
@@ -800,20 +807,13 @@ class Aggregator:
           wage_dispersion=self._series_mean(self._metric_series['wage_dispersion'])
           fill_rate=self._series_mean(self._metric_series['fill_rate'], default=1.0)
           avg_spread=self._series_mean(self._metric_series['avg_spread'])
-
-          credit_series=self._metric_series['total_credit']
-          credit_growth=0.0
-          if len(credit_series) >= 2:
-              start=credit_series[0]
-              end=credit_series[-1]
-              if abs(start) > 1e-9:
-                  credit_growth=(end-start)/float(start)
+          loan_output_ratio=self._series_mean(self._metric_series['loan_output_ratio'])
 
           return {
               'inflation_volatility': inflation_vol,
               'price_dispersion': price_dispersion,
-              'credit_growth': credit_growth,
               'avg_spread': avg_spread,
+              'loan_output_ratio': loan_output_ratio,
               'wage_dispersion': wage_dispersion,
               'fill_rate': fill_rate,
           }

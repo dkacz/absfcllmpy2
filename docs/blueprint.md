@@ -25,7 +25,7 @@ The LLM runs as a **Python 3 localhost microservice**. The sim (Python 2) call
 
 **RQ1.** Do live, qualitative pricing cues (via LLM) measurably change **inflation volatility** or **price dispersion** relative to fixed numeric heuristics?
 
-**RQ2.** Does introducing soft‑information‑like loan screening (via LLM) alter **credit growth** and **average spreads** in ways consistent with narrative banking behavior?
+**RQ2.** Does introducing soft‑information‑like loan screening (via LLM) alter the **loan-to-output ratio** and **average spreads** in ways consistent with narrative banking behavior (credit-growth trends shown as overlays only)?
 
 **RQ3.** Do LLM‑mediated wage decisions change **wage dispersion** and **vacancy fill‑rates** in a direction consistent with qualitative labor‑market accounts?
 
@@ -62,7 +62,7 @@ The LLM runs as a **Python 3 localhost microservice**. The sim (Python 2) call
 
 **A/B Design (small horizon).** Run OFF (baseline numeric rules) then ON (live LLM), **same seed**, export:
 - **Firm block:** `data/firm_ab_table.csv` → **inflation volatility**, **price dispersion**; `figs/firm_ab_overlay.png`.
-- **Bank block:** `data/bank_ab_table.csv` → **credit growth**, **average spread**; `figs/bank_ab_overlay.png`.
+- **Bank block:** `data/bank_ab_table.csv` → **loan-to-output ratio**, **average spread** (credit growth overlay only in robustness); `figs/bank_ab_overlay.png`.
 - **Wage block:** `data/wage_ab_table.csv` → **wage dispersion**, **vacancy fill‑rate**; `figs/wage_ab_overlay.png`.
 
 **Scenario set (illustrative):**
@@ -75,7 +75,7 @@ The LLM runs as a **Python 3 localhost microservice**. The sim (Python 2) call
 # Expected qualitative effects (testable sketches) {#sec-expectations}
 
 - **Firms:** LLM may tilt toward **hold** when inventories normal & costs flat → **lower price dispersion**, possibly **lower inflation volatility**.
-- **Banks:** LLM may **tighten approval** for high‑leverage borrowers (soft info cue) → **slower credit growth**, **higher mean spreads** under stress.
+- **Banks:** LLM may **tighten approval** for high‑leverage borrowers (soft info cue) → **lower loan-to-output ratios** and **higher mean spreads** under stress (credit growth shown as a robustness overlay).
 - **Wages:** LLM may **raise reservation** under low unemployment and **raise offers** when fill‑rates poor → **higher wage dispersion** with **improved fill‑rates**.
 
 # Artifacts & Quarto plan {#sec-artifacts}
@@ -105,8 +105,8 @@ The Writer’s `papers/outline.md` must mirror this blueprint: IMRaD sections, t
 
 **Short-horizon artifacts (manuscript figures/tables)**  
 - Use a single seed (`run_id=0`).  
-- Horizons: A/B comparisons 200 periods; scenario demos 250; robustness demos 120.  
-- Baseline parameter files stay untouched; horizons and scenario tweaks are passed as runtime overrides in the A/B runner function.
+- Horizons: A/B comparisons **240** periods; scenario demos **250**; robustness demos **120**.  
+- Baseline parameter files stay untouched; horizons and scenario tweaks are passed as runtime overrides in the A/B runner function (window = full run).
 
 ### Horizon stability check (HSC) — one-off QA
 A single 1001-tick baseline (OFF only, seed=0) validates these short-horizon choices. Metrics are recomputed on tail

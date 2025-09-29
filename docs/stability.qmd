@@ -30,7 +30,8 @@ knitr::include_graphics(plots)
 
 ## Next steps
 
-* Maintain A/B horizon = 200, scenario = 250, robustness = 120 for the metrics that passed the tolerance test.
-* Raise the manuscript horizon for credit-growth and wage-dispersion reporting to the smallest window that satisfies the tolerance rule once we agree whether to rescale these metrics (e.g., relative dispersion / normalised credit growth) or accept a longer T (≥ 360). This decision should be confirmed with the architect before updating blueprint horizons.
+* Manuscript horizons adopted: **A/B = 240**, **Scenarios = 250**, **Robustness = 120** (window = full run).
+* Bank KPI swap: headline metrics are **average spread** and **loan-to-output ratio**; credit-growth remains as a robustness overlay.
+* Wage and price dispersion now use the 240-tick window; their Quarto tables should cite the new horizon in captions.
 
 All raw series are stored in `data/reference/hsc_series.json` for future inspection.
