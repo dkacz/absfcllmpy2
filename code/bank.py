@@ -3,6 +3,8 @@ import random
 import math
 import csv
 
+from llm_runtime import bank_enabled, get_client, log_fallback
+
 class Bank:
       def __init__(self,ide,homecountry,A,Lcountry,Fcost,folder,name,run,delta,minReserve\
                        ,rDiscount,xi,dividendRate,iota,rDeposit,mu1,iotaE,iotaRelPhi):
@@ -14,6 +16,8 @@ class Bank:
           self.Fcost=Fcost  
           self.folder=folder
           self.name=name
+          self.run=run
+          self.llm_tick=0
           self.delta=delta
           self.minReserve=minReserve
           self.Mloan=[]
@@ -29,6 +33,7 @@ class Bank:
           self.depositReceived=0
           self.PreviousA=self.A
           self.ResourceAvailable=0
+          self.nonAllocatedMoney=0.0
           self.dividendRate=dividendRate
           self.iota=iota
           self.pastA=self.A
@@ -56,7 +61,8 @@ class Bank:
           self.potentialExitCB=0
           self.iotaE=iotaE
           self.iotaRelPhi=iotaRelPhi
-          self.profitRate=0 
+          self.profitRate=0
+          self._llm_bank_last_decision=None
                     
       def moneyCreating(self):
           self.moneyCreated=0
@@ -76,6 +82,193 @@ class Bank:
           if relPhi<=1.0:
              probLoan=math.exp(-1*self.iotaRelPhi*leverage)
           return probLoan
+
+      def credit_decision(self,firm_obj,leverage,relPhi,loan_request,loan_supply,max_loan_firm):
+          try:
+             loan_request=float(loan_request or 0.0)
+          except (TypeError,ValueError):
+             loan_request=0.0
+          try:
+             loan_supply=float(loan_supply or 0.0)
+          except (TypeError,ValueError):
+             loan_supply=0.0
+          try:
+             max_loan_firm=float(max_loan_firm or 0.0)
+          except (TypeError,ValueError):
+             max_loan_firm=0.0
+          baseline=self._baseline_credit_decision(leverage,relPhi,loan_request,loan_supply,max_loan_firm)
+          state=baseline.copy()
+          state.update({
+              'baseline':baseline,
+              'decision':None,
+              'used_llm':False,
+              'fallback':False,
+              'fallback_reason':None,
+          })
+          self._llm_bank_last_decision=state
+          if not bank_enabled():
+             return state
+
+          client=get_client()
+          if client is None:
+             log_fallback('bank','client_unavailable')
+             state['fallback']=True
+             state['fallback_reason']='client_unavailable'
+             self._llm_bank_last_decision=state
+             return state
+
+          payload=self._build_llm_payload(firm_obj,leverage,relPhi,loan_request,loan_supply,baseline)
+          decision,error=client.decide_bank(payload)
+          if error:
+             reason='error'
+             detail=None
+             if isinstance(error,dict):
+                reason=error.get('reason','error')
+                detail=error.get('detail')
+             log_fallback('bank',reason,detail)
+             state['fallback']=True
+             state['fallback_reason']=reason
+             self._llm_bank_last_decision=state
+             return state
+
+          if not self._validate_llm_decision(decision):
+             log_fallback('bank','invalid_response')
+             state['fallback']=True
+             state['fallback_reason']='invalid_response'
+             self._llm_bank_last_decision=state
+             return state
+
+          applied=self._apply_llm_decision(decision,baseline,loan_request)
+          applied.update({
+              'baseline':baseline,
+              'decision':decision,
+              'used_llm':True,
+              'fallback':False,
+              'fallback_reason':None,
+          })
+          self._llm_bank_last_decision=applied
+          return applied
+
+      def _baseline_credit_decision(self,leverage,relPhi,loan_request,loan_supply,max_loan_firm):
+          probability=self.computeProbProvidingLoan(leverage,relPhi)
+          if probability<0.0:
+             probability=0.0
+          if probability>1.0:
+             probability=1.0
+          limit=min(max_loan_firm,loan_supply)
+          if limit>loan_request:
+             limit=loan_request
+          if limit<0.0:
+             limit=0.0
+          interest=self.computeInterestRate(leverage)
+          spread=max(0.0,(interest-self.rDiscount)*10000.0)
+          baseline={
+             'approve':True,
+             'probability':probability,
+             'credit_limit':limit,
+             'interest_rate':interest,
+             'spread_bps':spread,
+          }
+          return baseline
+
+      def _build_llm_payload(self,firm_obj,leverage,relPhi,loan_request,loan_supply,baseline):
+          guards=self._spread_guard_bounds()
+          payload={
+              'schema_version':'1.0',
+              'run_id':getattr(self,'run',0),
+              'tick':getattr(self,'llm_tick',0),
+              'bank_id':self.ide,
+              'country_id':self.country,
+              'capital':getattr(self,'A',0.0),
+              'loan_supply':loan_supply,
+              'reserves':getattr(self,'Reserves',0.0),
+              'loan_book_value':getattr(self,'Loan',0.0),
+              'deposits':getattr(self,'Deposit',0.0),
+              'non_allocated_money':getattr(self,'nonAllocatedMoney',0.0),
+              'borrower':{
+                  'firm_id':getattr(firm_obj,'ide',''),
+                  'country_id':getattr(firm_obj,'country',0),
+                  'loan_request':loan_request,
+                  'leverage':leverage,
+                  'relative_productivity':relPhi,
+                  'profit_rate':getattr(firm_obj,'profitRate',0.0),
+              },
+              'guards':{
+                  'spread_min_bps':guards[0],
+                  'spread_max_bps':guards[1],
+              },
+              'baseline':{
+                  'probability':baseline.get('probability'),
+                  'credit_limit':baseline.get('credit_limit'),
+                  'spread_bps':baseline.get('spread_bps'),
+              },
+          }
+          return payload
+
+      def _validate_llm_decision(self,decision):
+          if not isinstance(decision,dict):
+             return False
+          try:
+             approve=decision.get('approve',True)
+             decision['approve']=bool(approve)
+          except Exception:
+             return False
+          try:
+             ratio=float(decision.get('credit_limit_ratio',1.0))
+          except (TypeError,ValueError):
+             return False
+          if ratio<0.0:
+             ratio=0.0
+          decision['credit_limit_ratio']=ratio
+          spread=decision.get('spread_bps')
+          if spread is not None:
+             try:
+                spread=float(spread)
+             except (TypeError,ValueError):
+                return False
+             decision['spread_bps']=spread
+          return True
+
+      def _apply_llm_decision(self,decision,baseline,loan_request):
+          result=baseline.copy()
+          approve=decision.get('approve',True)
+          ratio=decision.get('credit_limit_ratio',1.0)
+          base_limit=baseline.get('credit_limit',0.0)
+          credit_limit=base_limit*ratio
+          if credit_limit>base_limit:
+             credit_limit=base_limit
+          if credit_limit>loan_request:
+             credit_limit=loan_request
+          if credit_limit<0.0:
+             credit_limit=0.0
+          spread=decision.get('spread_bps')
+          if spread is None:
+             spread=baseline.get('spread_bps',0.0)
+          if spread<0.0:
+             spread=0.0
+          interest=self.rDiscount+spread/10000.0
+          probability=baseline.get('probability',0.0)
+          if not approve:
+             probability=0.0
+             credit_limit=0.0
+          result.update({
+              'approve':bool(approve),
+              'probability':self._clamp_probability(probability),
+              'credit_limit':credit_limit,
+              'interest_rate':interest,
+              'spread_bps':spread,
+          })
+          return result
+
+      def _clamp_probability(self,value):
+          if value<0.0:
+             return 0.0
+          if value>1.0:
+             return 1.0
+          return value
+
+      def _spread_guard_bounds(self):
+          return (50.0,500.0)
 
       def computeProbBuyingBondLoan(self,leverage):
           probBond=math.exp(-1*self.iotaE*leverage)
