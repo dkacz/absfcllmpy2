@@ -1,0 +1,37 @@
+---
+title: "Horizon Stability Check"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+## Overview
+
+We ran a single 1001-tick baseline (OFF only, seed=0) to validate the short-horizon settings outlined in `docs/blueprint.md`. For each manuscript metric we recomputed tail-window estimates using windows `T ∈ {120,160,200,240,280,320,360,400,500,750,1000}`. A window is considered stable when two consecutive step comparisons satisfy the tolerance rule from the blueprint addition (`τ = 5%`, except `τ = 2%` for average spreads).
+
+## Stability summary
+
+```{r}
+library(readr)
+hsc <- read_csv("../data/reference/hsc_summary.csv", show_col_types = FALSE)
+hsc
+```
+
+Metrics that meet the tolerance rule by `T = 200` (inflation volatility, price dispersion, average spread, fill rate) confirm the existing A/B horizons. Credit growth and wage dispersion do not stabilise within 1 000 ticks; their series continue to trend, so keeping 200-tick snapshots would systematically understate their long-run behaviour.
+
+## Convergence plots
+
+```{r}
+library(fs)
+plots <- sort(dir_ls("../figs/reference", regexp = "hsc_convergence_.*\\.png$"))
+knitr::include_graphics(plots)
+```
+
+## Next steps
+
+* Manuscript horizons adopted: **A/B = 240**, **Scenarios = 250**, **Robustness = 120** (window = full run).
+* Bank KPI swap: headline metrics are **average spread** and **loan-to-output ratio**; credit-growth remains as a robustness overlay.
+* Wage and price dispersion now use the 240-tick window; their Quarto tables should cite the new horizon in captions.
+
+All raw series are stored in `data/reference/hsc_series.json` for future inspection.

@@ -1,6 +1,7 @@
 # aggegaror.py
 
 import csv
+import math
 
 class Aggregator:
       def __init__(self,Lcountry,name,folder,timeCollectingStart,LtimeCollecting,printAgent):
@@ -99,7 +100,18 @@ class Aggregator:
           self.avPhiGlobal=0
           self.avPhiGlobalTradable=0    
           self.avPriceGlobalTradable=0 
- 
+
+          # Time-series buffers for core manuscript metrics
+          self._metric_series = {
+              'inflation': [],
+              'price_dispersion': [],
+              'total_credit': [],
+              'avg_spread': [],
+              'wage_dispersion': [],
+              'fill_rate': [],
+              'loan_output_ratio': [],
+          }
+
          
 
       def unemployement(self,McountryConsumer):
@@ -155,6 +167,19 @@ class Aggregator:
           sumProductionGlobalTradable=0 
           sumProductionSoldGlobalTradable=0
           sumProductionQuantitySoldGlobalTradable=0  
+
+          price_weight_total=0.0
+          price_sum_total=0.0
+          price_sq_sum_total=0.0
+          wage_weight_total=0.0
+          wage_sum_total=0.0
+          wage_sq_sum_total=0.0
+          fill_desired_total=0.0
+          fill_employed_total=0.0
+          credit_total=0.0
+          spread_weighted_sum=0.0
+          spread_loan_sum=0.0
+
           for country in McountryConsumer:
               DcountryExport[country]=0
               DcountryImport[country]=0 
@@ -202,6 +227,7 @@ class Aggregator:
                   bankBonds=bankBonds+McountryBank[country][bank].Bonds 
                   bankLoan=bankLoan+McountryBank[country][bank].Loan
                   bankLosses=bankLosses+McountryBank[country][bank].losses
+              credit_total=credit_total+bankLoan
               for consumer in  McountryConsumer[country]:
                   totLabor=totLabor+McountryConsumer[country][consumer].ls
                   LC=LC+McountryConsumer[country][consumer].l    
@@ -338,6 +364,28 @@ class Aggregator:
                   x=McountryFirm[country][firm].productionEffective
                   p=McountryFirm[country][firm].price 
                   xSold=McountryFirm[country][firm].xSold
+                  try:
+                     sold_weight=max(0.0,float(xSold))
+                  except (TypeError,ValueError):
+                     sold_weight=0.0
+                  price_weight_total=price_weight_total+sold_weight
+                  price_sum_total=price_sum_total+p*sold_weight
+                  price_sq_sum_total=price_sq_sum_total+(p**2)*sold_weight
+                  try:
+                     employment=max(0.0,float(McountryFirm[country][firm].l))
+                  except (TypeError,ValueError):
+                     employment=0.0
+                  wage=McountryFirm[country][firm].w
+                  wage_weight_total=wage_weight_total+employment
+                  wage_sum_total=wage_sum_total+wage*employment
+                  wage_sq_sum_total=wage_sq_sum_total+(wage**2)*employment
+                  desired=getattr(McountryFirm[country][firm],'workForceNumberDesired',0.0)
+                  try:
+                     desired=max(0.0,float(desired))
+                  except (TypeError,ValueError):
+                     desired=0.0
+                  fill_desired_total=fill_desired_total+desired
+                  fill_employed_total=fill_employed_total+employment
                   sumPhi=sumPhi+McountryFirm[country][firm].phi*x   
                   productionC=productionC+x*p
                   productionCSold=productionCSold+xSold*p 
@@ -457,6 +505,10 @@ class Aggregator:
               averageInterestRate=0
               if bankLoan>0:
                  averageInterestRate=sumInterestRate/float(bankLoan)
+              spread = averageInterestRate - McountryCentralBank[country].rDiscount
+              if bankLoan>0:
+                 spread_weighted_sum=spread_weighted_sum+spread*bankLoan
+                 spread_loan_sum=spread_loan_sum+bankLoan
               TBC=DcountryExport[country]-DcountryImport[country]
               self.DcountryTradeBalance[country]=TBC
               self.DTBC[country]=TBC
@@ -535,6 +587,47 @@ class Aggregator:
                avP=0
           if t==1 or t==0:
              self.avP0=avP
+          avg_inflation=0.0
+          if self.Lcountry:
+             avg_inflation=sum(self.McountryInflation[c] for c in self.Lcountry)/float(len(self.Lcountry))
+          self._metric_series['inflation'].append(avg_inflation)
+
+          price_dispersion=0.0
+          if price_weight_total>0:
+             mean_price=price_sum_total/price_weight_total
+             variance=price_sq_sum_total/price_weight_total-(mean_price**2)
+             if variance<0:
+                variance=0.0
+             price_dispersion=math.sqrt(variance)
+          self._metric_series['price_dispersion'].append(price_dispersion)
+
+          wage_dispersion=0.0
+          if wage_weight_total>0:
+             mean_wage=wage_sum_total/wage_weight_total
+             wage_variance=wage_sq_sum_total/wage_weight_total-(mean_wage**2)
+             if wage_variance<0:
+                wage_variance=0.0
+             wage_dispersion=math.sqrt(wage_variance)
+          self._metric_series['wage_dispersion'].append(wage_dispersion)
+
+          fill_rate_value=1.0
+          if fill_desired_total>0:
+             fill_rate_value=fill_employed_total/float(fill_desired_total)
+          self._metric_series['fill_rate'].append(fill_rate_value)
+
+          self._metric_series['total_credit'].append(credit_total)
+          total_output = totalY
+          if total_output>0:
+             ratio=credit_total/float(total_output)
+          else:
+             ratio=0.0
+          self._metric_series['loan_output_ratio'].append(ratio)
+
+          avg_spread=0.0
+          if spread_loan_sum>0:
+             avg_spread=spread_weighted_sum/float(spread_loan_sum)
+          self._metric_series['avg_spread'].append(avg_spread)
+
           #if totalTB>0.00001 or totalTB<-0.00001:
           #   print 'totalTB', totalTB
           #   print 'stop', stop      
@@ -691,6 +784,45 @@ class Aggregator:
               writer = csv.writer(c)
               writer.writerow(L)
               c.close()
+
+      def _series_mean(self, values, default=0.0):
+          if not values:
+              return default
+          return sum(values)/float(len(values))
+
+      def _series_std(self, values):
+          if not values:
+              return 0.0
+          mean=self._series_mean(values)
+          variance=sum((val-mean)**2 for val in values)/float(len(values))
+          if variance<0:
+              variance=0.0
+          return math.sqrt(variance)
+
+      def core_metrics_summary(self):
+          """Return aggregate metrics needed for manuscript tables."""
+
+          inflation_vol=self._series_std(self._metric_series['inflation'])
+          price_dispersion=self._series_mean(self._metric_series['price_dispersion'])
+          wage_dispersion=self._series_mean(self._metric_series['wage_dispersion'])
+          fill_rate=self._series_mean(self._metric_series['fill_rate'], default=1.0)
+          avg_spread=self._series_mean(self._metric_series['avg_spread'])
+          loan_output_ratio=self._series_mean(self._metric_series['loan_output_ratio'])
+
+          return {
+              'inflation_volatility': inflation_vol,
+              'price_dispersion': price_dispersion,
+              'avg_spread': avg_spread,
+              'loan_output_ratio': loan_output_ratio,
+              'wage_dispersion': wage_dispersion,
+              'fill_rate': fill_rate,
+          }
+
+      def metric_series(self):
+          return {
+              key: list(values)
+              for key, values in self._metric_series.items()
+          }
 
       def checkNetWorth(self,McountryConsumer,McountryFirm,McountryBank,McountryCentralBank,McountryEtat,DpastBondExit):
           for country in McountryConsumer:

@@ -74,9 +74,12 @@ These defaults will be consumed by runners (#19, #28, #36, #45, #55-#57, #62-#64
 
 - delta_price = 0.04, delta_wage = 0.04, delta_e = 0.04; Tight = 0.5x, Loose = 1.5x.
 - Overlays: one per block; ON solid, OFF dashed; shade last 50 periods; single legend.
+- Horizons: A/B = **240**, Scenarios = **250**, Robustness = **120** (window = full run).
 - Scenarios: A/B target country index 0; C applies to all five.
 - Robustness: K = 5 only; beta in {beta0, 0.75beta0, 1.25beta0}; no heatmaps, no multi-K grid.
 - Tables: CSV raw; Quarto shows 2-decimal ratios/spreads; comma-separated counts; captions include units.
+- Bank KPIs: {avg_spread_pp, loan_to_output_ratio}. Credit growth appears only as a robustness overlay.
+- One-off Horizon Stability Check (HSC): 1001-tick baseline, OFF only, seed=0; stability rule τ = 5% (inflation/dispersion/fill) and τ = 2% (spreads, per-tick credit overlay).
 
 ### Executor notes (for uniform implementation)
 

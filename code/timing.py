@@ -30,6 +30,7 @@ from time import *
 import random
 import os
 import glob
+import csv
 from bank import *
 from matchingCredit import *
 from matchingBonds import *
@@ -276,13 +277,22 @@ def run_simulation(parameter=None, progress=True):
                   break 
 
 
+    metrics_summary = aggrega.core_metrics_summary()
+    metrics_series = aggrega.metric_series()
+    result = {
+        'core_metrics': metrics_summary,
+        'metric_series': metrics_series,
+    }
+
     if progress:
         print        
         print 'the end'       
 
+    return result
+
 
 DEFAULT_HORIZONS = {
-    'ab': 200,
+    'ab': 240,
     'scenario': 250,
     'robustness': 120,
 }
@@ -293,7 +303,7 @@ def run_ab_demo(run_id=0, ncycle=None, output_root=None, parameter_overrides=Non
 
     Args:
         run_id (int): Seed identifier mirrored into ``Parameter.Lrun``.
-        ncycle (int): Horizon for the short demo runs (defaults to 200).
+        ncycle (int): Horizon for the short demo runs (defaults to 240).
         output_root (str): Directory where OFF/ON subfolders are created.
         parameter_overrides (dict): Optional ``Parameter`` attribute overrides applied
             to both OFF and ON configurations (example: ``{"ncycle": 120}``).
@@ -333,7 +343,13 @@ def run_ab_demo(run_id=0, ncycle=None, output_root=None, parameter_overrides=Non
         for attr, value in llm_overrides.items():
             setattr(para, attr, value)
 
-        run_simulation(para, progress=progress)
+        sim_output = run_simulation(para, progress=progress)
+        if isinstance(sim_output, dict):
+            core_metrics = sim_output.get('core_metrics', {})
+            metric_series = sim_output.get('metric_series', {})
+        else:
+            core_metrics = {}
+            metric_series = {}
 
         results[label] = {
             'folder': para.folder,
@@ -347,7 +363,11 @@ def run_ab_demo(run_id=0, ncycle=None, output_root=None, parameter_overrides=Non
             },
             'artifacts': _collect_artifacts(para.folder),
             'counters': _counters_summary(),
+            'core_metrics': core_metrics,
+            'metric_series': metric_series,
         }
+
+    _write_core_metrics(results)
 
     return results
 
@@ -369,6 +389,29 @@ def _counters_summary():
         'timeouts': 0,
     }
     return summary
+
+
+def _write_core_metrics(results):
+    """Persist core metrics for OFF/ON scenarios under data/core_metrics.csv."""
+
+    rows = []
+    scenario_map = {'off': 'baseline', 'on': 'llm_on'}
+    for label, payload in results.items():
+        scenario = scenario_map.get(label, label)
+        metrics = payload.get('core_metrics') or {}
+        for metric_name, value in metrics.items():
+            rows.append((scenario, metric_name, value))
+
+    data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+    if not os.path.isdir(data_dir):
+        os.makedirs(data_dir)
+
+    file_path = os.path.join(data_dir, 'core_metrics.csv')
+    with open(file_path, 'wb') as handle:
+        writer = csv.writer(handle, lineterminator='\n')
+        writer.writerow(['scenario', 'metric', 'value'])
+        for scenario, metric_name, value in rows:
+            writer.writerow([scenario, metric_name, value])
 
 
 if __name__ == "__main__":
