@@ -1,0 +1,35 @@
+---
+title: "Methods Hub"
+description: "Landing page for the Caiani AB-SFC live LLM instrumentation, linking to method-focused documentation and reference artifacts."
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Methods Hub {#methods-index}
+
+This hub gathers the technical documentation that underpins the live LLM instrumentation of the Caiani AB-SFC model. Use it as the starting point for detailed discussions of the architecture, runtime safeguards, data exports, and manuscript-ready metrics.
+
+## Model Context
+
+- [Model Overview](model_overview.md) — Non-technical summary of agents, markets, timing, and where LLM hooks integrate with the legacy Python 2 loop (@ref(methods-model-overview)).
+- [Equation Map (coming soon)](eq_map.md) — Crosswalk between manuscript equations and code touchpoints (see Issue #74 for upcoming appendix content).
+
+## Runtime Architecture
+
+- [Decider Stub](decider.md) — Python 3 microservice that serves deterministic decisions, schema validation, and timeout controls.
+- [Py2 Client](py2_client.md) — HTTP bridge from the legacy simulation to the Decider, including error taxonomy and fallback triggers.
+- [Fallback Semantics](fallbacks.qmd) — Detailed explanation of guardrails, clamping rules, and logging for LLM fallbacks.
+- [A/B Runner Helper](runners.md) — Convenience wrapper for producing short OFF/ON runs and pointers to the stub data bundle.
+
+## Data & Metrics
+
+- [Variable Dictionary](variables.md) — Metric-by-metric definitions, CSV column references, and aggregation formulas for manuscript tables (@ref(methods-variables)).
+- `data/core_metrics.csv` — Canonical 240-tick baseline/LLM comparison exported by `code/timing.py`.
+- `docs/stubs/` — 20-tick preview dataset (LLM OFF) for quick Quarto prototypes and smoke checks.
+
+## Next Steps
+
+- Coordinate with Issue #23 (M2 sign-off) once the hub and supporting pages render cleanly via `quarto render docs`.
+- Update this index as additional Methods pages (e.g., caching design, wage hook instrumentation) land in later milestones.

@@ -19,12 +19,22 @@ website:
         href: conventions.md
       - text: "Repro Manual"
         href: repro_manual.qmd
-      - text: "Decider Stub"
-        href: methods/decider.md
-      - text: "Py2 Client"
-        href: methods/py2_client.md
-      - text: "Fallback Semantics"
-        href: methods/fallbacks.qmd
+      - text: "Methods"
+        menu:
+          - text: "Methods Hub"
+            href: methods/index.qmd
+          - text: "Model Overview"
+            href: methods/model_overview.md
+          - text: "Variable Dictionary"
+            href: methods/variables.md
+          - text: "Decider Stub"
+            href: methods/decider.md
+          - text: "Py2 Client"
+            href: methods/py2_client.md
+          - text: "Fallback Semantics"
+            href: methods/fallbacks.qmd
+          - text: "A/B Runner Helper"
+            href: methods/runners.md
 
 format:
   html:
