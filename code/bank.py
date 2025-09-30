@@ -3,7 +3,7 @@ import random
 import math
 import csv
 
-from llm_runtime import bank_enabled, get_client, log_fallback
+from llm_runtime import bank_enabled, get_client, get_bank_guard_config, log_fallback
 
 class Bank:
       def __init__(self,ide,homecountry,A,Lcountry,Fcost,folder,name,run,delta,minReserve\
@@ -189,7 +189,7 @@ class Bank:
                   * ``relative_productivity`` ∈ ℝ and ``leverage`` ≥ 0 forwarded from matching.
           """
 
-          guards=self._spread_guard_bounds()
+          guards=self._bank_guard_config()
 
           capital=self._safe_float(getattr(self,'A',0.0), default=0.0)
           reserves=self._safe_float(getattr(self,'Reserves',0.0), default=0.0)
@@ -236,7 +236,6 @@ class Bank:
               'sector_code':sector_code,
               'collateral_proxy':collateral,
           }
-
           payload={
               'schema_version':'1.0',
               'run_id':getattr(self,'run',0),
@@ -251,8 +250,8 @@ class Bank:
               'non_allocated_money':idle_funds,
               'borrower':borrower_payload,
               'guards':{
-                  'spread_min_bps':guards[0],
-                  'spread_max_bps':guards[1],
+                  'spread_min_bps':guards['min_bps'],
+                  'spread_max_bps':guards['max_bps'],
               },
               'baseline':{
                   'probability':baseline.get('probability'),
@@ -288,21 +287,41 @@ class Bank:
 
       def _apply_llm_decision(self,decision,baseline,loan_request):
           result=baseline.copy()
+          guards=self._bank_guard_config()
           approve=decision.get('approve',True)
           ratio=decision.get('credit_limit_ratio',1.0)
           base_limit=baseline.get('credit_limit',0.0)
           credit_limit=base_limit*ratio
           if credit_limit>base_limit:
+             log_fallback('bank','credit_limit_clamped_baseline')
              credit_limit=base_limit
           if credit_limit>loan_request:
+             log_fallback('bank','credit_limit_clamped_demand')
              credit_limit=loan_request
           if credit_limit<0.0:
+             log_fallback('bank','credit_limit_clamped_negative')
              credit_limit=0.0
           spread=decision.get('spread_bps')
           if spread is None:
              spread=baseline.get('spread_bps',0.0)
-          if spread<0.0:
-             spread=0.0
+          min_spread=guards['min_bps']
+          max_spread=guards['max_bps']
+          epsilon=guards['epsilon']
+          if spread<min_spread:
+             log_fallback('bank','spread_clamped_min','%.1f<%.1f' % (spread,min_spread))
+             spread=min_spread
+          elif spread>max_spread:
+             log_fallback('bank','spread_clamped_max','%.1f>%.1f' % (spread,max_spread))
+             spread=max_spread
+          baseline_spread=baseline.get('spread_bps',min_spread)
+          baseline_guarded=baseline_spread
+          if baseline_guarded<min_spread:
+             baseline_guarded=min_spread
+          if baseline_guarded>max_spread:
+             baseline_guarded=max_spread
+          if spread+epsilon<baseline_guarded:
+             log_fallback('bank','spread_monotonicity','%.1f<%.1f' % (spread,baseline_guarded))
+             spread=baseline_guarded
           interest=self.rDiscount+spread/10000.0
           probability=baseline.get('probability',0.0)
           if not approve:
@@ -324,8 +343,18 @@ class Bank:
              return 1.0
           return value
 
-      def _spread_guard_bounds(self):
-          return (50.0,500.0)
+      def _bank_guard_config(self):
+          config=get_bank_guard_config() or {}
+          min_bps=config.get('min_bps',50.0)
+          max_bps=config.get('max_bps',500.0)
+          epsilon=config.get('epsilon',1e-6)
+          if max_bps<min_bps:
+             max_bps=min_bps
+          return {
+              'min_bps':min_bps,
+              'max_bps':max_bps,
+              'epsilon':max(0.0,epsilon),
+          }
 
       def _safe_float(self,value, default=None):
           try:
