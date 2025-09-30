@@ -1,0 +1,5 @@
+scenario,metric,value
+llm_on,inflation_volatility,0.0061805681026881705
+llm_on,price_dispersion,0.20957101039825526
+baseline,inflation_volatility,0.0061805681026881705
+baseline,price_dispersion,0.20957101039825526
