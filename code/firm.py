@@ -5,7 +5,7 @@ from lebalance import *
 import csv
 from time import *
 import math
-from llm_runtime import firm_enabled, get_client, get_firm_guard_caps, log_fallback
+from llm_runtime import firm_enabled, get_client, get_firm_guard_caps, log_fallback, log_llm_call
 
 class Firm:
       def __init__(self,ide,country,A,phi,Lcountry,w,folder,name,run,delta,dividendRate,xi,iota,\
@@ -128,6 +128,7 @@ class Firm:
              log_fallback('firm','feature_pack_missing',feature_error)
              self._apply_baseline(baseline)
              return
+          log_llm_call('firm')
           decision,error=client.decide_firm(payload)
           if error:
              reason='error'
