@@ -172,27 +172,84 @@ class Bank:
           return baseline
 
       def _build_llm_payload(self,firm_obj,leverage,relPhi,loan_request,loan_supply,baseline):
+          """Build the Decider payload with guard bounds and borrower descriptors.
+
+          Feature hints (pre-clamp values; missing entries fall back to 0/False):
+              - ``capital`` ≥ 0: bank net worth proxy.
+              - ``loan_supply`` ≥ 0: credit still available this tick.
+              - ``reserves`` ≥ 0: current reserve stock.
+              - ``loan_book_value`` ≥ 0: outstanding loan stock.
+              - ``non_allocated_money`` ∈ ℝ: idle liquidity.
+              - Borrower block:
+                  * ``asset_base`` ≥ 0 (firm equity `A`).
+                  * ``profit_rate`` ∈ ℝ (`firm.profitRate`).
+                  * ``arrears_flag`` ∈ {False, True} (heuristic using debt service vs. repayments).
+                  * ``sector_code`` ∈ {``tradable``, ``non_tradable``} when known.
+                  * ``collateral_proxy`` ≥ 0 (inventory value if available).
+                  * ``relative_productivity`` ∈ ℝ and ``leverage`` ≥ 0 forwarded from matching.
+          """
+
           guards=self._spread_guard_bounds()
+
+          capital=self._safe_float(getattr(self,'A',0.0), default=0.0)
+          reserves=self._safe_float(getattr(self,'Reserves',0.0), default=0.0)
+          loan_book=self._safe_float(getattr(self,'Loan',0.0), default=0.0)
+          deposits=self._safe_float(getattr(self,'Deposit',0.0), default=0.0)
+          idle_funds=self._safe_float(getattr(self,'nonAllocatedMoney',0.0), default=0.0)
+
+          firm_assets=self._safe_float(getattr(firm_obj,'A',0.0), default=0.0)
+          profit_rate=self._safe_float(getattr(firm_obj,'profitRate',0.0), default=0.0)
+          collateral=self._safe_float(getattr(firm_obj,'inventoryValue',None))
+          if collateral is None:
+              inv=self._safe_float(getattr(firm_obj,'inventory',None))
+              price=self._safe_float(getattr(firm_obj,'price',None))
+              if inv is not None and price is not None:
+                  collateral=max(0.0, inv*price)
+              else:
+                  collateral=0.0
+          else:
+              collateral=max(0.0, collateral)
+
+          arrears_flag=False
+          reimbursed=self._safe_float(getattr(firm_obj,'loanReimboursed',None))
+          debt_service=self._safe_float(getattr(firm_obj,'debtService',None))
+          if reimbursed is not None and debt_service is not None:
+              arrears_flag=reimbursed+1e-9<debt_service
+
+          sector_raw=getattr(firm_obj,'tradable',None)
+          if sector_raw=='yes':
+              sector_code='tradable'
+          elif sector_raw=='no':
+              sector_code='non_tradable'
+          else:
+              sector_code=None
+
+          borrower_payload={
+              'firm_id':getattr(firm_obj,'ide',''),
+              'country_id':getattr(firm_obj,'country',0),
+              'loan_request':self._safe_float(loan_request, default=0.0),
+              'leverage':self._safe_float(leverage, default=0.0),
+              'relative_productivity':self._safe_float(relPhi, default=0.0),
+              'profit_rate':profit_rate,
+              'asset_base':firm_assets,
+              'arrears_flag':bool(arrears_flag),
+              'sector_code':sector_code,
+              'collateral_proxy':collateral,
+          }
+
           payload={
               'schema_version':'1.0',
               'run_id':getattr(self,'run',0),
               'tick':getattr(self,'llm_tick',0),
               'bank_id':self.ide,
               'country_id':self.country,
-              'capital':getattr(self,'A',0.0),
-              'loan_supply':loan_supply,
-              'reserves':getattr(self,'Reserves',0.0),
-              'loan_book_value':getattr(self,'Loan',0.0),
-              'deposits':getattr(self,'Deposit',0.0),
-              'non_allocated_money':getattr(self,'nonAllocatedMoney',0.0),
-              'borrower':{
-                  'firm_id':getattr(firm_obj,'ide',''),
-                  'country_id':getattr(firm_obj,'country',0),
-                  'loan_request':loan_request,
-                  'leverage':leverage,
-                  'relative_productivity':relPhi,
-                  'profit_rate':getattr(firm_obj,'profitRate',0.0),
-              },
+              'capital':capital,
+              'loan_supply':self._safe_float(loan_supply, default=0.0),
+              'reserves':reserves,
+              'loan_book_value':loan_book,
+              'deposits':deposits,
+              'non_allocated_money':idle_funds,
+              'borrower':borrower_payload,
               'guards':{
                   'spread_min_bps':guards[0],
                   'spread_max_bps':guards[1],
@@ -269,6 +326,19 @@ class Bank:
 
       def _spread_guard_bounds(self):
           return (50.0,500.0)
+
+      def _safe_float(self,value, default=None):
+          try:
+              numeric=float(value)
+          except (TypeError,ValueError):
+              if default is not None:
+                  return float(default)
+              return None
+          if math.isnan(numeric) or math.isinf(numeric):
+              if default is not None:
+                  return float(default)
+              return None
+          return numeric
 
       def computeProbBuyingBondLoan(self,leverage):
           probBond=math.exp(-1*self.iotaE*leverage)
