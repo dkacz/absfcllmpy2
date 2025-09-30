@@ -244,11 +244,12 @@ class Firm:
       def _apply_llm_decision(self,previous_price,baseline,decision,guard_caps):
           max_step=max(0.0,float(guard_caps.get('max_price_step',self.delta)))
           step=decision.get('price_step',0.0)
-          if step<0:
-             step=0.0
           if step>max_step:
-             log_fallback('firm','price_step_clamped')
+             log_fallback('firm','price_step_clamped_high')
              step=max_step
+          elif step<0.0:
+             log_fallback('firm','price_step_clamped_low')
+             step=0.0
 
           direction=decision.get('direction')
           price_floor=baseline.get('price_floor',self._unit_cost())
