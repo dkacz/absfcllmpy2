@@ -26,6 +26,12 @@ _GUARD_PRESET_FACTORS = {
     'loose': 1.5,
 }
 
+_BANK_GUARD_EPSILON = {
+    'baseline': 1e-6,
+    'tight': 0.0,
+    'loose': 1e-6,
+}
+
 
 def configure(parameter):
     """Register the active ``Parameter`` instance for downstream hooks."""
@@ -119,6 +125,49 @@ def get_firm_guard_caps():
     return _scale_caps(base, factor)
 
 
+def get_bank_guard_config():
+    """Return spread guard bounds (bps) and epsilon."""
+
+    base_min = 50.0
+    base_max = 500.0
+    parameter = get_parameter()
+
+    if parameter:
+        custom_bounds = getattr(parameter, 'bank_guard_bounds', None)
+        bounds = _sanitise_bank_bounds(custom_bounds)
+        if bounds is not None:
+            base_min, base_max = bounds
+
+    preset = 'baseline'
+    if parameter:
+        preset = _resolve_guard_preset(parameter, 'bank_guard_preset')
+    factor = _GUARD_PRESET_FACTORS.get(preset, 1.0)
+
+    min_bps = base_min
+    if preset == 'tight':
+        min_bps = base_min + 50.0
+
+    window = max(0.0, base_max - base_min)
+    max_bps = min_bps + window * factor
+    if max_bps < min_bps:
+        max_bps = min_bps
+
+    epsilon = _BANK_GUARD_EPSILON.get(preset, 1e-6)
+    if parameter:
+        custom_eps = getattr(parameter, 'bank_guard_epsilon', None)
+        try:
+            if custom_eps is not None:
+                epsilon = max(0.0, float(custom_eps))
+        except (TypeError, ValueError):
+            pass
+
+    return {
+        'min_bps': min_bps,
+        'max_bps': max_bps,
+        'epsilon': epsilon,
+    }
+
+
 def _resolve_guard_preset(parameter, attribute):
     value = getattr(parameter, attribute, None)
     if value:
@@ -173,6 +222,24 @@ def _sanitise_firm_caps(custom):
     return caps
 
 
+def _sanitise_bank_bounds(value):
+    if not value:
+        return None
+    try:
+        minimum, maximum = value
+        minimum = float(minimum)
+        maximum = float(maximum)
+    except (TypeError, ValueError, IndexError):
+        return None
+    if minimum < 0.0:
+        minimum = 0.0
+    if maximum < 0.0:
+        maximum = 0.0
+    if maximum < minimum:
+        minimum, maximum = maximum, minimum
+    return (minimum, maximum)
+
+
 def _ensure_block_counter(block):
     counters = _CONTEXT.get('counters')
     if counters is None:
@@ -205,4 +272,5 @@ __all__ = [
     'ensure_counter',
     'get_counters_snapshot',
     'get_firm_guard_caps',
+    'get_bank_guard_config',
 ]
