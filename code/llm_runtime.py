@@ -11,6 +11,13 @@ except ImportError:  # pragma: no cover - package import fallback
 _CONTEXT = {
     'parameter': None,
     'client': None,
+    'counters': {},
+}
+
+_COUNTER_TEMPLATE = {
+    'calls': 0,
+    'fallbacks': 0,
+    'timeouts': 0,
 }
 
 _GUARD_PRESET_FACTORS = {
@@ -25,6 +32,7 @@ def configure(parameter):
 
     _CONTEXT['parameter'] = parameter
     _CONTEXT['client'] = None
+    _CONTEXT['counters'] = {}
 
 
 def get_parameter():
@@ -55,10 +63,40 @@ def bank_enabled():
 
 
 def log_fallback(block, reason, detail=None):
+    _register_fallback(block, reason)
     message = '[LLM %s] fallback: %s' % (block, reason)
     if detail:
         message = message + ' (%s)' % detail
     print message
+
+
+def log_llm_call(block):
+    _ensure_block_counter(block)['calls'] += 1
+
+
+def reset_counters(block=None):
+    if block is None:
+        _CONTEXT['counters'] = {}
+        return
+    counters = _CONTEXT.get('counters')
+    if counters is None:
+        _CONTEXT['counters'] = {}
+        counters = _CONTEXT['counters']
+    counters[str(block)] = _COUNTER_TEMPLATE.copy()
+
+
+def ensure_counter(block):
+    return _ensure_block_counter(block)
+
+
+def get_counters_snapshot():
+    counters = _CONTEXT.get('counters') or {}
+    snapshot = {}
+    for block, values in counters.items():
+        if values is None:
+            continue
+        snapshot[block] = values.copy()
+    return snapshot
 
 
 def get_firm_guard_caps():
@@ -135,4 +173,36 @@ def _sanitise_firm_caps(custom):
     return caps
 
 
-__all__ = ['configure', 'get_client', 'get_parameter', 'firm_enabled', 'bank_enabled', 'log_fallback', 'get_firm_guard_caps']
+def _ensure_block_counter(block):
+    counters = _CONTEXT.get('counters')
+    if counters is None:
+        counters = {}
+        _CONTEXT['counters'] = counters
+    key = str(block)
+    current = counters.get(key)
+    if current is None:
+        current = _COUNTER_TEMPLATE.copy()
+        counters[key] = current
+    return current
+
+
+def _register_fallback(block, reason):
+    counter = _ensure_block_counter(block)
+    counter['fallbacks'] += 1
+    if str(reason) == 'timeout':
+        counter['timeouts'] += 1
+
+
+__all__ = [
+    'configure',
+    'get_client',
+    'get_parameter',
+    'firm_enabled',
+    'bank_enabled',
+    'log_fallback',
+    'log_llm_call',
+    'reset_counters',
+    'ensure_counter',
+    'get_counters_snapshot',
+    'get_firm_guard_caps',
+]

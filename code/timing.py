@@ -39,7 +39,12 @@ from globalInnovation import *
 from printParameters import *
 from centralBankUnion import *
 from policy import *
-from llm_runtime import configure as configure_llm
+from llm_runtime import (
+    configure as configure_llm,
+    ensure_counter as ensure_llm_counter,
+    get_counters_snapshot as get_llm_counters_snapshot,
+    reset_counters as reset_llm_counters,
+)
 
 
 _LOG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'timing.log'))
@@ -47,6 +52,31 @@ _LOG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'timin
 
 def _flag(value):
     return 'on' if value else 'off'
+
+
+def _log_llm_counter_line(parameter, run_id, counters):
+    counters = counters or {}
+    calls = int(counters.get('calls', 0))
+    fallbacks = int(counters.get('fallbacks', 0))
+    timeouts = int(counters.get('timeouts', 0))
+    line = (
+        '[LLM firm] counters name=%s run=%s llm=%s calls=%d fallbacks=%d timeouts=%d\n'
+        % (
+            getattr(parameter, 'name', 'n/a'),
+            run_id,
+            _flag(getattr(parameter, 'use_llm_firm_pricing', False)),
+            calls,
+            fallbacks,
+            timeouts,
+        )
+    )
+    try:
+        handle = open(_LOG_PATH, 'a')
+        handle.write(line)
+        handle.close()
+    except Exception as exc:
+        print 'Warning: failed to write firm counter log (%s)' % exc
+    print line.strip()
 
 
 def log_llm_toggles(parameter):
@@ -83,9 +113,13 @@ def run_simulation(parameter=None, progress=True):
     printPa=PrintParameters(para.name,para.folder)
     configure_llm(para)
 
+    run_counters = {}
+
     for run in para.Lrun:
         if para.weSeedRun=='yes':
            random.seed(run) 
+        reset_llm_counters()
+        ensure_llm_counter('firm')
         # initialization
         printPa.printingPara(para,run)
         ite=Initialize(para.ncountry,para.nconsumer,para.A,para.phi,\
@@ -276,12 +310,17 @@ def run_simulation(parameter=None, progress=True):
             if ite.breaking=='yes':
                   break 
 
+        counters_snapshot = get_llm_counters_snapshot()
+        run_counters[run] = counters_snapshot
+        _log_llm_counter_line(para, run, counters_snapshot.get('firm'))
+
 
     metrics_summary = aggrega.core_metrics_summary()
     metrics_series = aggrega.metric_series()
     result = {
         'core_metrics': metrics_summary,
         'metric_series': metrics_series,
+        'llm_counters': run_counters,
     }
 
     if progress:
