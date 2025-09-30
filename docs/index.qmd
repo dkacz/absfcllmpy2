@@ -29,6 +29,10 @@ For file naming, see the [Artifact Naming & Cross-Reference Conventions](convent
 
 The table above is drawn from `data/_examples/sample_metrics.csv`; future Quarto pages should cite the CSV when narrating results (for example, “see @tbl-example-metrics”).
 
+## Milestone M3 — Firm pricing & expectations
+
+- [Firm pricing A/B comparison](firm_ab.qmd) — embeds Table `@tbl-firm-ab` and Figure `@fig-firm-ab` derived from the 200-tick OFF/ON runs.
+
 ## Ethics & scope
 
 {{< include snippets/ethics_scope.md >}}
