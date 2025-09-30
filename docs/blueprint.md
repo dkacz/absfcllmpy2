@@ -121,10 +121,11 @@ robustness = 120; otherwise we raise only the failing block to the smallest `T` 
 - All guards still enforce stock-flow safety and floors.
 
 **LLM providers under test**  
-- `DECIDER_PROVIDER = openai:gpt5-nano` or `google:gemini2.5-flash-lite`.  
-- Deterministic (`temperature=0`), JSON-only contract, state-hash cache.  
-- Timeout calibration: for each provider, send 200 calls per endpoint, set `LLM_TIMEOUT_MS = min(300, ceil(p95 + 30ms))`; cap at 350ms. Initial default: 200 ms.  
-- On timeout/invalid JSON: baseline fallback with a one-line reason logged; A/B counters report calls/timeouts/fallbacks.
+- Live mode routes through **OpenRouter** (`https://openrouter.ai/api/v1/chat/completions`).  
+- Environment: `OPENROUTER_API_KEY` (required), optional `OPENROUTER_HTTP_REFERER`, `OPENROUTER_TITLE`.  
+- Model slugs (e.g., `openai/gpt-5-nano`, `google/gemini-2.5-flash-lite`) verified via `/api/v1/models` on startup.  
+- Deterministic (`temperature=0`, optional `seed`), JSON-only or JSON-Schema structured outputs with local validation + guard clamps.  
+- Timeout calibration: adapter deadline < server `--deadline-ms` (default 200 ms). On timeout/invalid JSON: single fallback slug attempt, then baseline.
 
 ### Presentation & guard defaults (final)
 
@@ -150,3 +151,12 @@ robustness = 120; otherwise we raise only the failing block to the smallest `T` 
 **Tables: rounding & units**  
 - CSVs store raw numeric values.  
 - Quarto rendering: ratios & spreads to 2 decimals; counts with comma separators; captions spell out units.
+
+## Live mode (M6-LIVE — OpenRouter integration)
+
+- **Adapter** — single OpenRouter client (`tools/decider/providers/openrouter_adapter.py`) with model-slug verification, JSON/JSON-Schema handling, temperature=0, usage token capture.
+- **Decider server** — `--mode live` flag, primary→fallback retry ladder, guard-aware validation for firm/bank/wage prompts, baseline fallback on error.
+- **Prompts & schemas** — endpoint-specific system/user instructions plus strict JSON Schemas with compact “why” codes and guard ranges (price_step ±0.04, spread bps clamps, etc.).
+- **Telemetry** — `timing.log` to include prompt/completion tokens, elapsed ms, fallback reasons; optional `GET /api/v1/key` credit snapshot at startup.
+- **Docs** — new Methods page `docs/methods/decider_live_openrouter.md`, AGENTS quickstart for live mode, manuscript updates adding why-code tables alongside overlays.
+- **Tests** — structured-output detection, timeout/failover scenarios, schema validation, placeholder values when stub still in use.
