@@ -1,0 +1,46 @@
+---
+title: "Firm A/B Comparison"
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Overview
+This page tracks the firm pricing & expectations experiment for Milestone M3. Both runs use `run_id = 0` over a 200-tick horizon with the Decider stub responding deterministically. The CSV and overlay below are generated via `python3 tools/generate_firm_ab.py` and surface the raw metrics exported by `code/timing.py`.
+
+Because the stub currently rejects every firm request, the OFF and ON scenarios are identical. We keep the artifacts in place so later prompt work can drop in updated values without changing the page structure.
+
+## Core metrics
+The table aggregates inflation volatility and price dispersion for the baseline (`OFF`) and LLM-enabled (`ON`) runs. Values are rounded to two decimals per the manuscript convention.
+
+```{python}
+#| label: tbl-firm-ab
+#| tbl-cap: "Firm A/B metrics (run 0, 200 ticks)."
+import pandas as pd
+from pathlib import Path
+
+source = Path("../data/firm/firm_ab_table.csv")
+df = pd.read_csv(source)
+ordered = (
+    df.pivot(index="scenario", columns="metric", values="value")
+      .reindex(["baseline", "llm_on"])
+      [["inflation_volatility", "price_dispersion"]]
+      .rename(columns={
+          "inflation_volatility": "Inflation volatility",
+          "price_dispersion": "Price dispersion",
+      })
+)
+formatted = ordered.applymap(lambda x: f"{x:,.2f}")
+formatted
+```
+
+## Price-dispersion overlay
+Figure @fig-firm-ab overlays the OFF and ON time series. The OFF path is dashed, the ON path is solid, and the final 50 ticks are shaded to highlight the comparison window used in the manuscript.
+
+![Firm price dispersion overlay (OFF dashed, ON solid; final 50 ticks shaded)](../figs/firm/firm_ab_overlay.png){#fig-firm-ab}
+
+## Notes
+- Artifact paths: `data/firm/firm_ab_table.csv`, `figs/firm/firm_ab_overlay.png`.
+- Stub behaviour yields identical OFF/ON metrics; expect differences once live prompts replace the stub.
