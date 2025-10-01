@@ -5,7 +5,7 @@ from lebalance import *
 import csv
 from time import *
 import math
-from llm_runtime import firm_enabled, get_client, get_firm_guard_caps, log_fallback, log_llm_call
+from llm_runtime import firm_enabled, get_client, get_firm_guard_caps, log_fallback, log_llm_call, wage_enabled
 
 class Firm:
       def __init__(self,ide,country,A,phi,Lcountry,w,folder,name,run,delta,dividendRate,xi,iota,\
@@ -587,42 +587,291 @@ class Firm:
              print 'ratioUnemployment', ratioUnemployment
              print 'unemploymentVariation', unemploymentVariation
              print 'productivityVariation', productivityVariation
-              
+             
+
+      def _wage_offer_limits(self):
+          try:
+             floor=float(getattr(self,'wageMin',0.0))
+          except (TypeError,ValueError):
+             floor=0.0
+          if floor<0.0:
+             floor=0.0
+
+          wage_cap=getattr(self,'wageMax',None)
+          try:
+             wage_cap=float(wage_cap)
+             if math.isinf(wage_cap):
+                wage_cap=None
+             elif wage_cap<0.0:
+                wage_cap=0.0
+          except (TypeError,ValueError):
+             wage_cap=None
+
+          price_cap=None
+          try:
+             price_cap=float(self.price)*float(self.phi)
+             if math.isnan(price_cap) or math.isinf(price_cap):
+                price_cap=None
+             elif price_cap<0.0:
+                price_cap=0.0
+          except (TypeError,ValueError):
+             price_cap=None
+
+          return floor, wage_cap, price_cap
+
+      def _wage_offer_guard_caps(self):
+          try:
+             delta=float(getattr(self,'deltaLabor',0.0))
+          except (TypeError,ValueError):
+             delta=0.0
+          if delta<0.0:
+             delta=0.0
+          return {'max_wage_step': delta}
+
+      def _clamp_wage_offer(self,target,enforce_price_cap=False):
+          floor,wage_cap,price_cap=self._wage_offer_limits()
+          effective_ceiling=wage_cap
+          if enforce_price_cap:
+             if effective_ceiling is None:
+                effective_ceiling=price_cap
+             elif price_cap is not None:
+                effective_ceiling=min(effective_ceiling,price_cap)
+
+          clamped=target
+          reasons=[]
+          if clamped<floor:
+             clamped=floor
+             reasons.append('wage_floor_enforced')
+          if effective_ceiling is not None and clamped>effective_ceiling:
+             clamped=effective_ceiling
+             if enforce_price_cap and price_cap is not None and (effective_ceiling==price_cap or target>price_cap):
+                 reasons.append('price_floor_guard')
+             else:
+                 reasons.append('wage_ceiling_enforced')
+          return clamped,reasons
+
+      def _baseline_wage_offer_decision(self,unemployment_rate):
+          previous_wage=self.w
+          direction='stay'
+          firm_upsilon=1.0
+          draw=random.uniform(0,1)
+          if self.nWorkerDesiredEffective>self.l:
+             threshold=firm_upsilon*math.exp(-unemployment_rate*self.upsilon)
+             if draw<=threshold:
+                direction='plus'
+          else:
+             threshold=firm_upsilon*math.exp(-unemployment_rate*self.upsilon)
+             if draw>threshold:
+                direction='minus'
+
+          candidate=previous_wage
+          try:
+             delta=float(getattr(self,'deltaLabor',0.0))
+          except (TypeError,ValueError):
+             delta=0.0
+          if delta<0.0:
+             delta=0.0
+
+          if direction=='plus':
+             upper=previous_wage*(1.0+delta)
+             candidate=random.uniform(previous_wage,upper)
+          elif direction=='minus':
+             lower=previous_wage*(1.0-delta)
+             candidate=random.uniform(previous_wage,lower)
+
+          candidate,_=self._clamp_wage_offer(candidate,enforce_price_cap=False)
+          return {
+             'wage': candidate,
+             'direction': direction,
+          }
+
+      def _apply_wage_offer_outcome(self,outcome,from_llm=False):
+          candidate=outcome.get('wage',self.w)
+          clamped,reasons=self._clamp_wage_offer(candidate,enforce_price_cap=from_llm)
+          self.w=clamped
+          if from_llm:
+             for reason in reasons:
+                 log_fallback('wage',reason)
+          return clamped
+
+      def _build_wage_offer_payload(self,previous_wage,unemployment_rate,guard_caps,vacancies,fill_rate):
+          floor,_,price_cap=self._wage_offer_limits()
+          ceiling_value=None
+          wage_cap=getattr(self,'wageMax',None)
+          try:
+             wage_cap=float(wage_cap)
+             if math.isinf(wage_cap):
+                wage_cap=None
+             elif wage_cap<0.0:
+                wage_cap=0.0
+          except (TypeError,ValueError):
+             wage_cap=None
+          candidates=[value for value in (wage_cap,price_cap) if value is not None]
+          if candidates:
+             ceiling_value=min(candidates)
+
+          payload={
+             'schema_version':'1.0',
+             'run_id':getattr(self,'run',0),
+             'tick':getattr(self,'llm_tick',0),
+             'context':'firm_offer',
+             'agent_id':self.ide,
+             'country_id':getattr(self,'country',0),
+             'wage_ceiling':ceiling_value,
+             'guards':{
+                 'max_wage_step':guard_caps.get('max_wage_step',0.0),
+             },
+             'wage_floor':floor,
+             'vacancies':vacancies,
+             'recent_fill_rate':fill_rate,
+             'recent_unemployment_rate':unemployment_rate,
+          }
+
+          try:
+             payload['run_id']=int(payload['run_id'])
+          except (TypeError,ValueError):
+             payload['run_id']=0
+          try:
+             payload['tick']=int(payload['tick'])
+          except (TypeError,ValueError):
+             payload['tick']=0
+          try:
+             payload['country_id']=int(payload['country_id'])
+          except (TypeError,ValueError):
+             payload['country_id']=0
+          payload['agent_id']=str(payload['agent_id'])
+
+          numeric_fields=(
+             ('current_wage',previous_wage),
+             ('wage_floor',payload['wage_floor']),
+             ('guards.max_wage_step',payload['guards']['max_wage_step']),
+             ('vacancies',vacancies),
+             ('recent_fill_rate',fill_rate),
+             ('recent_unemployment_rate',unemployment_rate),
+          )
+
+          for label,value in numeric_fields:
+             numeric=self._safe_numeric(value)
+             if numeric is None:
+                return None,label
+             if label=='guards.max_wage_step':
+                payload['guards']['max_wage_step']=numeric
+             else:
+                field_name=label
+                payload[field_name]=numeric
+
+          if payload['wage_ceiling'] is not None:
+             ceiling_numeric=self._safe_numeric(payload['wage_ceiling'])
+             if ceiling_numeric is None:
+                return None,'wage_ceiling'
+             payload['wage_ceiling']=ceiling_numeric
+
+          return payload,None
+
+      def _validate_wage_offer_decision(self,decision):
+          if not isinstance(decision,dict):
+             return False
+          direction=decision.get('direction')
+          if direction not in ('up','down','hold'):
+             return False
+          if direction=='hold':
+             return True
+          try:
+             float(decision.get('wage_step',0.0))
+          except (TypeError,ValueError):
+             return False
+          return True
+
+      def _apply_llm_wage_offer(self,previous_wage,decision,guard_caps):
+          direction=decision.get('direction')
+          try:
+             max_step=float(guard_caps.get('max_wage_step',0.0))
+          except (TypeError,ValueError):
+             max_step=0.0
+          if max_step<0.0:
+             max_step=0.0
+
+          if direction=='hold':
+             target=previous_wage
+          else:
+             try:
+                step=abs(float(decision.get('wage_step',0.0)))
+             except (TypeError,ValueError):
+                return False
+             if step>max_step:
+                log_fallback('wage','wage_step_clamped_high')
+                step=max_step
+             if direction=='up':
+                target=previous_wage*(1.0+step)
+             elif direction=='down':
+                target=previous_wage*(1.0-step)
+             else:
+                return False
+          self._apply_wage_offer_outcome({'wage':target},from_llm=True)
+          return True
 
       def wageOffered(self,McountryUnemployement,McountryPastUnemployement,McountryYL,McountryPastYL,t,McountryConsumer):
-          # Eq. 15 (Caiani et al. 2016): firm offered wage baseline rule.
-          nWorkerDesired=self.nWorkerDesiredEffective
-          l=self.l 
-          p=self.price
-          u=McountryUnemployement[self.country]
-          a=random.uniform(0,1)   
-          self.pastWage=self.w 
-          direction='stay' 
-          firmUpsilon=1.0#1/2.5#0.25  
-          if nWorkerDesired>self.l:
-                #direction='plus'
-                if a>firmUpsilon*math.exp(-u*self.upsilon):
-                #if a<=u*self.upsilon*firmUpsilon: 
-                   direction='stay'
-                if a<=firmUpsilon*math.exp(-u*self.upsilon):
-                #if a>u*self.upsilon*firmUpsilon:
-                   direction='plus' 
-          if nWorkerDesired<=self.l:
-             #direction='stay'    
-             if  a>firmUpsilon*math.exp(-u*self.upsilon):
-             #if  a<=u*self.upsilon*firmUpsilon:
-                 direction='minus' 
-             if a<=firmUpsilon*math.exp(-u*self.upsilon):
-             #if  a>u*self.upsilon*firmUpsilon: 
-                direction='stay'
-          if direction=='plus':
-             self.w=random.uniform(self.w,self.w*(1+self.deltaLabor)) 
-          if direction=='minus':
-             self.w=random.uniform(self.w,self.w*(1-self.deltaLabor))          
-          if self.w<self.wageMin:
-             self.w=self.wageMin 
-          if self.w>self.wageMax:
-             self.w=self.wageMax 
+          # Eq. 15 (Caiani et al. 2016): firm offered wage baseline rule with optional LLM override.
+          self.pastWage=self.w
+          unemployment_rate=McountryUnemployement[self.country]
+          guard_caps=self._wage_offer_guard_caps()
+          baseline=self._baseline_wage_offer_decision(unemployment_rate)
+
+          if not wage_enabled():
+             self._apply_wage_offer_outcome(baseline)
+             return
+
+          client=get_client()
+          if client is None:
+             log_fallback('wage','client_unavailable')
+             self._apply_wage_offer_outcome(baseline)
+             return
+
+          desired_workers=self._safe_numeric(self.nWorkerDesiredEffective)
+          employed_workers=self._safe_numeric(self.l)
+          if desired_workers is None:
+             desired_workers=0.0
+          if employed_workers is None:
+             employed_workers=0.0
+          vacancies=max(0.0,desired_workers-employed_workers)
+          if desired_workers>0.0:
+             fill_rate=min(max(employed_workers/desired_workers,0.0),1.0)
+          else:
+             fill_rate=1.0
+
+          payload,feature_error=self._build_wage_offer_payload(
+             self.pastWage,
+             unemployment_rate,
+             guard_caps,
+             vacancies,
+             fill_rate,
+          )
+          if payload is None:
+             log_fallback('wage','feature_pack_missing',feature_error)
+             self._apply_wage_offer_outcome(baseline)
+             return
+
+          log_llm_call('wage')
+          decision,error=client.decide_wage(payload)
+          if error:
+             reason='error'
+             detail=None
+             if isinstance(error,dict):
+                reason=error.get('reason','error')
+                detail=error.get('detail') or error.get('body')
+             log_fallback('wage',reason,detail)
+             self._apply_wage_offer_outcome(baseline)
+             return
+
+          if not self._validate_wage_offer_decision(decision):
+             log_fallback('wage','invalid_response')
+             self._apply_wage_offer_outcome(baseline)
+             return
+
+          if not self._apply_llm_wage_offer(self.pastWage,decision,guard_caps):
+             log_fallback('wage','invalid_decision')
+             self._apply_wage_offer_outcome(baseline)
+             return
          
 
       def wageOffered3(self,McountryUnemployement,McountryPastUnemployement,McountryYL,McountryPastYL,t,McountryConsumer):

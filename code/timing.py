@@ -122,6 +122,7 @@ def run_simulation(parameter=None, progress=True):
         reset_llm_counters()
         ensure_llm_counter('firm')
         ensure_llm_counter('bank')
+        ensure_llm_counter('wage')
         # initialization
         printPa.printingPara(para,run)
         ite=Initialize(para.ncountry,para.nconsumer,para.A,para.phi,\
@@ -327,6 +328,13 @@ def run_simulation(parameter=None, progress=True):
             'bank',
             counters_snapshot.get('bank'),
             getattr(para, 'use_llm_bank_credit', False),
+        )
+        _log_llm_counter_line(
+            para,
+            run,
+            'wage',
+            counters_snapshot.get('wage'),
+            getattr(para, 'use_llm_wage', False),
         )
 
 
