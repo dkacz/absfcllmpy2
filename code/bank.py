@@ -175,18 +175,18 @@ class Bank:
           """Build the Decider payload with guard bounds and borrower descriptors.
 
           Feature hints (pre-clamp values; missing entries fall back to 0/False):
-              - ``capital`` ≥ 0: bank net worth proxy.
-              - ``loan_supply`` ≥ 0: credit still available this tick.
-              - ``reserves`` ≥ 0: current reserve stock.
-              - ``loan_book_value`` ≥ 0: outstanding loan stock.
-              - ``non_allocated_money`` ∈ ℝ: idle liquidity.
+              - ``capital`` >= 0: bank net worth proxy.
+              - ``loan_supply`` >= 0: credit still available this tick.
+              - ``reserves`` >= 0: current reserve stock.
+              - ``loan_book_value`` >= 0: outstanding loan stock.
+              - ``non_allocated_money`` in R: idle liquidity.
               - Borrower block:
-                  * ``asset_base`` ≥ 0 (firm equity `A`).
-                  * ``profit_rate`` ∈ ℝ (`firm.profitRate`).
-                  * ``arrears_flag`` ∈ {False, True} (heuristic using debt service vs. repayments).
-                  * ``sector_code`` ∈ {``tradable``, ``non_tradable``} when known.
-                  * ``collateral_proxy`` ≥ 0 (inventory value if available).
-                  * ``relative_productivity`` ∈ ℝ and ``leverage`` ≥ 0 forwarded from matching.
+                  * ``asset_base`` >= 0 (firm equity `A`).
+                  * ``profit_rate`` in R (`firm.profitRate`).
+                  * ``arrears_flag`` in {False, True} (heuristic using debt service vs. repayments).
+                  * ``sector_code`` in {``tradable``, ``non_tradable``} when known.
+                  * ``collateral_proxy`` >= 0 (inventory value if available).
+                  * ``relative_productivity`` in R and ``leverage`` >= 0 forwarded from matching.
           """
 
           guards=self._bank_guard_config()
