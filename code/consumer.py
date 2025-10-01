@@ -4,6 +4,8 @@ import csv
 import random
 import math
 
+from llm_runtime import get_client, log_fallback, log_llm_call, wage_enabled
+
 class Consumer:
       def __init__(self,ide,country,w,beta,folder,name,run,delta,\
                    cDisposableIncome,cWealth,liqPref,upsilon,rDeposit,ls,w0,wBar,upsilon2):
@@ -58,6 +60,7 @@ class Consumer:
           self.wageMax=float('inf')
           self.wageMin=0.0
           self.gPhi=0 
+          self.llm_tick=0
           self.memory=8
           self.LpastEmployment=[]
           for i in range(self.memory):
@@ -272,59 +275,237 @@ class Consumer:
              #print 'a', a
 
 
-      def laborSupply(self,McountryUnemployement,McountryPastUnemployement,McountryYL,McountryPastYL):
-          # Eq. 1 (Caiani et al. 2016): reservation wage update before any LLM hook.
-          #if self.laborSupplyAlreadyRevised=='no':
-             u=McountryUnemployement[self.country]
-             self.wageDirection=0 
-             self.pastWage=self.wageDemanded 
-             g=(McountryYL[self.country]-McountryPastYL[self.country])/McountryPastYL[self.country]
-             a=random.uniform(0,1)
-             #self.upsilon=1.0 
-             direction='stay'
-             upsilonConsumer=self.upsilon2#0.75 
-             if self.l<self.ls:# and g<=0:
-                   #direction='down'    
-                   if a<upsilonConsumer*math.exp(-1*(u*self.upsilon)):
-                   #if a>u*self.upsilon*upsilonConsumer:
-                      direction='stay'
-                   else:
-                      direction='down'#'stay'
-             if self.l>=self.ls:
-                #direction='up'
-                   if a<upsilonConsumer*math.exp(-1*(u*self.upsilon)):# and self.gPhi>0:
-                   #if a>u*self.upsilon*upsilonConsumer:
-                      direction='up'
-                   else:
-                      direction='stay'#'stay'
-             if direction=='up':
-                Umin=self.wageDemanded
-                Umax=self.wageDemanded*(1+self.deltaLabor)
-                self.wP=random.uniform(Umin,Umax)
-                self.wageDemanded=self.wP 
-             if direction=='down':
-                Umin=self.wageDemanded
-                Umax=self.wageDemanded*(1-self.deltaLabor)
-                self.wP=random.uniform(Umin,Umax)
-                self.wageDemanded=self.wP  
-             if self.wageDemanded<self.wageMin:
-                self.wageDemanded=self.wageMin
-             if self.wageDemanded>self.wageMax:
-                self.wageDemanded=self.wageMax
-             if self.ide=='C0n0':
-                print
-                print 'self.ide', self.ide
-                print 'self.wageDemanded', self.wageDemanded
-                print 'self.pastWage', self.pastWage
-                print 'self.l', self.l
-                print 'self.ls', self.ls
-                print 'a', a  
-                print 'math.exp(-u*self.upsilon)', math.exp(-u*self.upsilon)
-                print a<math.exp(-u*self.upsilon) 
-                print 'self.gPhi', self.gPhi  
-                print 'g', g
-                print 'direction', direction
+      def _wage_guard_caps(self):
+          try:
+              delta = float(getattr(self, 'deltaLabor', 0.0))
+          except (TypeError, ValueError):
+              delta = 0.0
+          if delta < 0.0:
+              delta = 0.0
+          return {'max_wage_step': delta}
 
+      def _wage_floor(self):
+          base = max(1.0, getattr(self, 'wageMin', 0.0) or 0.0)
+          return base
+
+      def _wage_ceiling_value(self):
+          ceiling = getattr(self, 'wageMax', None)
+          if ceiling is None:
+              return None
+          try:
+              value = float(ceiling)
+          except (TypeError, ValueError):
+              return None
+          if math.isinf(value):
+              return None
+          return value
+
+      def _clamp_wage(self, wage):
+          floor = self._wage_floor()
+          if wage < floor:
+              wage = floor
+          ceiling = getattr(self, 'wageMax', float('inf'))
+          try:
+              ceiling_value = float(ceiling)
+          except (TypeError, ValueError):
+              ceiling_value = float('inf')
+          if not math.isinf(ceiling_value) and wage > ceiling_value:
+              wage = ceiling_value
+          return wage
+
+      def _baseline_wage_decision(self, unemployment_rate, growth_rate):
+          previous_wage = self.wageDemanded
+          try:
+              threshold = self.upsilon2 * math.exp(-1.0 * (unemployment_rate * self.upsilon))
+          except Exception:
+              threshold = 0.0
+          random_draw = random.uniform(0, 1)
+          direction = 'stay'
+          if self.l < self.ls:
+              if random_draw >= threshold:
+                  direction = 'down'
+          else:
+              if random_draw < threshold:
+                  direction = 'up'
+
+          candidate = previous_wage
+          delta = self._wage_guard_caps().get('max_wage_step', 0.0)
+          if direction == 'up':
+              upper = previous_wage * (1.0 + delta)
+              candidate = random.uniform(previous_wage, upper)
+          elif direction == 'down':
+              lower = previous_wage * (1.0 - delta)
+              candidate = random.uniform(previous_wage, lower)
+
+          candidate = self._clamp_wage(candidate)
+          step = 0.0
+          if previous_wage > 0.0:
+              step = abs((candidate - previous_wage) / previous_wage)
+
+          if self.ide == 'C0n0':
+              print
+              print 'self.ide', self.ide
+              print 'self.wageDemanded (previous)', previous_wage
+              print 'candidate_wage', candidate
+              print 'self.pastWage', self.pastWage
+              print 'self.l', self.l
+              print 'self.ls', self.ls
+              print 'random_draw', random_draw
+              print 'threshold', threshold
+              print 'growth_rate', growth_rate
+              print 'direction', direction
+              print 'self.LpastEmployment', getattr(self, 'LpastEmployment', [])
+
+          return {
+              'direction': direction,
+              'wage': candidate,
+              'wage_step': step,
+              'direction_flag': {'up': 1, 'down': -1}.get(direction, 0),
+          }
+
+      def _apply_wage_outcome(self, outcome):
+          target = outcome.get('wage', self.wageDemanded)
+          target = self._clamp_wage(target)
+          self.wageDemanded = target
+          self.wP = target
+          self.wageDirection = outcome.get('direction_flag', 0)
+
+      def _build_wage_llm_payload(self, previous_wage, unemployment_rate, guard_caps):
+          history = []
+          for value in getattr(self, 'LpastEmployment', []):
+              try:
+                  history.append(float(value))
+              except (TypeError, ValueError):
+                  return None, 'employment_history'
+
+          payload = {
+              'schema_version': '1.0',
+              'run_id': getattr(self, 'run', 0),
+              'tick': getattr(self, 'llm_tick', 0),
+              'context': 'worker_reservation',
+              'agent_id': self.ide,
+              'country_id': self.country,
+              'current_wage': previous_wage,
+              'wage_floor': self._wage_floor(),
+              'wage_ceiling': self._wage_ceiling_value(),
+              'guards': {
+                  'max_wage_step': guard_caps.get('max_wage_step', 0.0),
+              },
+              'employment_history': history,
+              'recent_unemployment_rate': unemployment_rate,
+          }
+          return payload, None
+
+      def _validate_wage_decision(self, decision):
+          if not isinstance(decision, dict):
+              return False
+          direction = decision.get('direction')
+          if direction not in ('up', 'down', 'hold'):
+              return False
+          if direction == 'hold':
+              return True
+          try:
+              float(decision.get('wage_step', 0.0))
+          except (TypeError, ValueError):
+              return False
+          return True
+
+      def _apply_llm_wage_decision(self, previous_wage, decision, guard_caps):
+          direction = decision.get('direction')
+          try:
+              max_step = float(guard_caps.get('max_wage_step', 0.0))
+          except (TypeError, ValueError):
+              max_step = 0.0
+          if max_step < 0.0:
+              max_step = 0.0
+
+          if direction == 'hold':
+              step = 0.0
+          else:
+              try:
+                  step = abs(float(decision.get('wage_step', 0.0)))
+              except (TypeError, ValueError):
+                  log_fallback('wage', 'invalid_step')
+                  return False
+
+          if step > max_step:
+              log_fallback('wage', 'wage_step_clamped_high')
+              step = max_step
+
+          if direction == 'up':
+              target = previous_wage * (1.0 + step)
+          elif direction == 'down':
+              target = previous_wage * (1.0 - step)
+          elif direction == 'hold':
+              target = previous_wage
+          else:
+              return False
+
+          unclamped = target
+          target = self._clamp_wage(target)
+          floor = self._wage_floor()
+          ceiling = getattr(self, 'wageMax', float('inf'))
+          try:
+              ceiling_value = float(ceiling)
+          except (TypeError, ValueError):
+              ceiling_value = float('inf')
+          if target < unclamped and unclamped < floor:
+              log_fallback('wage', 'wage_floor_enforced')
+          if target < unclamped and not math.isinf(ceiling_value) and unclamped > ceiling_value:
+              log_fallback('wage', 'wage_ceiling_enforced')
+
+          self.wageDemanded = target
+          self.wP = target
+          self.wageDirection = {'up': 1, 'down': -1}.get(direction, 0)
+          return True
+
+      def laborSupply(self,McountryUnemployement,McountryPastUnemployement,McountryYL,McountryPastYL):
+          # Eq. 1 (Caiani et al. 2016): baseline reservation wage update with optional LLM override.
+          u=McountryUnemployement[self.country]
+          self.wageDirection=0
+          previous_wage=self.wageDemanded
+          self.pastWage=previous_wage
+          g=(McountryYL[self.country]-McountryPastYL[self.country])/McountryPastYL[self.country]
+          guard_caps=self._wage_guard_caps()
+          baseline=self._baseline_wage_decision(u,g)
+
+          if not wage_enabled():
+              self._apply_wage_outcome(baseline)
+              return
+
+          client=get_client()
+          if client is None:
+              log_fallback('wage','client_unavailable')
+              self._apply_wage_outcome(baseline)
+              return
+
+          payload,feature_error=self._build_wage_llm_payload(previous_wage,u,guard_caps)
+          if payload is None:
+              log_fallback('wage','feature_pack_missing',feature_error)
+              self._apply_wage_outcome(baseline)
+              return
+
+          log_llm_call('wage')
+          decision,error=client.decide_wage(payload)
+          if error:
+              reason='error'
+              detail=None
+              if isinstance(error,dict):
+                  reason=error.get('reason','error')
+                  detail=error.get('detail') or error.get('body')
+              log_fallback('wage',reason,detail)
+              self._apply_wage_outcome(baseline)
+              return
+
+          if not self._validate_wage_decision(decision):
+              log_fallback('wage','invalid_response')
+              self._apply_wage_outcome(baseline)
+              return
+
+          if not self._apply_llm_wage_decision(previous_wage,decision,guard_caps):
+              log_fallback('wage','invalid_decision')
+              self._apply_wage_outcome(baseline)
+              return
 
       def laborSupply4(self,McountryUnemployement,McountryPastUnemployement,McountryYL,McountryPastYL):
           #if self.laborSupplyAlreadyRevised=='no':

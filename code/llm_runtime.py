@@ -68,6 +68,11 @@ def bank_enabled():
     return bool(parameter and parameter.use_llm_bank_credit)
 
 
+def wage_enabled():
+    parameter = get_parameter()
+    return bool(parameter and parameter.use_llm_wage)
+
+
 def log_fallback(block, reason, detail=None):
     _register_fallback(block, reason)
     message = '[LLM %s] fallback: %s' % (block, reason)
@@ -266,6 +271,7 @@ __all__ = [
     'get_parameter',
     'firm_enabled',
     'bank_enabled',
+    'wage_enabled',
     'log_fallback',
     'log_llm_call',
     'reset_counters',
