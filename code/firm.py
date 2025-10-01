@@ -5,7 +5,15 @@ from lebalance import *
 import csv
 from time import *
 import math
-from llm_runtime import firm_enabled, get_client, get_firm_guard_caps, log_fallback, log_llm_call, wage_enabled
+from llm_runtime import (
+    firm_enabled,
+    get_client,
+    get_firm_guard_caps,
+    get_wage_guard_caps,
+    log_fallback,
+    log_llm_call,
+    wage_enabled,
+)
 
 class Firm:
       def __init__(self,ide,country,A,phi,Lcountry,w,folder,name,run,delta,dividendRate,xi,iota,\
@@ -620,12 +628,13 @@ class Firm:
           return floor, wage_cap, price_cap
 
       def _wage_offer_guard_caps(self):
+          caps = get_wage_guard_caps() or {}
           try:
-             delta=float(getattr(self,'deltaLabor',0.0))
-          except (TypeError,ValueError):
-             delta=0.0
-          if delta<0.0:
-             delta=0.0
+             delta = float(caps.get('max_wage_step', 0.0))
+          except (TypeError, ValueError):
+             delta = 0.0
+          if delta < 0.0:
+             delta = 0.0
           return {'max_wage_step': delta}
 
       def _clamp_wage_offer(self,target,enforce_price_cap=False):
@@ -807,7 +816,13 @@ class Firm:
                 target=previous_wage*(1.0-step)
              else:
                 return False
-          self._apply_wage_offer_outcome({'wage':target},from_llm=True)
+
+          clamped,reasons=self._clamp_wage_offer(target,enforce_price_cap=True)
+          for reason in reasons:
+             log_fallback('wage',reason)
+          if 'price_floor_guard' in reasons:
+             return False
+          self.w=clamped
           return True
 
       def wageOffered(self,McountryUnemployement,McountryPastUnemployement,McountryYL,McountryPastYL,t,McountryConsumer):

@@ -4,7 +4,13 @@ import csv
 import random
 import math
 
-from llm_runtime import get_client, log_fallback, log_llm_call, wage_enabled
+from llm_runtime import (
+    get_client,
+    get_wage_guard_caps,
+    log_fallback,
+    log_llm_call,
+    wage_enabled,
+)
 
 class Consumer:
       def __init__(self,ide,country,w,beta,folder,name,run,delta,\
@@ -276,8 +282,9 @@ class Consumer:
 
 
       def _wage_guard_caps(self):
+          caps = get_wage_guard_caps() or {}
           try:
-              delta = float(getattr(self, 'deltaLabor', 0.0))
+              delta = float(caps.get('max_wage_step', 0.0))
           except (TypeError, ValueError):
               delta = 0.0
           if delta < 0.0:
