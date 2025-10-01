@@ -54,17 +54,18 @@ def _flag(value):
     return 'on' if value else 'off'
 
 
-def _log_llm_counter_line(parameter, run_id, counters):
+def _log_llm_counter_line(parameter, run_id, block_label, counters, enabled):
     counters = counters or {}
     calls = int(counters.get('calls', 0))
     fallbacks = int(counters.get('fallbacks', 0))
     timeouts = int(counters.get('timeouts', 0))
     line = (
-        '[LLM firm] counters name=%s run=%s llm=%s calls=%d fallbacks=%d timeouts=%d\n'
+        '[LLM %s] counters name=%s run=%s llm=%s calls=%d fallbacks=%d timeouts=%d\n'
         % (
+            block_label,
             getattr(parameter, 'name', 'n/a'),
             run_id,
-            _flag(getattr(parameter, 'use_llm_firm_pricing', False)),
+            _flag(enabled),
             calls,
             fallbacks,
             timeouts,
@@ -75,7 +76,7 @@ def _log_llm_counter_line(parameter, run_id, counters):
         handle.write(line)
         handle.close()
     except Exception as exc:
-        print 'Warning: failed to write firm counter log (%s)' % exc
+        print 'Warning: failed to write %s counter log (%s)' % (block_label, exc)
     print line.strip()
 
 
@@ -120,6 +121,7 @@ def run_simulation(parameter=None, progress=True):
            random.seed(run) 
         reset_llm_counters()
         ensure_llm_counter('firm')
+        ensure_llm_counter('bank')
         # initialization
         printPa.printingPara(para,run)
         ite=Initialize(para.ncountry,para.nconsumer,para.A,para.phi,\
@@ -312,7 +314,20 @@ def run_simulation(parameter=None, progress=True):
 
         counters_snapshot = get_llm_counters_snapshot()
         run_counters[run] = counters_snapshot
-        _log_llm_counter_line(para, run, counters_snapshot.get('firm'))
+        _log_llm_counter_line(
+            para,
+            run,
+            'firm',
+            counters_snapshot.get('firm'),
+            getattr(para, 'use_llm_firm_pricing', False),
+        )
+        _log_llm_counter_line(
+            para,
+            run,
+            'bank',
+            counters_snapshot.get('bank'),
+            getattr(para, 'use_llm_bank_credit', False),
+        )
 
 
     metrics_summary = aggrega.core_metrics_summary()
@@ -422,11 +437,12 @@ def _collect_artifacts(folder):
 
 def _counters_summary():
     timing_log = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'timing.log'))
-    summary = {
-        'timing_log': timing_log,
-        'fallbacks': 0,
-        'timeouts': 0,
-    }
+    snapshot = get_llm_counters_snapshot() or {}
+    summary = {'timing_log': timing_log}
+    for block, values in snapshot.items():
+        if values is None:
+            continue
+        summary[str(block)] = values.copy()
     return summary
 
 
