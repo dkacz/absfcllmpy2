@@ -40,8 +40,9 @@ Run these from the repo root; keep the Decider stub in its own terminal while th
    python2 code/timing.py
    ```
 
-   - Default parameters cover 1001 ticks; for smoke tests temporarily set `Parameter.ncycle = 200` *locally* (do **not** commit) or switch to the demo runner from #19 once it lands.
-   - Aggregates land in `data/`; runtime notes (and future LLM fallback counts) append to `timing.log`.
+- Default parameters cover 1001 ticks; for smoke tests temporarily set `Parameter.ncycle = 200` *locally* (do **not** commit) or switch to the demo runner from #19 once it lands.
+- Aggregates land in `data/`; runtime notes (and future LLM fallback counts) append to `timing.log`.
+- Longer simulation or demo runs should be executed by the operator; ask for handoff before scheduling any extended run.
 
 3. **Render the Quarto docs.**
 
