@@ -1,0 +1,47 @@
+---
+title: "Bank A/B Comparison"
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Overview
+This page documents the bank credit & spreads experiment for Milestone M4. Both runs use `run_id = 0` over a 200-tick horizon. The CSV and overlay below are generated via `python3 tools/generate_bank_ab.py` and report the metrics exported by `code/timing.py`.
+
+Because the Decider stub currently returns deterministic fallbacks, the OFF and ON scenarios remain identical. We publish the artifacts now so prompt work can later drop in differentiated behaviour without restructuring the page.
+
+## Core metrics
+The table summarises the average spread, loan-to-output ratio, and credit-growth proxy for baseline (`OFF`) versus LLM-enabled (`ON`) runs. Values follow manuscript formatting (two decimals, comma separators for large magnitudes).
+
+```{python}
+#| label: tbl-bank-ab
+#| tbl-cap: "Bank A/B metrics (run 0, 200 ticks)."
+import pandas as pd
+from pathlib import Path
+
+source = Path("../data/bank/bank_ab_table.csv")
+df = pd.read_csv(source)
+ordered = (
+    df.pivot(index="scenario", columns="metric", values="value")
+      .reindex(["baseline", "llm_on"])
+      [["avg_spread", "loan_output_ratio", "credit_growth"]]
+      .rename(columns={
+          "avg_spread": "Average spread",
+          "loan_output_ratio": "Loan-to-output ratio",
+          "credit_growth": "Credit growth proxy",
+      })
+)
+formatted = ordered.applymap(lambda x: f"{x:,.2f}")
+formatted
+```
+
+## Average-spread overlay
+Figure @fig-bank-ab overlays the OFF and ON average-spread series. The OFF path is dashed, the ON path is solid, and the final 50 ticks are shaded to match the manuscript comparison window.
+
+![Bank average spread overlay (OFF dashed, ON solid; final 50 ticks shaded)](../figs/bank/bank_ab_overlay.png){#fig-bank-ab}
+
+## Notes
+- Artifact paths: `data/bank/bank_ab_table.csv`, `figs/bank/bank_ab_overlay.png`.
+- Credit growth remains elevated because total credit starts close to zero; the stub behaviour leads to identical OFF/ON values. Future prompt iterations should revisit the metric once live decisions are in place.
