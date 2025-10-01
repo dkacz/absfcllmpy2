@@ -130,6 +130,28 @@ def get_firm_guard_caps():
     return _scale_caps(base, factor)
 
 
+def get_wage_guard_caps():
+    """Return guard caps for wage decisions shared by workers and firms."""
+
+    parameter = get_parameter()
+
+    if parameter:
+        custom = getattr(parameter, 'wage_guard_caps', None)
+        if isinstance(custom, dict):
+            return _sanitise_wage_caps(custom, parameter)
+
+    base_delta = _default_wage_delta(parameter)
+
+    preset = 'baseline'
+    if parameter:
+        preset = _resolve_guard_preset(parameter, 'wage_guard_preset')
+    factor = _GUARD_PRESET_FACTORS.get(preset, 1.0)
+
+    return {
+        'max_wage_step': base_delta * factor,
+    }
+
+
 def get_bank_guard_config():
     """Return spread guard bounds (bps) and epsilon."""
 
@@ -227,6 +249,45 @@ def _sanitise_firm_caps(custom):
     return caps
 
 
+def _sanitise_wage_caps(custom, parameter):
+    base_delta = _default_wage_delta(parameter)
+
+    if not isinstance(custom, dict):
+        return {
+            'max_wage_step': base_delta,
+        }
+
+    value = custom.get('max_wage_step')
+    if value is None:
+        return {
+            'max_wage_step': base_delta,
+        }
+
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        numeric = base_delta
+
+    if numeric < 0.0:
+        numeric = 0.0
+
+    return {
+        'max_wage_step': numeric,
+    }
+
+
+def _default_wage_delta(parameter):
+    base = 0.04
+    if parameter:
+        try:
+            base = float(getattr(parameter, 'delta', base))
+        except (TypeError, ValueError):
+            base = 0.04
+    if base < 0.0:
+        base = 0.0
+    return base
+
+
 def _sanitise_bank_bounds(value):
     if not value:
         return None
@@ -278,5 +339,6 @@ __all__ = [
     'ensure_counter',
     'get_counters_snapshot',
     'get_firm_guard_caps',
+    'get_wage_guard_caps',
     'get_bank_guard_config',
 ]
