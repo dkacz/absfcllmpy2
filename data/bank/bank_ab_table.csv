@@ -1,0 +1,7 @@
+scenario,metric,value
+llm_on,avg_spread,0.00889359407949925
+llm_on,loan_output_ratio,1.287783914482426
+llm_on,credit_growth,19012.88896143385
+baseline,avg_spread,0.00889359407949925
+baseline,loan_output_ratio,1.287783914482426
+baseline,credit_growth,19012.88896143385
