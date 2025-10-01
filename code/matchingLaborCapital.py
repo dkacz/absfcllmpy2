@@ -9,7 +9,9 @@ class MatchingLaborCapital:
       def bargaining(self,McountryFirm,McountryConsumer,McountryUnemployement,McountryPastUnemployement,McountryYL,McountryPastYL,t):
           for country in McountryConsumer:
               for consumer in McountryConsumer[country]:
-                  McountryConsumer[country][consumer].laborSupply(McountryUnemployement,McountryPastUnemployement,McountryYL,McountryPastYL) 
+                  consumer_obj=McountryConsumer[country][consumer]
+                  consumer_obj.llm_tick=t
+                  consumer_obj.laborSupply(McountryUnemployement,McountryPastUnemployement,McountryYL,McountryPastYL) 
               for firm in McountryFirm[country]:
                   McountryFirm[country][firm].wageOffered(McountryUnemployement,McountryPastUnemployement,\
                                   McountryYL,McountryPastYL,t,McountryConsumer)             
