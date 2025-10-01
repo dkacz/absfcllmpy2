@@ -620,6 +620,8 @@ class Firm:
           return floor, wage_cap, price_cap
 
       def _wage_offer_guard_caps(self):
+          """Return per-tick fractional guard limits for wage offers."""
+
           try:
              delta=float(getattr(self,'deltaLabor',0.0))
           except (TypeError,ValueError):
@@ -695,80 +697,75 @@ class Firm:
           return clamped
 
       def _build_wage_offer_payload(self,previous_wage,unemployment_rate,guard_caps,vacancies,fill_rate):
-          floor,_,price_cap=self._wage_offer_limits()
+          """Build the compact firm wage-offer payload for the Decider.
+
+          Fields:
+              - ``current_wage``: last offer (float ≥ 0).
+              - ``wage_floor``: lower bound (float ≥ 0).
+              - ``wage_ceiling``: optional upper bound (min of firm cap and
+                price-floor guard), excluded when ``None``.
+              - ``guards.max_wage_step``: fractional step cap, ``≥ 0``.
+              - ``vacancies``: desired minus employed workers, ``≥ 0``.
+              - ``recent_fill_rate``: fill ratio, ``0 ≤ value ≤ 1``.
+              - ``recent_unemployment_rate``: macro unemployment rate,
+                ``0 ≤ value ≤ 1``.
+          """
+
+          floor,wage_cap,price_cap=self._wage_offer_limits()
           ceiling_value=None
-          wage_cap=getattr(self,'wageMax',None)
+          if wage_cap is not None and price_cap is not None:
+             ceiling_value=min(wage_cap,price_cap)
+          elif wage_cap is not None:
+             ceiling_value=wage_cap
+          elif price_cap is not None:
+             ceiling_value=price_cap
+
           try:
-             wage_cap=float(wage_cap)
-             if math.isinf(wage_cap):
-                wage_cap=None
-             elif wage_cap<0.0:
-                wage_cap=0.0
+             unemployment_rate=float(unemployment_rate)
           except (TypeError,ValueError):
-             wage_cap=None
-          candidates=[value for value in (wage_cap,price_cap) if value is not None]
-          if candidates:
-             ceiling_value=min(candidates)
+             return None,'recent_unemployment_rate'
+          unemployment_rate=max(0.0,min(1.0,unemployment_rate))
+
+          vacancies=max(0.0,self._safe_numeric(vacancies) or 0.0)
+          fill_rate=max(0.0,min(1.0,self._safe_numeric(fill_rate) or 0.0))
+
+          guard_cap=guard_caps.get('max_wage_step',0.0)
+          try:
+             guard_cap=float(guard_cap)
+          except (TypeError,ValueError):
+             guard_cap=0.0
+          if guard_cap<0.0:
+             guard_cap=0.0
+
+          current_wage=self._safe_numeric(previous_wage)
+          if current_wage is None or current_wage<0.0:
+             current_wage=floor
 
           payload={
              'schema_version':'1.0',
-             'run_id':getattr(self,'run',0),
-             'tick':getattr(self,'llm_tick',0),
+             'run_id':int(getattr(self,'run',0) or 0),
+             'tick':int(getattr(self,'llm_tick',0) or 0),
              'context':'firm_offer',
-             'agent_id':self.ide,
-             'country_id':getattr(self,'country',0),
-             'wage_ceiling':ceiling_value,
-             'guards':{
-                 'max_wage_step':guard_caps.get('max_wage_step',0.0),
-             },
+             'agent_id':str(self.ide),
+             'country_id':int(getattr(self,'country',0) or 0),
+             'current_wage':current_wage,
              'wage_floor':floor,
+             'guards':{
+                 'max_wage_step':guard_cap,
+             },
              'vacancies':vacancies,
              'recent_fill_rate':fill_rate,
              'recent_unemployment_rate':unemployment_rate,
           }
 
-          try:
-             payload['run_id']=int(payload['run_id'])
-          except (TypeError,ValueError):
-             payload['run_id']=0
-          try:
-             payload['tick']=int(payload['tick'])
-          except (TypeError,ValueError):
-             payload['tick']=0
-          try:
-             payload['country_id']=int(payload['country_id'])
-          except (TypeError,ValueError):
-             payload['country_id']=0
-          payload['agent_id']=str(payload['agent_id'])
-
-          numeric_fields=(
-             ('current_wage',previous_wage),
-             ('wage_floor',payload['wage_floor']),
-             ('guards.max_wage_step',payload['guards']['max_wage_step']),
-             ('vacancies',vacancies),
-             ('recent_fill_rate',fill_rate),
-             ('recent_unemployment_rate',unemployment_rate),
-          )
-
-          for label,value in numeric_fields:
-             numeric=self._safe_numeric(value)
-             if numeric is None:
-                return None,label
-             if label=='guards.max_wage_step':
-                payload['guards']['max_wage_step']=numeric
-             else:
-                field_name=label
-                payload[field_name]=numeric
-
-          if payload['wage_ceiling'] is not None:
-             ceiling_numeric=self._safe_numeric(payload['wage_ceiling'])
-             if ceiling_numeric is None:
-                return None,'wage_ceiling'
-             payload['wage_ceiling']=ceiling_numeric
+          if ceiling_value is not None:
+             payload['wage_ceiling']=ceiling_value
 
           return payload,None
 
       def _validate_wage_offer_decision(self,decision):
+          """Validate schema compliance for firm wage-offer decisions."""
+
           if not isinstance(decision,dict):
              return False
           direction=decision.get('direction')
@@ -776,11 +773,13 @@ class Firm:
              return False
           if direction=='hold':
              return True
+          if 'wage_step' not in decision:
+             return False
           try:
-             float(decision.get('wage_step',0.0))
+             step=float(decision.get('wage_step'))
           except (TypeError,ValueError):
              return False
-          return True
+          return step>=0.0
 
       def _apply_llm_wage_offer(self,previous_wage,decision,guard_caps):
           direction=decision.get('direction')

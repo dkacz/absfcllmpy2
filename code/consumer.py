@@ -276,6 +276,8 @@ class Consumer:
 
 
       def _wage_guard_caps(self):
+          """Return per-tick fractional guard caps for wage adjustments."""
+
           try:
               delta = float(getattr(self, 'deltaLabor', 0.0))
           except (TypeError, ValueError):
@@ -371,32 +373,70 @@ class Consumer:
           self.wageDirection = outcome.get('direction_flag', 0)
 
       def _build_wage_llm_payload(self, previous_wage, unemployment_rate, guard_caps):
+          """Return the compact worker reservation payload for the Decider.
+
+          Fields are bounded to safe ranges so the service sees only finite
+          values. If any component is invalid a ``(None, field_name)`` sentinel
+          is returned so the caller can fall back to the baseline logic.
+
+          ``recent_unemployment_rate`` is clamped to ``[0, 1]``. ``max_wage_step``
+          is a non-negative fraction. ``employment_history`` comprises floats in
+          ``[0, 1]`` mirroring recent employment snapshots.
+          """
+
           history = []
           for value in getattr(self, 'LpastEmployment', []):
               try:
-                  history.append(float(value))
+                  numeric = float(value)
               except (TypeError, ValueError):
                   return None, 'employment_history'
+              history.append(max(0.0, min(1.0, numeric)))
+
+          wage_floor = self._wage_floor()
+          wage_ceiling = self._wage_ceiling_value()
+
+          try:
+              unemployment_rate = float(unemployment_rate)
+          except (TypeError, ValueError):
+              return None, 'recent_unemployment_rate'
+          unemployment_rate = max(0.0, min(1.0, unemployment_rate))
+
+          current_wage = self._safe_numeric(previous_wage)
+          if current_wage is None or current_wage < 0.0:
+              current_wage = wage_floor
+
+          guard_cap = guard_caps.get('max_wage_step', 0.0)
+          try:
+              guard_cap = float(guard_cap)
+          except (TypeError, ValueError):
+              guard_cap = 0.0
+          if guard_cap < 0.0:
+              guard_cap = 0.0
 
           payload = {
               'schema_version': '1.0',
-              'run_id': getattr(self, 'run', 0),
-              'tick': getattr(self, 'llm_tick', 0),
+              'run_id': int(getattr(self, 'run', 0) or 0),
+              'tick': int(getattr(self, 'llm_tick', 0) or 0),
               'context': 'worker_reservation',
-              'agent_id': self.ide,
-              'country_id': self.country,
-              'current_wage': previous_wage,
-              'wage_floor': self._wage_floor(),
-              'wage_ceiling': self._wage_ceiling_value(),
+              'agent_id': str(self.ide),
+              'country_id': int(getattr(self, 'country', 0) or 0),
+              'current_wage': current_wage,
+              'wage_floor': wage_floor,
               'guards': {
-                  'max_wage_step': guard_caps.get('max_wage_step', 0.0),
+                  'max_wage_step': guard_cap,
               },
               'employment_history': history,
               'recent_unemployment_rate': unemployment_rate,
           }
+
+          if wage_ceiling is not None:
+              payload['wage_ceiling'] = wage_ceiling
+
           return payload, None
 
       def _validate_wage_decision(self, decision):
+          """Validate worker reservation decisions from the Decider."""
+
           if not isinstance(decision, dict):
               return False
           direction = decision.get('direction')
@@ -404,11 +444,13 @@ class Consumer:
               return False
           if direction == 'hold':
               return True
+          if 'wage_step' not in decision:
+              return False
           try:
-              float(decision.get('wage_step', 0.0))
+              step = float(decision.get('wage_step'))
           except (TypeError, ValueError):
               return False
-          return True
+          return step >= 0.0
 
       def _apply_llm_wage_decision(self, previous_wage, decision, guard_caps):
           direction = decision.get('direction')
