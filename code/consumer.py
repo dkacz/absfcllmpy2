@@ -293,6 +293,15 @@ class Consumer:
               delta = 0.0
           return {'max_wage_step': delta}
 
+      def _safe_numeric(self, value):
+          try:
+              numeric = float(value)
+          except (TypeError, ValueError):
+              return None
+          if math.isnan(numeric) or math.isinf(numeric):
+              return None
+          return numeric
+
       def _wage_floor(self):
           base = max(1.0, getattr(self, 'wageMin', 0.0) or 0.0)
           return base
@@ -436,8 +445,7 @@ class Consumer:
               'recent_unemployment_rate': unemployment_rate,
           }
 
-          if wage_ceiling is not None:
-              payload['wage_ceiling'] = wage_ceiling
+          payload['wage_ceiling'] = wage_ceiling
 
           return payload, None
 

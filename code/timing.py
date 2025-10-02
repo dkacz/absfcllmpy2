@@ -80,6 +80,44 @@ def _log_llm_counter_line(parameter, run_id, block_label, counters, enabled):
     print line.strip()
 
 
+def _log_wage_ab_summary(parameter_name, run_id, off_counters, on_counters):
+    """Append an OFF/ON wage counter snapshot after ``run_ab_demo`` completes."""
+
+    def _stats(payload):
+        payload = payload or {}
+        return (
+            int(payload.get('calls', 0)),
+            int(payload.get('fallbacks', 0)),
+            int(payload.get('timeouts', 0)),
+        )
+
+    off_calls, off_fallbacks, off_timeouts = _stats(off_counters)
+    on_calls, on_fallbacks, on_timeouts = _stats(on_counters)
+
+    line = (
+        '[LLM wage] ab_summary name=%s run=%s '
+        'off_calls=%d off_fallbacks=%d off_timeouts=%d '
+        'on_calls=%d on_fallbacks=%d on_timeouts=%d\n'
+        % (
+            parameter_name,
+            run_id,
+            off_calls,
+            off_fallbacks,
+            off_timeouts,
+            on_calls,
+            on_fallbacks,
+            on_timeouts,
+        )
+    )
+    try:
+        handle = open(_LOG_PATH, 'a')
+        handle.write(line)
+        handle.close()
+    except Exception as exc:
+        print 'Warning: failed to write wage AB summary (%s)' % exc
+    print line.strip()
+
+
 def log_llm_toggles(parameter):
     """Append the current LLM toggle configuration to timing.log."""
 
@@ -406,28 +444,46 @@ def run_ab_demo(run_id=0, ncycle=None, output_root=None, parameter_overrides=Non
             setattr(para, attr, value)
 
         sim_output = run_simulation(para, progress=progress)
+        run_counters = {}
         if isinstance(sim_output, dict):
             core_metrics = sim_output.get('core_metrics', {})
             metric_series = sim_output.get('metric_series', {})
+            run_counters = sim_output.get('llm_counters') or {}
         else:
             core_metrics = {}
             metric_series = {}
+            run_counters = {}
+
+        counters_for_run = run_counters.get(run_id, {})
 
         results[label] = {
             'folder': para.folder,
             'run_id': run_id,
             'ncycle': para.ncycle,
             'mode': mode,
+            'parameter_name': getattr(para, 'name', 'n/a'),
             'llm': {
                 'firm_pricing': para.use_llm_firm_pricing,
                 'bank_credit': para.use_llm_bank_credit,
                 'wage': para.use_llm_wage,
             },
             'artifacts': _collect_artifacts(para.folder),
-            'counters': _counters_summary(),
+            'counters': counters_for_run,
             'core_metrics': core_metrics,
             'metric_series': metric_series,
         }
+
+    try:
+        parameter_name = results['on'].get('parameter_name') or results['off'].get('parameter_name')
+    except KeyError:
+        parameter_name = 'n/a'
+
+    _log_wage_ab_summary(
+        parameter_name,
+        run_id,
+        results.get('off', {}).get('counters', {}).get('wage'),
+        results.get('on', {}).get('counters', {}).get('wage'),
+    )
 
     _write_core_metrics(results)
 
