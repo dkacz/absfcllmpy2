@@ -1,0 +1,46 @@
+---
+title: "Wage A/B Comparison"
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Overview
+This page reports the wage bargaining experiment for Milestone M5. Both runs use `run_id = 0` over a 200-tick horizon with the Decider stub supplying deterministic responses. The artifacts below come from `python3 tools/generate_wage_ab.py`, which invokes `code/timing.py` to export the wage metrics and series used in the manuscript.
+
+The stub currently preserves baseline behaviour for the OFF leg and applies identical guard-respecting responses for the ON leg, so values remain close but can diverge when guard clamps trigger. We keep the artifacts in place so later prompt work can replace the stub without altering page structure.
+
+## Core metrics
+Table @tbl-wage-ab summarises wage dispersion and vacancy fill rate for baseline (`OFF`) versus LLM-enabled (`ON`) runs. Values are rounded to two decimals to match the manuscript convention.
+
+```{python}
+#| label: tbl-wage-ab
+#| tbl-cap: "Wage A/B metrics (run 0, 200 ticks)."
+import pandas as pd
+from pathlib import Path
+
+source = Path("../data/wage/wage_ab_table.csv")
+df = pd.read_csv(source)
+ordered = (
+    df.pivot(index="scenario", columns="metric", values="value")
+      .reindex(["baseline", "llm_on"])
+      [["wage_dispersion", "fill_rate"]]
+      .rename(columns={
+          "wage_dispersion": "Wage dispersion",
+          "fill_rate": "Vacancy fill rate",
+      })
+)
+formatted = ordered.applymap(lambda x: f"{x:,.2f}")
+formatted
+```
+
+## Wage-dispersion overlay
+Figure @fig-wage-ab overlays the OFF and ON wage-dispersion series. The OFF path is dashed, the ON path is solid, and the final 50 ticks are shaded to highlight the comparison window used elsewhere in the manuscript.
+
+![Wage dispersion overlay (OFF dashed, ON solid; final 50 ticks shaded)](../figs/wage/wage_ab_overlay.png){#fig-wage-ab}
+
+## Notes
+- Artifact paths: `data/wage/wage_ab_table.csv`, `figs/wage/wage_ab_overlay.png`.
+- Stub behaviour keeps OFF/ON decisions largely aligned; expect richer divergences once live prompts replace the stub.

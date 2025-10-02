@@ -37,6 +37,10 @@ The table above is drawn from `data/_examples/sample_metrics.csv`; future Quarto
 
 - [Bank credit A/B comparison](bank_ab.qmd) — embeds Table `@tbl-bank-ab` and Figure `@fig-bank-ab` produced by the 200-tick OFF/ON runs.
 
+## Milestone M5 — Wage bargaining
+
+- [Wage bargaining A/B comparison](wage_ab.qmd) — embeds Table `@tbl-wage-ab` and Figure `@fig-wage-ab` derived from the 200-tick OFF/ON runs.
+
 ## Ethics & scope
 
 {{< include snippets/ethics_scope.md >}}

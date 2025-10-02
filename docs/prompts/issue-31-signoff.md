@@ -161,7 +161,7 @@ Because the stub currently rejects every firm request, the OFF and ON scenarios 
 ## Core metrics
 The table aggregates inflation volatility and price dispersion for the baseline (`OFF`) and LLM-enabled (`ON`) runs. Values are rounded to two decimals per the manuscript convention.
 
-```{python}
+```python
 #| label: tbl-firm-ab
 #| tbl-cap: "Firm A/B metrics (run 0, 200 ticks)."
 import pandas as pd

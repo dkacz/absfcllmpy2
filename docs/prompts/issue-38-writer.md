@@ -114,7 +114,7 @@ Because the Decider stub currently returns deterministic fallbacks, the OFF and 
 ## Core metrics
 The table summarises the average spread, loan-to-output ratio, and credit-growth proxy for baseline (`OFF`) versus LLM-enabled (`ON`) runs. Values follow manuscript formatting (two decimals, comma separators for large magnitudes).
 
-```{python}
+```python
 #| label: tbl-bank-ab
 #| tbl-cap: "Bank A/B metrics (run 0, 200 ticks)."
 ...
