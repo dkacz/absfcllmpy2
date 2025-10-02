@@ -445,6 +445,8 @@ class Consumer:
               'recent_unemployment_rate': unemployment_rate,
           }
 
+          if wage_ceiling is None:
+              wage_ceiling = wage_floor
           payload['wage_ceiling'] = wage_ceiling
 
           return payload, None
