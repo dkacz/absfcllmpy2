@@ -1,0 +1,5 @@
+scenario,metric,value
+llm_on,wage_dispersion,0.0021183807187412796
+llm_on,fill_rate,0.5501397177771765
+baseline,wage_dispersion,0.1441582030704589
+baseline,fill_rate,0.3501829294414104
