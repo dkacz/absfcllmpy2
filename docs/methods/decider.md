@@ -45,8 +45,9 @@ python3 tools/decider/server.py \
 
 - `--mode live` switches the handler to the OpenRouter adapter; the default remains `stub` so accidental runs stay cost-free.
 - Provide the primary model slug via the flag or the `OPENROUTER_MODEL_PRIMARY` environment variable. The fallback slug is optional but recommended.
-- The server verifies both slugs with `/api/v1/models` on startup and logs the selected provider, prompt/response token counts, elapsed time, and any `why_code` the model returns.
+- The server verifies both slugs with `/api/v1/models` on startup and logs the selected provider, prompt/response token counts, elapsed time, and any `why` codes the model returns.
 - Live requests honour the same `--deadline-ms` budget; the adapter subtracts a small buffer before calling OpenRouter so the overall request still respects the server deadline. Any timeout or schema violation is surfaced back to the simulation as an HTTP error, triggering the baseline fallback path.
+- Firm decisions follow a strict schema: `direction ∈ {raise, hold, cut}`, `price_step`/`expectation_bias` within ±0.04, a `why` array drawn from enumerated codes (`baseline_guard`, `inventory_pressure`, `demand_softening`, etc.), and `confidence ∈ [0,1]`. The server validates these fields before applying guard clamps so malformed replies fail fast.
 
 > **Guardrail:** keep the stub workflow for day-to-day smoke tests. Only start live mode when you explicitly want to hit OpenRouter and have confirmed your API key, model slugs, and run budget.
 

@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Firm live decision response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "direction",
+    "price_step",
+    "expectation_bias",
+    "why",
+    "confidence"
+  ],
+  "properties": {
+    "direction": {
+      "type": "string",
+      "enum": ["raise", "hold", "cut"]
+    },
+    "price_step": {
+      "type": "number",
+      "minimum": -0.04,
+      "maximum": 0.04
+    },
+    "expectation_bias": {
+      "type": "number",
+      "minimum": -0.04,
+      "maximum": 0.04
+    },
+    "why": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "baseline_guard",
+          "demand_softening",
+          "demand_spike",
+          "cost_push",
+          "credit_constraint",
+          "inventory_pressure",
+          "llm_uncertain"
+        ]
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "comment": {
+      "type": "string",
+      "maxLength": 280
+    }
+  }
+}

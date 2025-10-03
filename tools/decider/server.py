@@ -74,6 +74,7 @@ BATCH_ENDPOINTS: Dict[str, str] = {
 BATCH_MAX_ITEMS = 16
 
 SCHEMA_DIR = Path(__file__).with_name("schemas")
+PROMPT_DIR = Path(__file__).with_name("prompts")
 SCHEMA_FILES = {
     "/decide/firm": "firm_request.schema.json",
     "/decide/bank": "bank_request.schema.json",
@@ -83,6 +84,11 @@ SCHEMA_FILES = {
 
 DEFAULT_MODE = "stub"
 LIVE_BUFFER_MS = 20
+
+
+def _load_json_file(path: Path) -> Dict[str, Any]:
+    with open(path, "r") as handle:
+        return json.load(handle)
 
 
 class LivePrompt(object):
@@ -98,21 +104,36 @@ class LivePrompt(object):
         return self.user_template.format(payload_json=payload_json)
 
 
+def _load_firm_live_prompt() -> Tuple[LivePrompt, jsonschema.Draft7Validator]:
+    prompt_path = PROMPT_DIR / "firm_live.json"
+    prompt_data = _load_json_file(prompt_path)
+    schema_name = prompt_data.get("response_schema", "firm_live_response.schema.json")
+    schema_path = SCHEMA_DIR / schema_name
+    schema = _load_json_file(schema_path)
+    response_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "firm_live_decision",
+            "schema": schema,
+        },
+    }
+    prompt = LivePrompt(
+        system=prompt_data["system"],
+        user_template=prompt_data["user_template"],
+        response_format=response_format,
+    )
+    validator = jsonschema.Draft7Validator(schema)
+    return prompt, validator
+
+
+FIRM_LIVE_PROMPT, FIRM_LIVE_RESPONSE_VALIDATOR = _load_firm_live_prompt()
+
+
 def _default_live_prompts() -> Dict[str, LivePrompt]:
     """Return default prompt definitions for live mode."""
 
     return {
-        "/decide/firm": LivePrompt(
-            system=(
-                "You are the firm pricing decision service for the Caiani AB-SFC model. "
-                "Return a compact JSON object with keys: direction (string), price_step (number), "
-                "expectation_bias (number), and why_code (string describing the rationale)."
-            ),
-            user_template=(
-                "Given the following firm state, guards, and baseline decision (JSON):\n"
-                "{payload_json}\n\nRespond with JSON only."
-            ),
-        ),
+        "/decide/firm": FIRM_LIVE_PROMPT,
         "/decide/bank": LivePrompt(
             system=(
                 "You are the bank credit decision service for the Caiani AB-SFC model. "
@@ -139,22 +160,24 @@ def _default_live_prompts() -> Dict[str, LivePrompt]:
 def _validate_firm_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(decision, dict):
         raise ValueError("firm decision must be a JSON object")
-    result = dict(decision)
-    direction = result.get("direction")
-    if not isinstance(direction, str) or not direction:
-        raise ValueError("firm decision missing 'direction' string")
-    for field in ("price_step", "expectation_bias"):
-        value = result.get(field)
-        if value is None:
-            raise ValueError("firm decision missing '%s'" % field)
-        try:
-            result[field] = float(value)
-        except (TypeError, ValueError):
-            raise ValueError("firm decision field '%s' must be numeric" % field)
-    why_code = result.get("why_code")
-    if why_code is not None and not isinstance(why_code, str):
-        raise ValueError("firm decision 'why_code' must be a string when provided")
-    return result
+    try:
+        FIRM_LIVE_RESPONSE_VALIDATOR.validate(decision)
+    except jsonschema.ValidationError as exc:
+        raise ValueError("firm decision schema violation: %s" % exc.message)
+
+    why_codes = [str(code) for code in decision.get("why", [])]
+    normalised = {
+        "direction": str(decision["direction"]),
+        "price_step": float(decision["price_step"]),
+        "expectation_bias": float(decision["expectation_bias"]),
+        "why": why_codes,
+        "confidence": float(decision["confidence"]),
+    }
+    if why_codes:
+        normalised["why_code"] = why_codes[0]
+    if "comment" in decision:
+        normalised["comment"] = str(decision["comment"])
+    return normalised
 
 
 def _validate_bank_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
@@ -311,13 +334,19 @@ class LiveModeRouter(object):
                     raise ValueError("model response must be JSON object")
                 normalised = validator(decision)
                 usage = meta.get("usage", {}) if isinstance(meta, dict) else {}
-                why_code = normalised.get("why_code")
+                why_value = normalised.get("why")
+                if isinstance(why_value, list):
+                    why_repr = ",".join(why_value)
+                else:
+                    why_repr = normalised.get("why_code") or "n/a"
+                confidence = normalised.get("confidence")
                 LOGGER.info(
-                    "live decision endpoint=%s model=%s attempt=%s why=%s prompt_tokens=%s completion_tokens=%s elapsed_ms=%.1f",
+                    "live decision endpoint=%s model=%s attempt=%s why=%s confidence=%s prompt_tokens=%s completion_tokens=%s elapsed_ms=%.1f",
                     endpoint,
                     meta.get("model", model) if isinstance(meta, dict) else model,
                     attempt_label,
-                    why_code or "n/a",
+                    why_repr,
+                    confidence,
                     usage.get("prompt_tokens"),
                     usage.get("completion_tokens"),
                     meta.get("elapsed_ms", 0.0) if isinstance(meta, dict) else 0.0,
