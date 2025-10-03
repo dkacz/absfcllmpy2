@@ -98,7 +98,8 @@ class DeciderServerLiveTests(unittest.TestCase):
             "direction": "hold",
             "price_step": 0.0,
             "expectation_bias": 0.0,
-            "why_code": "baseline_hold",
+            "why": ["baseline_guard"],
+            "confidence": 0.8,
         }
         meta = {
             "model": "primary-model",
@@ -119,7 +120,8 @@ class DeciderServerLiveTests(unittest.TestCase):
             "direction": "cut",
             "price_step": -0.01,
             "expectation_bias": -0.02,
-            "why_code": "fallback_cut",
+            "why": ["inventory_pressure", "cost_push"],
+            "confidence": 0.6,
         }
         meta = {
             "model": "fallback-model",
@@ -134,7 +136,8 @@ class DeciderServerLiveTests(unittest.TestCase):
         payload = build_firm_payload()
         status, body = handler._handle_single("/decide/firm", payload, time.monotonic())
         self.assertEqual(status, HTTPStatus.OK)
-        self.assertEqual(body["why_code"], "fallback_cut")
+        self.assertEqual(body["why"], ["inventory_pressure", "cost_push"])
+        self.assertEqual(body["why_code"], "inventory_pressure")
         self.assertEqual(len(adapter.calls), 2)
         self.assertEqual(adapter.calls[0]["model"], "primary-model")
         self.assertEqual(adapter.calls[1]["model"], "fallback-model")
@@ -150,6 +153,24 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertEqual(status, HTTPStatus.SERVICE_UNAVAILABLE)
         self.assertEqual(body["error"], "llm_live_failed")
         self.assertEqual(len(body["detail"]["attempts"]), 2)
+
+    def test_live_mode_schema_violation_returns_error(self):
+        decision = {
+            "direction": "raise",
+            "price_step": 0.1,
+            "expectation_bias": 0.0,
+            "why": ["baseline_guard"],
+            "confidence": 0.5,
+        }
+        meta = {"model": "primary-model", "usage": {}}
+        adapter = DummyAdapter([(decision, meta)])
+        handler = self._make_handler(mode="live", adapter=adapter)
+        payload = build_firm_payload()
+        status, body = handler._handle_single("/decide/firm", payload, time.monotonic())
+        self.assertEqual(status, HTTPStatus.SERVICE_UNAVAILABLE)
+        self.assertEqual(body["error"], "llm_live_failed")
+        attempts = body["detail"]["attempts"]
+        self.assertEqual(attempts[0]["reason"], "schema_error")
 
 
 if __name__ == "__main__":
