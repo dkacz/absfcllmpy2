@@ -62,6 +62,10 @@ These metrics assess labor-market outcomes, focusing on wage heterogeneity and t
 | **`wage_dispersion`** | `value` where `metric == "wage_dispersion"` | Time-average of the employment-weighted wage dispersion. <br><br> 1. **Tick-level:** Compute the employment-weighted variance of wages; take the square root. <br> 2. **Scalar:** Compute the mean of the `wage_dispersion` time series (`mean(series['wage_dispersion'])`). <br><br> **Guardrails:** Variance calculation includes a zero guard (`math.sqrt(max(variance_wage, 0.0))`). | Inputs supplied by **Firms** (offered wages) and **Workers** (reservation wages) during matching. Measures cross-sectional wage heterogeneity. |
 | **`fill_rate`** | `value` where `metric == "fill_rate"` | Time-average of the vacancy fill rate. <br><br> 1. **Tick-level:** Ratio of total employed labor to total desired labor: `fill_employed_total / float(fill_desired_total)`. Defaults to 1.0 if desired labor is zero. <br> 2. **Scalar:** Compute the mean of the `fill_rate` time series (`mean(series['fill_rate'])`). <br><br> **Guardrails:** Tick-level rate defaults to 1.0 when demand is zero; the scalar mean defaults to 1.0 if the series is empty. | Inputs supplied by **Firms** (desired labor demand) and the matching outcome from `maLaborCapital`. Indicates how effectively vacancies are filled. |
 
+::: {.callout-note}
+**Guardrail hand-off (wage hooks).** When the model has no explicit statutory wage ceiling, the worker payload now reports `wage_ceiling = null` to the Decider. The legacy floor (`wage_floor`) and the per-tick δ-cap still clamp outcomes via `_clamp_wage` / `_clamp_wage_offer`, so the feasible band remains `[wage_floor, wage_floor × (1 ± δ)]` unless an explicit ceiling is configured.
+:::
+
 ### Credit and Finance {#sec-variables-credit}
 
 These metrics track the cost and intensity of credit within the economy, driven by bank lending decisions (LLM-augmented via Eq. 26–27).

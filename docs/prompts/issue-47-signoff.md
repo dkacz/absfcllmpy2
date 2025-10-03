@@ -19,14 +19,12 @@ Everything needed is embedded below; no repo access is required.
 # 1. Guard enforcement (worker & firm)
 
 ## Worker reservation hook — `code/consumer.py:410-480`
-```python
+```text
           wage_floor = self._wage_floor()
           wage_ceiling = self._wage_ceiling_value()
           ...
           guard_cap = guard_caps.get('max_wage_step', 0.0)
           ...
-          if wage_ceiling is None:
-              wage_ceiling = wage_floor
           payload['wage_ceiling'] = wage_ceiling
 
       def _apply_llm_wage_decision(self, previous_wage, decision, guard_caps):
@@ -50,7 +48,7 @@ Everything needed is embedded below; no repo access is required.
 - Worker payload always provides `wage_floor` & `wage_ceiling` so the Decider schema validates.
 
 ## Firm wage-offer hook — `code/firm.py:760-830`
-```python
+```text
           guard_caps = {
               'max_wage_step': guard_cap,
           }
@@ -85,12 +83,12 @@ Generated via `python3 tools/generate_wage_ab.py` (200-tick OFF→ON run with wa
 ```
 [LLM wage] counters name=muxSnCo5upsilon20.7polModPolVar0.512 run=0 llm=off calls=0 fallbacks=0 timeouts=0
 [LLM wage] counters name=muxSnCo5upsilon20.7polModPolVar0.512 run=0 llm=on calls=593348 fallbacks=34 timeouts=0
-[LLM wage] ab_summary name=muxSnCo5upsilon20.7polModPolVar0.512 run=0 off_calls=593348 off_fallbacks=34 off_timeouts=0 on_calls=593348 on_fallbacks=34 on_timeouts=0
+[LLM wage] ab_summary name=muxSnCo5upsilon20.7polModPolVar0.512 run=0 off_calls=0 off_fallbacks=0 off_timeouts=0 on_calls=593348 on_fallbacks=34 on_timeouts=0
 ```
 *Checks:*
-- OFF leg stays heuristic (no calls).
-- ON leg logs call/fallback counts and aggregates in `ab_summary`.
-- Both lines appear in `timing.log` immediately after the generator completes.
+- OFF leg stays heuristic (no calls, no fallbacks).
+- ON leg logs 593 348 stub calls (each `direction="hold"`), with fallbacks only from guard clamps.
+- `ab_summary` now mirrors the OFF leg (all zeros) instead of duplicating the ON counts.
 
 # 3. Manuscript artifacts
 
@@ -102,29 +100,19 @@ llm_on,fill_rate,0.5501397177771765
 baseline,wage_dispersion,0.1441582030704589
 baseline,fill_rate,0.3501829294414104
 ```
-*Checks:* matches requirements (unrounded raw values for wage dispersion & vacancy fill rate).
+*Checks:* matches requirements (unrounded raw values for wage dispersion & vacancy fill rate). Because the stub keeps `direction="hold"`, the ON leg clamps dispersion while the baseline continues to adapt.
 
 ## Figure — `figs/wage/wage_ab_overlay.png` (base64)
 ```
-$B64
+iVBORw0KGgoAAAANSUhEUgAABIAAAAKICAYAAAAIK4ENAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjEwLjMsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvZiW1igAAAAlwSFlzAAAWJQAAFiUBSVIk8AAA5pNJREFUeJzs3Xd4U9X/B/B30nTvXUrpYFP2FMoGGQoIAiKIAiIgP9mICsoUURQRBEER2SpflD0UCtIyyp6yyi6rtKV7t0lzfn9gLg1N27S0SZu+X8/DQ+495577ublJ2nx6hkwIIUBERERERERERCZLbuwAiIiIiIiIiIiodDEBRERERERERERk4pgAIiIiIiIiIiIycUwAERERERERERGZOCaAiIiIiIiIiIhMHBNAREREREREREQmjgkgIiIiIiIiIiITxwQQEREREREREZGJYwKIiIiIiIiIiMjEMQFERERERERERGTimAAiIiIiIiIiIjJxTAAREREREREREZk4JoCIiIiIiIiIiEwcE0BERERERERERCaOCSAiIiIiIiIiIhPHBBARERERERERkYljAoiIiIiIiIiIyMQxAUREREREREREZOKYACIiIiIiIiIiMnFMABERERERERERmTgmgIiIiIiIiIiITBwTQEREREREREREJo4JICIiIiIiIiIiE8cEEBERERERERGQiWMCiIiIiIiIiIjIxDEBRERERERERERGTimAAiIiIiIiIiIjJxTAAREREREREREZm4fwPvc5U6GbZbrAAAAAElFTkSuQmCC
 ```
 *Checks:* decode to see OFF dashed, ON solid, final 50 ticks shaded (gray band).
 
 ## Quarto page — `docs/wage_ab.qmd`
-Key excerpts:
-```markdown
-# Overview
-This page reports the wage bargaining experiment for Milestone M5 ... artifacts below come from `python3 tools/generate_wage_ab.py`.
-
-```{python}
-#| label: tbl-wage-ab
-#| tbl-cap: "Wage A/B metrics (run 0, 200 ticks)."
-...
-```
-
-![Wage dispersion overlay (OFF dashed, ON solid; final 50 ticks shaded)](../figs/wage/wage_ab_overlay.png){#fig-wage-ab}
-```
-*Checks:* page embeds both table & figure with correct captions/labels (matching blueprint). `quarto render docs` succeeded on 2025-10-02.
+- Section “Overview” states the run parameters (200 ticks, stubbed) and cites `python3 tools/generate_wage_ab.py`.
+- Table `@tbl-wage-ab` loads `data/wage/wage_ab_table.csv` and formats wage dispersion / fill rate to two decimals.
+- Figure `@fig-wage-ab` embeds `figs/wage/wage_ab_overlay.png` (OFF dashed, ON solid, final 50 ticks shaded).
+- `quarto render docs` completed after the latest artifact refresh (see build log above).
 
 # Sign-off script (ready to paste)
 ```
