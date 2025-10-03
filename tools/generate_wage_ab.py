@@ -25,6 +25,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Dict
+import argparse
 
 os.environ.setdefault("MPLBACKEND", "Agg")
 
@@ -44,14 +45,40 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def start_decider_stub() -> subprocess.Popen:
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Generate wage A/B artifacts (CSV + overlay)."
+    )
+    parser.add_argument(
+        "--skip-stub",
+        action="store_true",
+        help="Do not start the Decider stub (useful when relying on local fallbacks).",
+    )
+    parser.add_argument(
+        "--stub-delay-ms",
+        type=int,
+        default=0,
+        help="Add artificial latency to stub responses (milliseconds).",
+    )
+    parser.add_argument(
+        "--input-json",
+        type=Path,
+        help="Reuse an existing run_ab_demo JSON payload instead of launching the simulation.",
+    )
+    return parser.parse_args()
+
+
+def start_decider_stub(stub_delay_ms: int = 0) -> subprocess.Popen:
     """Launch the Decider stub and wait until the health check passes."""
 
     root = repo_root()
     print("Starting Decider stub on http://127.0.0.1:8000 ...")
     with open(os.devnull, "wb") as devnull:
+        command = ["python3", "tools/decider/server.py", "--stub"]
+        if stub_delay_ms > 0:
+            command.extend(["--stub-delay-ms", str(stub_delay_ms)])
         proc = subprocess.Popen(
-            ["python3", "tools/decider/server.py", "--stub"],
+            command,
             cwd=str(root),
             stdout=devnull,
             stderr=subprocess.STDOUT,
@@ -169,15 +196,26 @@ def plot_overlay(results: Dict[str, dict], output_path: Path) -> None:
 
 
 def main() -> None:
+    args = parse_args()
+
     root = repo_root()
     tmp_json = root / "artifacts" / "wage_ab_result.json"
 
-    decider_proc = start_decider_stub()
+    decider_proc: subprocess.Popen | None = None
+
     try:
-        run_simulation(tmp_json)
-        results = load_results(tmp_json)
+        if args.input_json:
+            results_path = args.input_json
+        else:
+            if not args.skip_stub:
+                decider_proc = start_decider_stub(max(0, args.stub_delay_ms))
+            run_simulation(tmp_json)
+            results_path = tmp_json
+
+        results = load_results(results_path)
     finally:
-        stop_decider_stub(decider_proc)
+        if decider_proc is not None:
+            stop_decider_stub(decider_proc)
 
     table_path = root / "data" / "wage" / "wage_ab_table.csv"
     figure_path = root / "figs" / "wage" / "wage_ab_overlay.png"
@@ -185,7 +223,8 @@ def main() -> None:
     write_table(results, table_path)
     plot_overlay(results, figure_path)
 
-    tmp_json.unlink(missing_ok=True)
+    if not args.input_json:
+        tmp_json.unlink(missing_ok=True)
     relative_table = table_path.relative_to(root)
     relative_figure = figure_path.relative_to(root)
     print("Generated {} and {}".format(relative_table, relative_figure))

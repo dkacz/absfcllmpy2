@@ -31,6 +31,7 @@ import random
 import os
 import glob
 import csv
+import copy
 from bank import *
 from matchingCredit import *
 from matchingBonds import *
@@ -351,27 +352,33 @@ def run_simulation(parameter=None, progress=True):
             if ite.breaking=='yes':
                   break 
 
-        counters_snapshot = get_llm_counters_snapshot()
-        run_counters[run] = counters_snapshot
+        counters_snapshot = get_llm_counters_snapshot() or {}
+        snapshot_copy = {}
+        for block_label, block_values in counters_snapshot.items():
+            if block_values is None:
+                snapshot_copy[block_label] = {}
+            else:
+                snapshot_copy[block_label] = block_values.copy()
+        run_counters[run] = snapshot_copy
         _log_llm_counter_line(
             para,
             run,
             'firm',
-            counters_snapshot.get('firm'),
+            snapshot_copy.get('firm'),
             getattr(para, 'use_llm_firm_pricing', False),
         )
         _log_llm_counter_line(
             para,
             run,
             'bank',
-            counters_snapshot.get('bank'),
+            snapshot_copy.get('bank'),
             getattr(para, 'use_llm_bank_credit', False),
         )
         _log_llm_counter_line(
             para,
             run,
             'wage',
-            counters_snapshot.get('wage'),
+            snapshot_copy.get('wage'),
             getattr(para, 'use_llm_wage', False),
         )
 
