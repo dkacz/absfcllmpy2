@@ -31,6 +31,25 @@ Additional flags relevant for later milestones:
 - `--tick-budget <int>` — maximum calls allowed per `(run_id, tick)` pair (defaults to unlimited).
 - `--stub-delay-ms <int>` — testing helper that adds artificial latency to stub replies so you can exercise timeout behaviour.
 
+### Live mode (OpenRouter)
+
+Milestone M6 introduces a live mode that routes the same endpoints through OpenRouter:
+
+```bash
+OPENROUTER_API_KEY=sk-... \
+python3 tools/decider/server.py \
+  --mode live \
+  --openrouter-model-primary openrouter/your-model \
+  --openrouter-model-fallback openrouter/backup-model
+```
+
+- `--mode live` switches the handler to the OpenRouter adapter; the default remains `stub` so accidental runs stay cost-free.
+- Provide the primary model slug via the flag or the `OPENROUTER_MODEL_PRIMARY` environment variable. The fallback slug is optional but recommended.
+- The server verifies both slugs with `/api/v1/models` on startup and logs the selected provider, prompt/response token counts, elapsed time, and any `why_code` the model returns.
+- Live requests honour the same `--deadline-ms` budget; the adapter subtracts a small buffer before calling OpenRouter so the overall request still respects the server deadline. Any timeout or schema violation is surfaced back to the simulation as an HTTP error, triggering the baseline fallback path.
+
+> **Guardrail:** keep the stub workflow for day-to-day smoke tests. Only start live mode when you explicitly want to hit OpenRouter and have confirmed your API key, model slugs, and run budget.
+
 ## Health endpoint
 
 ```bash
