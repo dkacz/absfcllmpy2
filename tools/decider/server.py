@@ -22,13 +22,14 @@ import argparse
 import http.client
 import json
 import logging
+import os
 import signal
 import threading
 import time
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import jsonschema
 
@@ -36,6 +37,11 @@ try:  # pragma: no cover - import style depends on execution context
     from cache import DecisionCache
 except ImportError:  # pragma: no cover
     from .cache import DecisionCache  # type: ignore
+
+try:  # pragma: no cover - import style depends on execution context
+    from providers import OpenRouterAdapter, OpenRouterError
+except ImportError:  # pragma: no cover
+    from .providers import OpenRouterAdapter, OpenRouterError  # type: ignore
 
 LOGGER = logging.getLogger("decider.server")
 
@@ -73,6 +79,306 @@ SCHEMA_FILES = {
     "/decide/bank": "bank_request.schema.json",
     "/decide/wage": "wage_request.schema.json",
 }
+
+
+DEFAULT_MODE = "stub"
+LIVE_BUFFER_MS = 20
+
+
+class LivePrompt(object):
+    """Simple prompt template for the OpenRouter adapter."""
+
+    def __init__(self, system: str, user_template: str, response_format: Optional[Dict[str, Any]] = None) -> None:
+        self.system = system
+        self.user_template = user_template
+        self.response_format = response_format or {"type": "json_object"}
+
+    def build_user(self, payload: Dict[str, Any]) -> str:
+        payload_json = json.dumps(payload, sort_keys=True, indent=2)
+        return self.user_template.format(payload_json=payload_json)
+
+
+def _default_live_prompts() -> Dict[str, LivePrompt]:
+    """Return default prompt definitions for live mode."""
+
+    return {
+        "/decide/firm": LivePrompt(
+            system=(
+                "You are the firm pricing decision service for the Caiani AB-SFC model. "
+                "Return a compact JSON object with keys: direction (string), price_step (number), "
+                "expectation_bias (number), and why_code (string describing the rationale)."
+            ),
+            user_template=(
+                "Given the following firm state, guards, and baseline decision (JSON):\n"
+                "{payload_json}\n\nRespond with JSON only."
+            ),
+        ),
+        "/decide/bank": LivePrompt(
+            system=(
+                "You are the bank credit decision service for the Caiani AB-SFC model. "
+                "Respond with JSON containing approve (boolean), credit_limit_ratio (number), "
+                "spread_bps (number), and why_code (string summarising the choice)."
+            ),
+            user_template=(
+                "Bank state, applicant metrics, and guard rails (JSON):\n{payload_json}\n\n"
+                "Return JSON only."
+            ),
+        ),
+        "/decide/wage": LivePrompt(
+            system=(
+                "You are the wage negotiation decision service for the Caiani AB-SFC model. "
+                "Return JSON with direction (string), wage_step (number), and why_code (string)."
+            ),
+            user_template=(
+                "Worker and firm wage context (JSON):\n{payload_json}\n\nReturn JSON only."
+            ),
+        ),
+    }
+
+
+def _validate_firm_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(decision, dict):
+        raise ValueError("firm decision must be a JSON object")
+    result = dict(decision)
+    direction = result.get("direction")
+    if not isinstance(direction, str) or not direction:
+        raise ValueError("firm decision missing 'direction' string")
+    for field in ("price_step", "expectation_bias"):
+        value = result.get(field)
+        if value is None:
+            raise ValueError("firm decision missing '%s'" % field)
+        try:
+            result[field] = float(value)
+        except (TypeError, ValueError):
+            raise ValueError("firm decision field '%s' must be numeric" % field)
+    why_code = result.get("why_code")
+    if why_code is not None and not isinstance(why_code, str):
+        raise ValueError("firm decision 'why_code' must be a string when provided")
+    return result
+
+
+def _validate_bank_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(decision, dict):
+        raise ValueError("bank decision must be a JSON object")
+    result = dict(decision)
+    approve = result.get("approve")
+    if not isinstance(approve, bool):
+        raise ValueError("bank decision requires boolean 'approve'")
+    for field in ("credit_limit_ratio", "spread_bps"):
+        value = result.get(field)
+        if value is None:
+            raise ValueError("bank decision missing '%s'" % field)
+        try:
+            result[field] = float(value)
+        except (TypeError, ValueError):
+            raise ValueError("bank decision field '%s' must be numeric" % field)
+    why_code = result.get("why_code")
+    if why_code is not None and not isinstance(why_code, str):
+        raise ValueError("bank decision 'why_code' must be a string when provided")
+    return result
+
+
+def _validate_wage_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(decision, dict):
+        raise ValueError("wage decision must be a JSON object")
+    result = dict(decision)
+    direction = result.get("direction")
+    if not isinstance(direction, str) or not direction:
+        raise ValueError("wage decision missing 'direction' string")
+    wage_step = result.get("wage_step")
+    if wage_step is None:
+        raise ValueError("wage decision missing 'wage_step'")
+    try:
+        result["wage_step"] = float(wage_step)
+    except (TypeError, ValueError):
+        raise ValueError("wage decision field 'wage_step' must be numeric")
+    why_code = result.get("why_code")
+    if why_code is not None and not isinstance(why_code, str):
+        raise ValueError("wage decision 'why_code' must be a string when provided")
+    return result
+
+
+LIVE_RESPONSE_VALIDATORS = {
+    "/decide/firm": _validate_firm_decision,
+    "/decide/bank": _validate_bank_decision,
+    "/decide/wage": _validate_wage_decision,
+}
+
+
+def _prepare_live_router(args: argparse.Namespace, deadline_ms: int) -> LiveModeRouter:
+    primary_model = args.openrouter_model_primary
+    if not primary_model:
+        raise ValueError("live mode requires --openrouter-model-primary or OPENROUTER_MODEL_PRIMARY env")
+    fallback_model = args.openrouter_model_fallback or None
+
+    try:
+        adapter = OpenRouterAdapter(
+            base_url=args.openrouter_base_url,
+            referer=args.openrouter_referer,
+            title=args.openrouter_title,
+        )
+    except ValueError as exc:
+        raise ValueError("live mode requires OPENROUTER_API_KEY") from exc
+
+    check_deadline = None
+    if deadline_ms and deadline_ms > 0:
+        check_deadline = max(50, deadline_ms - LIVE_BUFFER_MS)
+
+    slugs = [primary_model]
+    if fallback_model:
+        slugs.append(fallback_model)
+
+    for slug in slugs:
+        try:
+            if not adapter.model_exists(slug, deadline_ms=check_deadline):
+                raise OpenRouterError("model_not_found", detail="model '%s' unavailable" % slug)
+        except OpenRouterError as exc:
+            LOGGER.error(
+                "OpenRouter model check failed model=%s reason=%s detail=%s status=%s",
+                slug,
+                exc.reason,
+                exc.detail,
+                exc.status,
+            )
+            raise
+
+    LOGGER.info(
+        "OpenRouter live mode initialised primary=%s fallback=%s", primary_model, fallback_model or "none"
+    )
+
+    router_deadline = deadline_ms if deadline_ms > 0 else None
+    return LiveModeRouter(
+        adapter=adapter,
+        primary_model=primary_model,
+        fallback_model=fallback_model,
+        server_deadline_ms=router_deadline,
+    )
+
+
+class LiveModeRouter(object):
+    """Dispatch helper for live mode requests."""
+
+    def __init__(
+        self,
+        adapter: OpenRouterAdapter,
+        primary_model: str,
+        fallback_model: Optional[str],
+        server_deadline_ms: Optional[int],
+        prompts: Optional[Dict[str, LivePrompt]] = None,
+        validators: Optional[Dict[str, Any]] = None,
+        buffer_ms: int = LIVE_BUFFER_MS,
+    ) -> None:
+        if not primary_model:
+            raise ValueError("primary model slug is required for live mode")
+        self.adapter = adapter
+        self.primary_model = primary_model
+        self.fallback_model = fallback_model if fallback_model and fallback_model != primary_model else None
+        self.server_deadline_ms = server_deadline_ms
+        self.prompts = prompts or _default_live_prompts()
+        self.validators = validators or LIVE_RESPONSE_VALIDATORS
+        self.buffer_ms = max(0, buffer_ms)
+
+    def decide(self, endpoint: str, payload: Dict[str, Any], start_time: float) -> Tuple[HTTPStatus, Dict[str, Any]]:
+        prompt = self.prompts.get(endpoint)
+        if prompt is None:
+            LOGGER.error("live prompt missing for endpoint %s", endpoint)
+            return HTTPStatus.NOT_IMPLEMENTED, {
+                "error": "live_prompt_missing",
+                "detail": {"endpoint": endpoint},
+            }
+
+        validator = self.validators.get(endpoint)
+        if validator is None:
+            LOGGER.error("live validator missing for endpoint %s", endpoint)
+            return HTTPStatus.NOT_IMPLEMENTED, {
+                "error": "live_validator_missing",
+                "detail": {"endpoint": endpoint},
+            }
+
+        attempts: List[Dict[str, Any]] = []
+        for attempt_index, model in enumerate(self._models()):
+            attempt_label = "primary" if attempt_index == 0 else "fallback"
+            try:
+                deadline_ms = self._remaining_deadline_ms(start_time)
+                decision, meta = self.adapter.call(
+                    model,
+                    prompt.system,
+                    prompt.build_user(payload),
+                    response_format=prompt.response_format,
+                    deadline_ms=deadline_ms,
+                )
+                if not isinstance(decision, dict):
+                    raise ValueError("model response must be JSON object")
+                normalised = validator(decision)
+                usage = meta.get("usage", {}) if isinstance(meta, dict) else {}
+                why_code = normalised.get("why_code")
+                LOGGER.info(
+                    "live decision endpoint=%s model=%s attempt=%s why=%s prompt_tokens=%s completion_tokens=%s elapsed_ms=%.1f",
+                    endpoint,
+                    meta.get("model", model) if isinstance(meta, dict) else model,
+                    attempt_label,
+                    why_code or "n/a",
+                    usage.get("prompt_tokens"),
+                    usage.get("completion_tokens"),
+                    meta.get("elapsed_ms", 0.0) if isinstance(meta, dict) else 0.0,
+                )
+                return HTTPStatus.OK, normalised
+            except OpenRouterError as exc:
+                details = {
+                    "model": model,
+                    "attempt": attempt_label,
+                    "reason": exc.reason,
+                }
+                if exc.status is not None:
+                    details["status"] = exc.status
+                if exc.detail is not None:
+                    details["detail"] = exc.detail
+                attempts.append(details)
+                LOGGER.warning(
+                    "live decision failed endpoint=%s model=%s reason=%s detail=%s status=%s",
+                    endpoint,
+                    model,
+                    exc.reason,
+                    exc.detail,
+                    exc.status,
+                )
+            except ValueError as exc:
+                attempts.append(
+                    {
+                        "model": model,
+                        "attempt": attempt_label,
+                        "reason": "schema_error",
+                        "detail": str(exc),
+                    }
+                )
+                LOGGER.warning(
+                    "live decision validation error endpoint=%s model=%s detail=%s",
+                    endpoint,
+                    model,
+                    exc,
+                )
+
+        return HTTPStatus.SERVICE_UNAVAILABLE, {
+            "error": "llm_live_failed",
+            "detail": {
+                "attempts": attempts,
+            },
+        }
+
+    def _models(self) -> List[str]:
+        models = [self.primary_model]
+        if self.fallback_model:
+            models.append(self.fallback_model)
+        return models
+
+    def _remaining_deadline_ms(self, start_time: float) -> Optional[int]:
+        if self.server_deadline_ms is None or self.server_deadline_ms <= 0:
+            return None
+        elapsed_ms = (time.monotonic() - start_time) * 1000.0
+        remaining = self.server_deadline_ms - elapsed_ms - self.buffer_ms
+        if remaining <= 0:
+            return 1
+        return int(remaining)
 
 
 def _load_validators() -> Dict[str, jsonschema.Draft7Validator]:
@@ -132,7 +438,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--stub",
         action="store_true",
-        help="Serve deterministic stub responses (default behaviour)."
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["stub", "live"],
+        default=DEFAULT_MODE,
+        help="Run mode: stub (default) or live (OpenRouter-backed)."
     )
     parser.add_argument(
         "--deadline-ms",
@@ -153,22 +465,54 @@ def parse_args() -> argparse.Namespace:
         help="Testing helper: add artificial latency to stub replies (milliseconds)."
     )
     parser.add_argument(
+        "--openrouter-model-primary",
+        default=os.getenv("OPENROUTER_MODEL_PRIMARY"),
+        help="Primary OpenRouter model slug (requires live mode)."
+    )
+    parser.add_argument(
+        "--openrouter-model-fallback",
+        default=os.getenv("OPENROUTER_MODEL_FALLBACK"),
+        help="Optional fallback OpenRouter model slug."
+    )
+    parser.add_argument(
+        "--openrouter-base-url",
+        default=os.getenv("OPENROUTER_BASE_URL", API_BASE_URL),
+        help="Override OpenRouter API base URL (advanced)."
+    )
+    parser.add_argument(
+        "--openrouter-title",
+        default=os.getenv("OPENROUTER_TITLE"),
+        help="Optional X-Title header for OpenRouter requests."
+    )
+    parser.add_argument(
+        "--openrouter-referer",
+        default=os.getenv("OPENROUTER_HTTP_REFERER"),
+        help="Optional HTTP-Referer header for OpenRouter requests."
+    )
+    parser.add_argument(
         "--check",
         action="store_true",
         help="Run a one-shot health check and exit."
     )
     args = parser.parse_args()
 
-    # `--stub` is the only supported mode today; default to True so users do not
-    # have to pass the flag explicitly once the CLI stabilises.
-    if not args.stub:
-        LOGGER.debug("--stub not provided; enabling stub mode by default")
-        args.stub = True
+    if args.mode != "live":
+        args.mode = "stub"
     return args
 
 
-def make_handler(stub_mode: bool, deadline_ms: int, tick_budget: int, stub_delay_ms: int):
+def make_handler(
+    mode: str,
+    deadline_ms: int,
+    tick_budget: int,
+    stub_delay_ms: int,
+    live_router: Optional[LiveModeRouter] = None,
+):
     """Factory that builds a request handler bound to the configuration."""
+
+    stub_mode = mode != "live"
+    if mode == "live" and live_router is None:
+        raise ValueError("live mode requires live_router configuration")
 
     deadline_seconds: Optional[float]
     if deadline_ms <= 0:
@@ -285,11 +629,15 @@ def make_handler(stub_mode: bool, deadline_ms: int, tick_budget: int, stub_delay
             LOGGER.debug("cache miss %s key=%s", endpoint, cache_key[:8])
 
             if not stub_mode:
-                LOGGER.error("non-stub mode requested but not implemented")
-                return HTTPStatus.NOT_IMPLEMENTED, {
-                    "error": "not_implemented",
-                    "detail": "only stub mode is available",
-                }
+                assert live_router is not None  # for type checkers
+                status, live_body = live_router.decide(endpoint, payload, start_time)
+                if status == HTTPStatus.OK:
+                    response_copy = json.loads(json.dumps(live_body))
+                    CACHE.set(cache_key, response_copy)
+                    if deadline_seconds is not None and self._deadline_exceeded(start_time):
+                        return HTTPStatus.GATEWAY_TIMEOUT, self._deadline_payload(start_time, endpoint)
+                    return HTTPStatus.OK, response_copy
+                return status, live_body
 
             if stub_delay_seconds > 0:
                 time.sleep(stub_delay_seconds)
@@ -401,14 +749,16 @@ def make_handler(stub_mode: bool, deadline_ms: int, tick_budget: int, stub_delay
 def run_server(
     host: str,
     port: int,
-    stub_mode: bool,
+    mode: str,
     check_only: bool,
     deadline_ms: int,
     tick_budget: int,
     stub_delay_ms: int,
+    live_router: Optional[LiveModeRouter] = None,
 ) -> int:
-    server = ThreadingHTTPServer((host, port), make_handler(stub_mode, deadline_ms, tick_budget, stub_delay_ms))
-    LOGGER.info("Decider stub listening on http://%s:%s", host, port)
+    handler = make_handler(mode, deadline_ms, tick_budget, stub_delay_ms, live_router=live_router)
+    server = ThreadingHTTPServer((host, port), handler)
+    LOGGER.info("Decider server (%s mode) listening on http://%s:%s", mode, host, port)
 
     # Graceful shutdown support for Ctrl+C / SIGTERM.
     def _handle_stop(signum: int, _frame: Any) -> None:  # pragma: no cover - signal path
@@ -449,14 +799,24 @@ def run_server(
 def main() -> None:
     args = parse_args()
     logging.basicConfig(level=getattr(logging, args.log_level.upper()), format="%(asctime)s %(levelname)s %(message)s")
+    live_router: Optional[LiveModeRouter] = None
+    if args.mode == "live":
+        try:
+            live_router = _prepare_live_router(args, args.deadline_ms)
+        except ValueError as exc:
+            LOGGER.error("%s", exc)
+            raise SystemExit(2)
+        except OpenRouterError:
+            raise SystemExit(2)
     exit_code = run_server(
         args.host,
         args.port,
-        stub_mode=args.stub,
+        mode=args.mode,
         check_only=args.check,
         deadline_ms=args.deadline_ms,
         tick_budget=args.tick_budget,
         stub_delay_ms=args.stub_delay_ms,
+        live_router=live_router,
     )
     raise SystemExit(exit_code)
 
