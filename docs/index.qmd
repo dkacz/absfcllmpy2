@@ -44,6 +44,7 @@ The table above is drawn from `data/_examples/sample_metrics.csv`; future Quarto
 ## Milestone M6 — A/B runner & overlays
 
 - [A/B overlay overview](ab_overview.qmd) — collects the firm, bank, and wage overlays (OFF dashed, ON solid, final 50 ticks shaded) produced from the `run_id=0`, `ncycle=200` runs.
+- [How to reproduce A/B overlays](howto_ab.qmd) — three-step checklist (stub, `run_ab_demo`, Quarto render) for regenerating the OFF→ON artifacts.
 
 ## Ethics & scope
 
