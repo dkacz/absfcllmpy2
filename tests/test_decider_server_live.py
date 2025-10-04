@@ -57,6 +57,25 @@ def build_bank_payload():
     }
 
 
+def build_wage_payload():
+    return {
+        "schema_version": "1.0",
+        "run_id": 0,
+        "tick": 0,
+        "context": "firm_offer",
+        "agent_id": "F0n0",
+        "country_id": 0,
+        "current_wage": 1.0,
+        "wage_floor": 0.8,
+        "wage_ceiling": 1.2,
+        "guards": {
+            "max_wage_step": 0.04,
+        },
+        "vacancies": 2,
+        "recent_fill_rate": 0.7,
+    }
+
+
 
 class DummyAdapter(object):
     def __init__(self, responses):
@@ -234,6 +253,43 @@ class DeciderServerLiveTests(unittest.TestCase):
         handler = self._make_handler(mode="live", adapter=adapter)
         payload = build_bank_payload()
         status, body = handler._handle_single("/decide/bank", payload, time.monotonic())
+        self.assertEqual(status, HTTPStatus.SERVICE_UNAVAILABLE)
+        self.assertEqual(body["error"], "llm_live_failed")
+        attempts = body["detail"]["attempts"]
+        self.assertEqual(attempts[0]["reason"], "schema_error")
+
+    def test_wage_live_mode_primary_success(self):
+        decision = {
+            "direction": "raise",
+            "wage_step": 0.02,
+            "why": ["inflation_pressure"],
+            "confidence": 0.9,
+        }
+        meta = {
+            "model": "primary-model",
+            "usage": {"prompt_tokens": 9, "completion_tokens": 5},
+            "elapsed_ms": 9.5,
+        }
+        adapter = DummyAdapter([(decision, meta)])
+        handler = self._make_handler(mode="live", adapter=adapter)
+        payload = build_wage_payload()
+        status, body = handler._handle_single("/decide/wage", payload, time.monotonic())
+        self.assertEqual(status, HTTPStatus.OK)
+        self.assertEqual(body["direction"], "raise")
+        self.assertEqual(body["why"], ["inflation_pressure"])
+
+    def test_wage_live_mode_schema_violation(self):
+        decision = {
+            "direction": "cut",
+            "wage_step": 0.2,
+            "why": ["baseline_guard"],
+            "confidence": 0.6,
+        }
+        meta = {"model": "primary-model", "usage": {}}
+        adapter = DummyAdapter([(decision, meta)])
+        handler = self._make_handler(mode="live", adapter=adapter)
+        payload = build_wage_payload()
+        status, body = handler._handle_single("/decide/wage", payload, time.monotonic())
         self.assertEqual(status, HTTPStatus.SERVICE_UNAVAILABLE)
         self.assertEqual(body["error"], "llm_live_failed")
         attempts = body["detail"]["attempts"]
