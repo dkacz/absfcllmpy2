@@ -1,0 +1,31 @@
+---
+title: "A/B Overlay Overview"
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Snapshot
+The short-horizon A/B experiments share a common configuration: `run_id = 0`, `ncycle = 200`, and the deterministic Decider stub. Each overlay compares the legacy baseline (OFF) against the guard-railed LLM path (ON) with OFF rendered as a dashed line, ON as a solid line, and the final 50 ticks shaded for manuscript alignment.
+
+## Overlays at a glance
+All three overlays originate from the runner outputs documented on the block-specific pages. The captions restate the run settings and call out the detailed figure identifiers (`fig-firm-ab`, `fig-bank-ab`, `fig-wage-ab`) so cross-references in the manuscript remain stable.
+
+::: {.layout-ncol=1}
+![Firm price-dispersion overlay (OFF dashed, ON solid; final 50 ticks shaded). Run generated with `run_id=0`, `ncycle=200`. Detailed breakdown: [fig-firm-ab](firm_ab.qmd#fig-firm-ab).](../figs/firm/firm_ab_overlay.png){#fig-ab-overview-firm}
+
+![Bank average-spread overlay (OFF dashed, ON solid; final 50 ticks shaded). Run generated with `run_id=0`, `ncycle=200`. Detailed breakdown: [fig-bank-ab](bank_ab.qmd#fig-bank-ab).](../figs/bank/bank_ab_overlay.png){#fig-ab-overview-bank}
+
+![Wage dispersion overlay (OFF dashed, ON solid; final 50 ticks shaded). Run generated with `run_id=0`, `ncycle=200`. Detailed breakdown: [fig-wage-ab](wage_ab.qmd#fig-wage-ab).](../figs/wage/wage_ab_overlay.png){#fig-ab-overview-wage}
+:::
+
+## Detailed pages
+For tables, counter snippets, and notes, consult the individual A/B write-ups:
+
+- [Firm A/B comparison](firm_ab.qmd)
+- [Bank A/B comparison](bank_ab.qmd)
+- [Wage A/B comparison](wage_ab.qmd)
+
+Each page includes the core metrics tables (`tbl-firm-ab`, `tbl-bank-ab`, `tbl-wage-ab`) and reiterates the OFF/ON artifact paths documented in `code/timing.py`.
