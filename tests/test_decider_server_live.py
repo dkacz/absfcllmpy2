@@ -1,6 +1,9 @@
+import os
+import tempfile
 import time
 import unittest
 from http import HTTPStatus
+from pathlib import Path
 
 from tools.decider import server
 from tools.decider.providers.openrouter_adapter import OpenRouterError
@@ -110,6 +113,12 @@ class DummyAdapter(object):
 class DeciderServerLiveTests(unittest.TestCase):
     def setUp(self):
         server.CACHE.clear()
+        self._original_timing_log = server.TIMING_LOG_PATH
+        tmp = tempfile.NamedTemporaryFile(delete=False)
+        tmp.close()
+        self.timing_log_path = tmp.name
+        server.TIMING_LOG_PATH = Path(self.timing_log_path)
+        self.addCleanup(self._cleanup_timing_log)
 
     def _make_handler(self, mode="stub", deadline_ms=200, adapter=None, primary="primary-model", fallback=None):
         live_router = None
@@ -125,6 +134,26 @@ class DeciderServerLiveTests(unittest.TestCase):
         handler_cls = server.make_handler(mode, deadline_ms, tick_budget=0, stub_delay_ms=0, live_router=live_router)
         handler = handler_cls.__new__(handler_cls)
         return handler
+
+    def _cleanup_timing_log(self):
+        server.TIMING_LOG_PATH = self._original_timing_log
+        try:
+            os.remove(self.timing_log_path)
+        except OSError:
+            pass
+
+    def _read_log_lines(self):
+        with open(self.timing_log_path, "r", encoding="utf-8") as handle:
+            return [line.strip() for line in handle if line.strip()]
+
+    @staticmethod
+    def _parse_fields(line):
+        fields = {}
+        for token in line.split():
+            if "=" in token:
+                key, value = token.split("=", 1)
+                fields[key] = value
+        return fields
 
     def test_stub_mode_returns_stub_response(self):
         handler = self._make_handler(mode="stub")
@@ -155,6 +184,12 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertEqual(len(adapter.calls), 1)
         self.assertEqual(adapter.calls[0]["model"], "primary-model")
         self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
+        lines = self._read_log_lines()
+        self.assertEqual(len(lines), 1)
+        self.assertTrue(lines[0].startswith("[LLM firm] usage"))
+        fields = self._parse_fields(lines[0])
+        self.assertEqual(fields["usage_prompt_tokens"], "12")
+        self.assertEqual(fields["usage_completion_tokens"], "5")
 
     def test_live_mode_fallback_on_primary_failure(self):
         decision = {
@@ -184,6 +219,14 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertEqual(adapter.calls[1]["model"], "fallback-model")
         self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
         self.assertEqual(adapter.calls[1]["response_format"]["type"], "json_schema")
+        lines = self._read_log_lines()
+        self.assertEqual(len(lines), 2)
+        self.assertTrue(lines[0].startswith("[LLM firm] usage_error"))
+        self.assertTrue(lines[1].startswith("[LLM firm] usage"))
+        error_fields = self._parse_fields(lines[0])
+        self.assertEqual(error_fields["reason"], "timeout")
+        self.assertEqual(error_fields["usage_prompt_tokens"], "0")
+        self.assertEqual(error_fields["usage_completion_tokens"], "0")
 
     def test_live_mode_failure_returns_error(self):
         adapter = DummyAdapter([
@@ -197,6 +240,18 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertEqual(body["error"], "llm_live_failed")
         self.assertEqual(len(body["detail"]["attempts"]), 2)
         self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
+        lines = self._read_log_lines()
+        self.assertEqual(len(lines), 2)
+        self.assertTrue(lines[0].startswith("[LLM firm] usage_error"))
+        self.assertTrue(lines[1].startswith("[LLM firm] usage_error"))
+        fields_primary = self._parse_fields(lines[0])
+        fields_fallback = self._parse_fields(lines[1])
+        self.assertEqual(fields_primary["reason"], "timeout")
+        self.assertEqual(fields_primary["usage_prompt_tokens"], "0")
+        self.assertEqual(fields_primary["usage_completion_tokens"], "0")
+        self.assertEqual(fields_fallback["reason"], "http_error")
+        self.assertEqual(fields_fallback["usage_prompt_tokens"], "0")
+        self.assertEqual(fields_fallback["usage_completion_tokens"], "0")
 
     def test_live_mode_schema_violation_returns_error(self):
         decision = {
@@ -216,6 +271,13 @@ class DeciderServerLiveTests(unittest.TestCase):
         attempts = body["detail"]["attempts"]
         self.assertEqual(attempts[0]["reason"], "schema_error")
         self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
+        lines = self._read_log_lines()
+        self.assertEqual(len(lines), 1)
+        self.assertTrue(lines[0].startswith("[LLM firm] usage_error"))
+        fields = self._parse_fields(lines[0])
+        self.assertEqual(fields["usage_prompt_tokens"], "0")
+        self.assertEqual(fields["usage_completion_tokens"], "0")
+        self.assertEqual(fields["reason"], "schema_error")
 
     def test_bank_live_mode_primary_success(self):
         decision = {
@@ -238,6 +300,9 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertTrue(body["approve"])
         self.assertEqual(body["why"], ["borrower_risk"])
         self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
+        lines = self._read_log_lines()
+        self.assertEqual(len(lines), 1)
+        self.assertTrue(lines[0].startswith("[LLM bank] usage"))
 
     def test_bank_live_mode_schema_violation(self):
         decision = {
@@ -257,6 +322,13 @@ class DeciderServerLiveTests(unittest.TestCase):
         attempts = body["detail"]["attempts"]
         self.assertEqual(attempts[0]["reason"], "schema_error")
         self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
+        lines = self._read_log_lines()
+        self.assertEqual(len(lines), 1)
+        self.assertTrue(lines[0].startswith("[LLM bank] usage_error"))
+        fields = self._parse_fields(lines[0])
+        self.assertEqual(fields["usage_prompt_tokens"], "0")
+        self.assertEqual(fields["usage_completion_tokens"], "0")
+        self.assertEqual(fields["reason"], "schema_error")
 
     def test_live_mode_json_object_when_schema_not_supported(self):
         decision = {
@@ -298,6 +370,10 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
         self.assertEqual(adapter.calls[1]["response_format"]["type"], "json_object")
         self.assertTrue(adapter.marked_unsupported)
+        lines = self._read_log_lines()
+        self.assertEqual(len(lines), 2)
+        self.assertTrue(lines[0].startswith("[LLM firm] usage_error"))
+        self.assertTrue(lines[1].startswith("[LLM firm] usage"))
 
 
 if __name__ == "__main__":

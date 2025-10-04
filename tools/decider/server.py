@@ -75,6 +75,8 @@ BATCH_MAX_ITEMS = 16
 
 SCHEMA_DIR = Path(__file__).with_name("schemas")
 PROMPT_DIR = Path(__file__).with_name("prompts")
+ROOT_DIR = Path(__file__).resolve().parents[2]
+TIMING_LOG_PATH = ROOT_DIR / "timing.log"
 SCHEMA_FILES = {
     "/decide/firm": "firm_request.schema.json",
     "/decide/bank": "bank_request.schema.json",
@@ -84,6 +86,11 @@ SCHEMA_FILES = {
 
 DEFAULT_MODE = "stub"
 LIVE_BUFFER_MS = 20
+LIVE_ENDPOINT_LABELS = {
+    "/decide/firm": "firm",
+    "/decide/bank": "bank",
+    "/decide/wage": "wage",
+}
 
 
 def _load_json_file(path: Path) -> Dict[str, Any]:
@@ -382,6 +389,7 @@ class LiveModeRouter(object):
                     model,
                     prompt,
                     user_message,
+                    payload,
                     start_time,
                     structured_supported,
                 )
@@ -407,8 +415,25 @@ class LiveModeRouter(object):
                     usage.get("completion_tokens"),
                     meta.get("elapsed_ms", 0.0) if isinstance(meta, dict) else 0.0,
                 )
+                self._log_usage_line(
+                    endpoint,
+                    payload,
+                    model=meta.get("model", model) if isinstance(meta, dict) else model,
+                    attempt=attempt_label,
+                    mode=mode_used,
+                    usage=usage,
+                    elapsed_ms=meta.get("elapsed_ms", 0.0) if isinstance(meta, dict) else 0.0,
+                )
                 return HTTPStatus.OK, normalised
             except OpenRouterError as exc:
+                self._log_usage_error(
+                    endpoint,
+                    payload,
+                    model=model,
+                    attempt=attempt_label,
+                    reason=exc.reason,
+                    status=exc.status,
+                )
                 details = {
                     "model": model,
                     "attempt": attempt_label,
@@ -436,6 +461,14 @@ class LiveModeRouter(object):
                         "detail": str(exc),
                     }
                 )
+                self._log_usage_error(
+                    endpoint,
+                    payload,
+                    model=model,
+                    attempt=attempt_label,
+                    reason="schema_error",
+                    status=None,
+                )
                 LOGGER.warning(
                     "live decision validation error endpoint=%s model=%s detail=%s",
                     endpoint,
@@ -456,6 +489,7 @@ class LiveModeRouter(object):
         model: str,
         prompt: LivePrompt,
         user_message: str,
+        payload: Dict[str, Any],
         start_time: float,
         structured_supported: bool,
     ) -> Tuple[Any, Dict[str, Any], str]:
@@ -484,6 +518,14 @@ class LiveModeRouter(object):
                 )
                 if hasattr(self.adapter, "mark_structured_unsupported"):
                     self.adapter.mark_structured_unsupported(model)
+                self._log_usage_error(
+                    endpoint,
+                    payload,
+                    model=model,
+                    attempt="structured",
+                    reason=exc.reason,
+                    status=exc.status,
+                )
                 deadline_ms = self._remaining_deadline_ms(start_time)
                 decision, meta = self.adapter.call(
                     model,
@@ -509,6 +551,93 @@ class LiveModeRouter(object):
             lowered = detail.lower()
             return "schema" in lowered or "structured" in lowered
         return False
+
+    def _log_usage_line(
+        self,
+        endpoint: str,
+        payload: Dict[str, Any],
+        *,
+        model: Optional[str],
+        attempt: Optional[str],
+        mode: str,
+        usage: Dict[str, Any],
+        elapsed_ms: Any,
+    ) -> None:
+        block = LIVE_ENDPOINT_LABELS.get(endpoint, endpoint.rsplit("/", 1)[-1])
+        run_id = self._coerce_int(payload.get("run_id"), default="n/a")
+        tick = self._coerce_int(payload.get("tick"), default="n/a")
+        prompt_tokens = self._coerce_int(usage.get("prompt_tokens"), default=0)
+        completion_tokens = self._coerce_int(usage.get("completion_tokens"), default=0)
+        elapsed = self._coerce_float(elapsed_ms, default=0.0)
+
+        line = (
+            "[LLM %s] usage run=%s tick=%s model=%s attempt=%s mode=%s "
+            "usage_prompt_tokens=%s usage_completion_tokens=%s elapsed_ms=%.1f\n"
+            % (
+                block,
+                run_id,
+                tick,
+                model or "n/a",
+                attempt or "n/a",
+                mode,
+                prompt_tokens,
+                completion_tokens,
+                elapsed,
+            )
+        )
+        self._append_timing_log(line)
+
+    def _log_usage_error(
+        self,
+        endpoint: str,
+        payload: Dict[str, Any],
+        *,
+        model: Optional[str],
+        attempt: Optional[str],
+        reason: Optional[str],
+        status: Optional[Any],
+    ) -> None:
+        block = LIVE_ENDPOINT_LABELS.get(endpoint, endpoint.rsplit("/", 1)[-1])
+        run_id = self._coerce_int(payload.get("run_id"), default="n/a")
+        tick = self._coerce_int(payload.get("tick"), default="n/a")
+        reason_text = (reason or "unknown").replace(" ", "_")
+        status_text = str(status) if status is not None else "n/a"
+        line = (
+            "[LLM %s] usage_error run=%s tick=%s model=%s attempt=%s reason=%s status=%s "
+            "usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0\n"
+            % (
+                block,
+                run_id,
+                tick,
+                model or "n/a",
+                attempt or "n/a",
+                reason_text,
+                status_text,
+            )
+        )
+        self._append_timing_log(line)
+
+    @staticmethod
+    def _append_timing_log(line: str) -> None:
+        try:
+            with open(TIMING_LOG_PATH, "a", encoding="utf-8") as handle:
+                handle.write(line)
+        except Exception as exc:  # pragma: no cover - logging shouldn't crash processing
+            LOGGER.warning("failed to append timing.log: %s", exc)
+
+    @staticmethod
+    def _coerce_int(value: Any, default: Any) -> Any:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return default
+
+    @staticmethod
+    def _coerce_float(value: Any, default: float) -> float:
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
 
     def _models(self) -> List[str]:
         models = [self.primary_model]
