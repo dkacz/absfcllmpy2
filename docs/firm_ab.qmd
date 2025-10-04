@@ -13,7 +13,7 @@ This page tracks the firm pricing & expectations experiment for Milestone M3. Bo
 Because the stub currently rejects every firm request, the OFF and ON scenarios are identical. We keep the artifacts in place so later prompt work can drop in updated values without changing the page structure.
 
 ## Core metrics
-The table aggregates inflation volatility and price dispersion for the baseline (`OFF`) and LLM-enabled (`ON`) runs. Values are rounded to two decimals per the manuscript convention.
+Table @tbl-firm-ab aggregates inflation volatility and price dispersion for the baseline (`OFF`) and LLM-enabled (`ON`) runs. Values are rounded to two decimals per the manuscript convention.
 
 ```{python}
 #| label: tbl-firm-ab

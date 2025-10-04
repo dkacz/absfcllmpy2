@@ -13,7 +13,7 @@ This page documents the bank credit & spreads experiment for Milestone M4. Both 
 Because the Decider stub currently returns deterministic fallbacks, the OFF and ON scenarios remain identical. We publish the artifacts now so prompt work can later drop in differentiated behaviour without restructuring the page.
 
 ## Core metrics
-The table summarises the average spread, loan-to-output ratio, and credit-growth proxy for baseline (`OFF`) versus LLM-enabled (`ON`) runs. Values follow manuscript formatting (two decimals, comma separators for large magnitudes).
+Table @tbl-bank-ab summarises the average spread, loan-to-output ratio, and credit-growth proxy for baseline (`OFF`) versus LLM-enabled (`ON`) runs. Values follow manuscript formatting (two decimals, comma separators for large magnitudes).
 
 ```{python}
 #| label: tbl-bank-ab
