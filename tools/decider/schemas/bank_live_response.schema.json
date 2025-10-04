@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bank live decision response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "approve",
+    "credit_limit_ratio",
+    "spread_bps",
+    "why",
+    "confidence"
+  ],
+  "properties": {
+    "approve": {
+      "type": "boolean"
+    },
+    "credit_limit_ratio": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "spread_bps": {
+      "type": "number"
+    },
+    "why": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "baseline_guard",
+          "capital_buffer_low",
+          "capital_buffer_high",
+          "liquidity_pressure",
+          "borrower_risk",
+          "policy_rate_shift",
+          "llm_uncertain"
+        ]
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "comment": {
+      "type": "string",
+      "maxLength": 280
+    }
+  }
+}

@@ -104,29 +104,34 @@ class LivePrompt(object):
         return self.user_template.format(payload_json=payload_json)
 
 
-def _load_firm_live_prompt() -> Tuple[LivePrompt, jsonschema.Draft7Validator]:
-    prompt_path = PROMPT_DIR / "firm_live.json"
-    prompt_data = _load_json_file(prompt_path)
-    schema_name = prompt_data.get("response_schema", "firm_live_response.schema.json")
-    schema_path = SCHEMA_DIR / schema_name
-    schema = _load_json_file(schema_path)
-    response_format = {
-        "type": "json_schema",
-        "json_schema": {
-            "name": "firm_live_decision",
-            "schema": schema,
-        },
-    }
+def _load_live_prompt(filename: str) -> Tuple[LivePrompt, Optional[jsonschema.Draft7Validator]]:
+    prompt_data = _load_json_file(PROMPT_DIR / filename)
+    schema_name = prompt_data.get("response_schema")
+    response_format: Optional[Dict[str, Any]] = None
+    validator: Optional[jsonschema.Draft7Validator] = None
+
+    if schema_name:
+        schema = _load_json_file(SCHEMA_DIR / schema_name)
+        response_format = {
+            "type": "json_schema",
+            "json_schema": {
+                "name": Path(schema_name).stem,
+                "schema": schema,
+            },
+        }
+        validator = jsonschema.Draft7Validator(schema)
+
     prompt = LivePrompt(
         system=prompt_data["system"],
         user_template=prompt_data["user_template"],
         response_format=response_format,
     )
-    validator = jsonschema.Draft7Validator(schema)
     return prompt, validator
 
 
-FIRM_LIVE_PROMPT, FIRM_LIVE_RESPONSE_VALIDATOR = _load_firm_live_prompt()
+FIRM_LIVE_PROMPT, FIRM_LIVE_RESPONSE_VALIDATOR = _load_live_prompt("firm_live.json")
+BANK_LIVE_PROMPT, BANK_LIVE_RESPONSE_VALIDATOR = _load_live_prompt("bank_live.json")
+WAGE_LIVE_PROMPT, WAGE_LIVE_RESPONSE_VALIDATOR = _load_live_prompt("wage_live.json")
 
 
 def _default_live_prompts() -> Dict[str, LivePrompt]:
@@ -134,28 +139,9 @@ def _default_live_prompts() -> Dict[str, LivePrompt]:
 
     return {
         "/decide/firm": FIRM_LIVE_PROMPT,
-        "/decide/bank": LivePrompt(
-            system=(
-                "You are the bank credit decision service for the Caiani AB-SFC model. "
-                "Respond with JSON containing approve (boolean), credit_limit_ratio (number), "
-                "spread_bps (number), and why_code (string summarising the choice)."
-            ),
-            user_template=(
-                "Bank state, applicant metrics, and guard rails (JSON):\n{payload_json}\n\n"
-                "Return JSON only."
-            ),
-        ),
-        "/decide/wage": LivePrompt(
-            system=(
-                "You are the wage negotiation decision service for the Caiani AB-SFC model. "
-                "Return JSON with direction (string), wage_step (number), and why_code (string)."
-            ),
-            user_template=(
-                "Worker and firm wage context (JSON):\n{payload_json}\n\nReturn JSON only."
-            ),
-        ),
+        "/decide/bank": BANK_LIVE_PROMPT,
+        "/decide/wage": WAGE_LIVE_PROMPT,
     }
-
 
 def _validate_firm_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(decision, dict):
@@ -183,6 +169,26 @@ def _validate_firm_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
 def _validate_bank_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(decision, dict):
         raise ValueError("bank decision must be a JSON object")
+    if BANK_LIVE_RESPONSE_VALIDATOR is not None:
+        try:
+            BANK_LIVE_RESPONSE_VALIDATOR.validate(decision)
+        except jsonschema.ValidationError as exc:
+            raise ValueError("bank decision schema violation: %s" % exc.message)
+
+        why_codes = [str(code) for code in decision.get("why", [])]
+        normalised = {
+            "approve": bool(decision["approve"]),
+            "credit_limit_ratio": float(decision["credit_limit_ratio"]),
+            "spread_bps": float(decision["spread_bps"]),
+            "why": why_codes,
+            "confidence": float(decision["confidence"]),
+        }
+        if why_codes:
+            normalised["why_code"] = why_codes[0]
+        if "comment" in decision:
+            normalised["comment"] = str(decision["comment"])
+        return normalised
+
     result = dict(decision)
     approve = result.get("approve")
     if not isinstance(approve, bool):
@@ -204,6 +210,24 @@ def _validate_bank_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
 def _validate_wage_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(decision, dict):
         raise ValueError("wage decision must be a JSON object")
+    if WAGE_LIVE_RESPONSE_VALIDATOR is not None:
+        try:
+            WAGE_LIVE_RESPONSE_VALIDATOR.validate(decision)
+        except jsonschema.ValidationError as exc:
+            raise ValueError("wage decision schema violation: %s" % exc.message)
+
+        why_codes = [str(code) for code in decision.get("why", [])]
+        normalised = {
+            "direction": str(decision["direction"]),
+            "wage_step": float(decision["wage_step"]),
+            "why": why_codes,
+            "confidence": float(decision["confidence"]),
+        }
+        if why_codes:
+            normalised["why_code"] = why_codes[0]
+        if "comment" in decision:
+            normalised["comment"] = str(decision["comment"])
+        return normalised
     result = dict(decision)
     direction = result.get("direction")
     if not isinstance(direction, str) or not direction:
