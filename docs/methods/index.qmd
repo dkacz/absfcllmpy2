@@ -19,6 +19,7 @@ This hub gathers the technical documentation that underpins the live LLM instrum
 ## Runtime Architecture
 
 - [Decider Stub](decider.md) — Python 3 microservice that serves deterministic decisions, schema validation, and timeout controls.
+- [Decider Live Mode (OpenRouter)](decider_live_openrouter.md) — Live adapter configuration, prompt schemas, fallback ladder, and telemetry expectations for the OpenRouter-backed deployment.
 - [Py2 Client](py2_client.md) — HTTP bridge from the legacy simulation to the Decider, including error taxonomy and fallback triggers.
 - [Fallback Semantics](fallbacks.qmd) — Detailed explanation of guardrails, clamping rules, and logging for LLM fallbacks.
 - [A/B Runner Helper](runners.md) — Convenience wrapper for producing short OFF/ON runs and pointers to the stub data bundle.
