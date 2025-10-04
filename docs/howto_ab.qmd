@@ -1,0 +1,58 @@
+---
+title: "How to Reproduce the A/B Overlays"
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Overview
+Follow this checklist whenever you need to regenerate the short-horizon OFF→ON overlays (firm, bank, wage). The process always happens from the repository root and relies on the deterministic Decider stub plus the Python 2 simulation harness.
+
+## Step 1 — Launch the Decider stub
+Run the stub in its own terminal so the simulation can retrieve deterministic responses. Leave the process running until the OFF/ON run completes.
+
+```bash
+python3 tools/decider/server.py --stub
+```
+
+- Health check (optional): `curl http://127.0.0.1:8000/healthz` → `{ "status": "ok" }`.
+- Stop the stub with `Ctrl+C` after you finish rendering the docs.
+
+## Step 2 — Call the A/B runner
+Open a second terminal and invoke `run_ab_demo` via Python 2. The helper returns a manifest with the OFF/ON artifact paths and appends the toggle snapshot plus counter lines to `timing.log`.
+
+```bash
+python2 - <<'PY'
+from pprint import pprint
+from code.timing import run_ab_demo
+
+result = run_ab_demo(run_id=0, mode='ab')
+print("OFF artifacts:")
+pprint(result['off']['artifacts'])
+print("ON artifacts:")
+pprint(result['on']['artifacts'])
+print("Counters appended to timing.log at:", result['meta']['timing_log'])
+PY
+```
+
+Tips:
+
+- Set `Parameter.ncycle = 200` (or pass `ncycle=200`) to match the short-horizon overlays if you override defaults.
+- Use `parameter_overrides={'firm_guard_preset': 'tight'}` (or similar) when testing guard presets; the helper applies overrides to both runs unless you move them into `llm_overrides`.
+
+## Step 3 — Render the documentation
+Once the artifacts land under `artifacts/ab_demo/run_<seed>/`, rebuild the Quarto site so the overlay pages embed the refreshed PNGs and tables.
+
+```bash
+quarto render docs
+```
+
+- `docs/_site/ab_overview.html` aggregates the three overlays.
+- The block pages (`firm_ab.qmd`, `bank_ab.qmd`, `wage_ab.qmd`) pull their tables from the CSV outputs listed in the `run_ab_demo` return value.
+
+## Cleanup checklist
+- Stop the Decider stub (`Ctrl+C`).
+- (Optional) Remove temporary artifacts once you have copied the CSV/PNG files into `data/` and `figs/` for manuscript use.
+- Keep `timing.log` out of version control; regenerate it for each run if you need fresh counter evidence.
