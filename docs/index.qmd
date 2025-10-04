@@ -41,6 +41,10 @@ The table above is drawn from `data/_examples/sample_metrics.csv`; future Quarto
 
 - [Wage bargaining A/B comparison](wage_ab.qmd) — embeds Table `@tbl-wage-ab` and Figure `@fig-wage-ab` derived from the 200-tick OFF/ON runs.
 
+## Milestone M6 — A/B runner & overlays
+
+- [A/B overlay overview](ab_overview.qmd) — collects the firm, bank, and wage overlays (OFF dashed, ON solid, final 50 ticks shaded) produced from the `run_id=0`, `ncycle=200` runs.
+
 ## Ethics & scope
 
 {{< include snippets/ethics_scope.md >}}
