@@ -94,10 +94,20 @@ def _load_json_file(path: Path) -> Dict[str, Any]:
 class LivePrompt(object):
     """Simple prompt template for the OpenRouter adapter."""
 
-    def __init__(self, system: str, user_template: str, response_format: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(
+        self,
+        system: str,
+        user_template: str,
+        response_format: Optional[Dict[str, Any]] = None,
+    ) -> None:
         self.system = system
         self.user_template = user_template
-        self.response_format = response_format or {"type": "json_object"}
+        self.structured_response_format = response_format
+        self.json_response_format = {"type": "json_object"}
+
+    @property
+    def has_structured_format(self) -> bool:
+        return self.structured_response_format is not None
 
     def build_user(self, payload: Dict[str, Any]) -> str:
         payload_json = json.dumps(payload, sort_keys=True, indent=2)
@@ -346,13 +356,34 @@ class LiveModeRouter(object):
         for attempt_index, model in enumerate(self._models()):
             attempt_label = "primary" if attempt_index == 0 else "fallback"
             try:
-                deadline_ms = self._remaining_deadline_ms(start_time)
-                decision, meta = self.adapter.call(
+                user_message = prompt.build_user(payload)
+                structured_supported = False
+                if prompt.has_structured_format and hasattr(self.adapter, "supports_structured_outputs"):
+                    try:
+                        structured_supported = bool(
+                            self.adapter.supports_structured_outputs(
+                                model,
+                                deadline_ms=self._remaining_deadline_ms(start_time),
+                            )
+                        )
+                    except OpenRouterError as exc:
+                        LOGGER.warning(
+                            "live model capability probe failed endpoint=%s model=%s reason=%s detail=%s status=%s",
+                            endpoint,
+                            model,
+                            exc.reason,
+                            exc.detail,
+                            exc.status,
+                        )
+                        structured_supported = False
+
+                decision, meta, mode_used = self._invoke_live_call(
+                    endpoint,
                     model,
-                    prompt.system,
-                    prompt.build_user(payload),
-                    response_format=prompt.response_format,
-                    deadline_ms=deadline_ms,
+                    prompt,
+                    user_message,
+                    start_time,
+                    structured_supported,
                 )
                 if not isinstance(decision, dict):
                     raise ValueError("model response must be JSON object")
@@ -365,10 +396,11 @@ class LiveModeRouter(object):
                     why_repr = normalised.get("why_code") or "n/a"
                 confidence = normalised.get("confidence")
                 LOGGER.info(
-                    "live decision endpoint=%s model=%s attempt=%s why=%s confidence=%s prompt_tokens=%s completion_tokens=%s elapsed_ms=%.1f",
+                    "live decision endpoint=%s model=%s attempt=%s mode=%s why=%s confidence=%s prompt_tokens=%s completion_tokens=%s elapsed_ms=%.1f",
                     endpoint,
                     meta.get("model", model) if isinstance(meta, dict) else model,
                     attempt_label,
+                    mode_used,
                     why_repr,
                     confidence,
                     usage.get("prompt_tokens"),
@@ -417,6 +449,66 @@ class LiveModeRouter(object):
                 "attempts": attempts,
             },
         }
+
+    def _invoke_live_call(
+        self,
+        endpoint: str,
+        model: str,
+        prompt: LivePrompt,
+        user_message: str,
+        start_time: float,
+        structured_supported: bool,
+    ) -> Tuple[Any, Dict[str, Any], str]:
+        use_structured = prompt.has_structured_format and structured_supported
+        response_format = prompt.structured_response_format if use_structured else prompt.json_response_format
+        mode_used = "structured" if use_structured else "json"
+
+        deadline_ms = self._remaining_deadline_ms(start_time)
+        try:
+            decision, meta = self.adapter.call(
+                model,
+                prompt.system,
+                user_message,
+                response_format=response_format,
+                deadline_ms=deadline_ms,
+            )
+            return decision, meta, mode_used
+        except OpenRouterError as exc:
+            if use_structured and self._should_retry_without_schema(exc):
+                LOGGER.warning(
+                    "live structured outputs unsupported endpoint=%s model=%s status=%s detail=%s; retrying json_object",
+                    endpoint,
+                    model,
+                    exc.status,
+                    exc.detail,
+                )
+                if hasattr(self.adapter, "mark_structured_unsupported"):
+                    self.adapter.mark_structured_unsupported(model)
+                deadline_ms = self._remaining_deadline_ms(start_time)
+                decision, meta = self.adapter.call(
+                    model,
+                    prompt.system,
+                    user_message,
+                    response_format=prompt.json_response_format,
+                    deadline_ms=deadline_ms,
+                )
+                return decision, meta, "json"
+            raise
+
+    @staticmethod
+    def _should_retry_without_schema(exc: OpenRouterError) -> bool:
+        if exc.reason != "http_error":
+            return False
+        status = exc.status or 0
+        if status in (400, 404, 415, 422):
+            return True
+        detail = exc.detail
+        if isinstance(detail, dict):
+            detail = json.dumps(detail)
+        if isinstance(detail, str):
+            lowered = detail.lower()
+            return "schema" in lowered or "structured" in lowered
+        return False
 
     def _models(self) -> List[str]:
         models = [self.primary_model]

@@ -78,9 +78,12 @@ def build_wage_payload():
 
 
 class DummyAdapter(object):
-    def __init__(self, responses):
+    def __init__(self, responses, *, structured_supported=True):
         self.responses = list(responses)
         self.calls = []
+        self._structured_supported = structured_supported
+        self.marked_unsupported = False
+        self.probe_calls = []
 
     def call(
         self,
@@ -100,6 +103,7 @@ class DummyAdapter(object):
                 "system": system_message,
                 "user": user_message,
                 "deadline_ms": deadline_ms,
+                "response_format": response_format,
             }
         )
         if not self.responses:
@@ -112,6 +116,14 @@ class DummyAdapter(object):
 
     def model_exists(self, slug, deadline_ms=None):
         return True
+
+    def supports_structured_outputs(self, slug, deadline_ms=None):
+        self.probe_calls.append((slug, deadline_ms))
+        return self._structured_supported
+
+    def mark_structured_unsupported(self, slug):
+        self._structured_supported = False
+        self.marked_unsupported = True
 
 
 class DeciderServerLiveTests(unittest.TestCase):
@@ -161,6 +173,7 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertAlmostEqual(body["price_step"], 0.0)
         self.assertEqual(len(adapter.calls), 1)
         self.assertEqual(adapter.calls[0]["model"], "primary-model")
+        self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
 
     def test_live_mode_fallback_on_primary_failure(self):
         decision = {
@@ -188,6 +201,8 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertEqual(len(adapter.calls), 2)
         self.assertEqual(adapter.calls[0]["model"], "primary-model")
         self.assertEqual(adapter.calls[1]["model"], "fallback-model")
+        self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
+        self.assertEqual(adapter.calls[1]["response_format"]["type"], "json_schema")
 
     def test_live_mode_failure_returns_error(self):
         adapter = DummyAdapter([
@@ -200,6 +215,7 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertEqual(status, HTTPStatus.SERVICE_UNAVAILABLE)
         self.assertEqual(body["error"], "llm_live_failed")
         self.assertEqual(len(body["detail"]["attempts"]), 2)
+        self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
 
     def test_live_mode_schema_violation_returns_error(self):
         decision = {
@@ -218,6 +234,7 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertEqual(body["error"], "llm_live_failed")
         attempts = body["detail"]["attempts"]
         self.assertEqual(attempts[0]["reason"], "schema_error")
+        self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
 
     def test_bank_live_mode_primary_success(self):
         decision = {
@@ -239,6 +256,7 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertEqual(status, HTTPStatus.OK)
         self.assertTrue(body["approve"])
         self.assertEqual(body["why"], ["borrower_risk"])
+        self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
 
     def test_bank_live_mode_schema_violation(self):
         decision = {
@@ -257,6 +275,48 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertEqual(body["error"], "llm_live_failed")
         attempts = body["detail"]["attempts"]
         self.assertEqual(attempts[0]["reason"], "schema_error")
+        self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
+
+    def test_live_mode_json_object_when_schema_not_supported(self):
+        decision = {
+            "direction": "hold",
+            "price_step": 0.0,
+            "expectation_bias": 0.0,
+            "why": ["baseline_guard"],
+            "confidence": 0.7,
+        }
+        meta = {"model": "primary-model", "usage": {}}
+        adapter = DummyAdapter([(decision, meta)], structured_supported=False)
+        handler = self._make_handler(mode="live", adapter=adapter)
+        payload = build_firm_payload()
+        status, body = handler._handle_single("/decide/firm", payload, time.monotonic())
+        self.assertEqual(status, HTTPStatus.OK)
+        self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_object")
+        self.assertFalse(adapter.marked_unsupported)
+
+    def test_live_mode_retries_without_schema_on_http_error(self):
+        decision = {
+            "direction": "cut",
+            "price_step": -0.01,
+            "expectation_bias": -0.02,
+            "why": ["inventory_pressure"],
+            "confidence": 0.65,
+        }
+        meta = {"model": "primary-model", "usage": {}}
+        adapter = DummyAdapter(
+            [
+                OpenRouterError("http_error", detail="structured outputs unavailable", status=422),
+                (decision, meta),
+            ]
+        )
+        handler = self._make_handler(mode="live", adapter=adapter)
+        payload = build_firm_payload()
+        status, body = handler._handle_single("/decide/firm", payload, time.monotonic())
+        self.assertEqual(status, HTTPStatus.OK)
+        self.assertEqual(len(adapter.calls), 2)
+        self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
+        self.assertEqual(adapter.calls[1]["response_format"]["type"], "json_object")
+        self.assertTrue(adapter.marked_unsupported)
 
     def test_wage_live_mode_primary_success(self):
         decision = {

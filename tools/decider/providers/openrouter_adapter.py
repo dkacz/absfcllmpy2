@@ -7,7 +7,7 @@ import os
 import socket
 import time
 from contextlib import closing
-from typing import Any, Callable, Dict, Iterable, Optional, Set, Tuple
+from typing import Any, Callable, Dict, Iterable, Optional, Tuple
 
 try:
     from urllib import request, error  # type: ignore
@@ -64,7 +64,8 @@ class OpenRouterAdapter:
         self.referer = referer if referer is not None else os.getenv("OPENROUTER_HTTP_REFERER")
         self.title = title if title is not None else os.getenv("OPENROUTER_TITLE")
         self.user_agent = user_agent
-        self._model_cache: Optional[Set[str]] = None
+        self._model_cache: Optional[Dict[str, Any]] = None
+        self._structured_support: Dict[str, bool] = {}
 
     # ------------------------------------------------------------------
     # Public API
@@ -153,13 +154,35 @@ class OpenRouterAdapter:
         if not slug:
             return False
 
-        if self._model_cache is not None:
-            return slug in self._model_cache
-
-        data, _ = self._request_json("GET", MODELS_PATH, deadline_ms=deadline_ms)
-        models = set(self._extract_model_ids(data))
-        self._model_cache = models
+        models = self._ensure_model_cache(deadline_ms)
         return slug in models
+
+    def supports_structured_outputs(
+        self, slug: str, *, deadline_ms: Optional[int] = None
+    ) -> bool:
+        """Return ``True`` when ``slug`` advertises JSON Schema support."""
+
+        if not slug:
+            return False
+
+        if slug in self._structured_support:
+            return self._structured_support[slug]
+
+        models = self._ensure_model_cache(deadline_ms)
+        entry = models.get(slug)
+        supported = False
+        if entry is not None:
+            supported = self._infer_structured_support(entry)
+
+        self._structured_support[slug] = supported
+        return supported
+
+    def mark_structured_unsupported(self, slug: str) -> None:
+        """Record that ``slug`` cannot handle structured outputs."""
+
+        if not slug:
+            return
+        self._structured_support[slug] = False
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -297,14 +320,71 @@ class OpenRouterAdapter:
         except (TypeError, ValueError):
             return raw
 
+    def _ensure_model_cache(self, deadline_ms: Optional[int]) -> Dict[str, Any]:
+        if self._model_cache is not None:
+            return self._model_cache
+
+        data, _ = self._request_json("GET", MODELS_PATH, deadline_ms=deadline_ms)
+        self._model_cache = self._extract_models(data)
+        return self._model_cache
+
     @staticmethod
-    def _extract_model_ids(payload: Dict[str, Any]) -> Iterable[str]:
-        models: Iterable[str] = []
+    def _extract_models(payload: Dict[str, Any]) -> Dict[str, Any]:
+        entries: Iterable[Any] = []
         if isinstance(payload.get("data"), list):
-            models = [OpenRouterAdapter._model_identifier(item) for item in payload["data"]]
+            entries = payload["data"]
         elif isinstance(payload.get("models"), list):
-            models = [OpenRouterAdapter._model_identifier(item) for item in payload["models"]]
-        return [m for m in models if m]
+            entries = payload["models"]
+
+        models: Dict[str, Any] = {}
+        for entry in entries:
+            slug = OpenRouterAdapter._model_identifier(entry)
+            if slug:
+                models[slug] = entry
+        return models
+
+    @staticmethod
+    def _infer_structured_support(entry: Any) -> bool:
+        if not isinstance(entry, dict):
+            return False
+
+        candidates = (
+            entry,
+            entry.get("metadata") if isinstance(entry.get("metadata"), dict) else {},
+            entry.get("capabilities") if isinstance(entry.get("capabilities"), dict) else {},
+        )
+
+        for container in candidates:
+            if not container:
+                continue
+            for key in ("structured_outputs", "structuredOutputs", "json_schema", "jsonSchema"):
+                value = container.get(key)
+                if isinstance(value, bool) and value:
+                    return True
+                if isinstance(value, str) and value.lower() in ("supported", "true", "yes"):
+                    return True
+                if isinstance(value, (list, tuple, set)):
+                    for item in value:
+                        if isinstance(item, str) and item.lower() in (
+                            "structured_outputs",
+                            "structured-outputs",
+                            "json_schema",
+                            "json-schema",
+                        ):
+                            return True
+
+        features = entry.get("features")
+        if isinstance(features, (list, tuple, set)):
+            for feature in features:
+                if isinstance(feature, str) and feature.lower() in (
+                    "structured_outputs",
+                    "structured-outputs",
+                    "json_schema",
+                    "json-schema",
+                ):
+                    return True
+
+        return False
 
     @staticmethod
     def _model_identifier(entry: Any) -> Optional[str]:
