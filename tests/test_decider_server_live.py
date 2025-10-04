@@ -257,7 +257,13 @@ class DeciderServerLiveTests(unittest.TestCase):
         status, body = handler._handle_single("/decide/firm", payload, time.monotonic())
         self.assertEqual(status, HTTPStatus.SERVICE_UNAVAILABLE)
         self.assertEqual(body["error"], "llm_live_failed")
-        self.assertEqual(len(body["detail"]["attempts"]), 2)
+        attempts = body["detail"]["attempts"]
+        self.assertEqual(len(attempts), 2)
+        self.assertEqual(len(adapter.calls), 2)
+        self.assertEqual(attempts[0]["attempt"], "primary")
+        self.assertEqual(attempts[0]["reason"], "timeout")
+        self.assertEqual(attempts[1]["attempt"], "fallback")
+        self.assertEqual(attempts[1]["reason"], "http_error")
         self.assertEqual(adapter.calls[0]["response_format"]["type"], "json_schema")
         lines = self._read_log_lines()
         self.assertEqual(len(lines), 2)
@@ -271,6 +277,21 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertEqual(fields_fallback["reason"], "http_error")
         self.assertEqual(fields_fallback["usage_prompt_tokens"], "0")
         self.assertEqual(fields_fallback["usage_completion_tokens"], "0")
+
+    def test_live_mode_timeout_without_fallback(self):
+        adapter = DummyAdapter([
+            OpenRouterError("timeout", detail="deadline exceeded"),
+        ])
+        handler = self._make_handler(mode="live", adapter=adapter, fallback=None)
+        payload = build_firm_payload()
+        status, body = handler._handle_single("/decide/firm", payload, time.monotonic())
+        self.assertEqual(status, HTTPStatus.SERVICE_UNAVAILABLE)
+        self.assertEqual(body["error"], "llm_live_failed")
+        attempts = body["detail"]["attempts"]
+        self.assertEqual(len(attempts), 1)
+        self.assertEqual(len(adapter.calls), 1)
+        self.assertEqual(attempts[0]["attempt"], "primary")
+        self.assertEqual(attempts[0]["reason"], "timeout")
 
     def test_live_mode_schema_violation_returns_error(self):
         decision = {
