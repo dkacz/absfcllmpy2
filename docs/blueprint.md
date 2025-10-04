@@ -84,7 +84,7 @@ The LLM runs as a **Python 3 localhost microservice**. The sim (Python 2) call
 
 **Pages (Quarto):**
 - `docs/index.qmd` — landing, scope, navigation.
-- **Methods hub:** `docs/methods/index.qmd` + subpages: Decider, Py2 client, fallbacks, equation map, variables, runners.
+- **Methods hub:** `docs/methods/index.qmd` + subpages: Decider, Decider live mode (OpenRouter), Py2 client, fallbacks, equation map, variables, runners.
 - **A/B pages:** `docs/firm_ab.qmd`, `docs/bank_ab.qmd`, `docs/wage_ab.qmd`, plus `docs/ab_overview.qmd`.
 - **Experiments:** `docs/exp_A.qmd`, `docs/exp_B.qmd`, `docs/exp_C.qmd`.
 - **Robustness:** `docs/robustness.qmd`.
