@@ -29,6 +29,34 @@ def build_firm_payload():
         },
     }
 
+def build_bank_payload():
+    return {
+        "schema_version": "1.0",
+        "run_id": 0,
+        "tick": 0,
+        "bank_id": "B0n0",
+        "country_id": 0,
+        "capital": 10.0,
+        "loan_supply": 20.0,
+        "reserves": 5.0,
+        "loan_book_value": 15.0,
+        "deposits": 25.0,
+        "non_allocated_money": 2.0,
+        "borrower": {
+            "firm_id": "F0n0",
+            "country_id": 0,
+            "loan_request": 4.0,
+            "leverage": 1.5,
+            "relative_productivity": 1.0,
+            "profit_rate": 0.02,
+        },
+        "guards": {
+            "spread_min_bps": 50.0,
+            "spread_max_bps": 500.0,
+        },
+    }
+
+
 
 class DummyAdapter(object):
     def __init__(self, responses):
@@ -167,6 +195,45 @@ class DeciderServerLiveTests(unittest.TestCase):
         handler = self._make_handler(mode="live", adapter=adapter)
         payload = build_firm_payload()
         status, body = handler._handle_single("/decide/firm", payload, time.monotonic())
+        self.assertEqual(status, HTTPStatus.SERVICE_UNAVAILABLE)
+        self.assertEqual(body["error"], "llm_live_failed")
+        attempts = body["detail"]["attempts"]
+        self.assertEqual(attempts[0]["reason"], "schema_error")
+
+    def test_bank_live_mode_primary_success(self):
+        decision = {
+            "approve": True,
+            "credit_limit_ratio": 0.7,
+            "spread_bps": 120.0,
+            "why": ["borrower_risk"],
+            "confidence": 0.85,
+        }
+        meta = {
+            "model": "primary-model",
+            "usage": {"prompt_tokens": 10, "completion_tokens": 6},
+            "elapsed_ms": 11.0,
+        }
+        adapter = DummyAdapter([(decision, meta)])
+        handler = self._make_handler(mode="live", adapter=adapter)
+        payload = build_bank_payload()
+        status, body = handler._handle_single("/decide/bank", payload, time.monotonic())
+        self.assertEqual(status, HTTPStatus.OK)
+        self.assertTrue(body["approve"])
+        self.assertEqual(body["why"], ["borrower_risk"])
+
+    def test_bank_live_mode_schema_violation(self):
+        decision = {
+            "approve": True,
+            "credit_limit_ratio": 1.2,
+            "spread_bps": 120.0,
+            "why": ["baseline_guard"],
+            "confidence": 0.9,
+        }
+        meta = {"model": "primary-model", "usage": {}}
+        adapter = DummyAdapter([(decision, meta)])
+        handler = self._make_handler(mode="live", adapter=adapter)
+        payload = build_bank_payload()
+        status, body = handler._handle_single("/decide/bank", payload, time.monotonic())
         self.assertEqual(status, HTTPStatus.SERVICE_UNAVAILABLE)
         self.assertEqual(body["error"], "llm_live_failed")
         attempts = body["detail"]["attempts"]
