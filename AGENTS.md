@@ -65,8 +65,8 @@ Run these from the repo root; keep the Decider stub in its own terminal while th
 
    ```bash
    export OPENROUTER_API_KEY=sk-...
-   export OPENROUTER_MODEL_PRIMARY=openrouter/anthropic/claude-3.5-sonnet      # required
-   export OPENROUTER_MODEL_FALLBACK=openrouter/nousresearch/nous-hermes-2      # optional but recommended
+   export OPENROUTER_MODEL_PRIMARY=openrouter/openai/gpt-5-nano                # required
+   export OPENROUTER_MODEL_FALLBACK=openrouter/google/gemini-2.5-flash-lite    # optional but recommended
    export OPENROUTER_HTTP_REFERER="https://absfcllmpy2.local"                 # optional
    export OPENROUTER_TITLE="absfcllmpy2 live dev"                             # optional
    ```
