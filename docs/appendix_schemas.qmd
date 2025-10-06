@@ -1,0 +1,124 @@
+---
+title: "Appendix B — JSON Response Schemas"
+date: last-modified
+format:
+  html:
+    toc: true
+---
+
+# Overview
+
+This appendix captures the live-mode JSON response schemas enforced by the Decider server. Every LLM answer must honour these structures; violations trigger the Python 2 simulation’s baseline fallback. Bold field names are required.
+
+Schema sources:
+
+- `tools/decider/schemas/firm_live_response.schema.json`
+- `tools/decider/schemas/bank_live_response.schema.json`
+- `tools/decider/schemas/wage_live_response.schema.json`
+
+## Firm pricing response schema
+
+Firm decisions return pricing adjustments for the Chief Pricing Officer persona. The guard stack clamps `price_step`/`expectation_bias` to ±0.04 and enforces the unit-cost floor before the simulation applies the decision.
+
+```{python}
+import json
+from pathlib import Path
+import pandas as pd
+
+SCHEMA_DIR = Path("../tools/decider/schemas")
+
+FIRM_NOTES = {
+    "direction": "Discrete action to move the price level.",
+    "price_step": "Signed step applied to the current price (guarded to ±0.04).",
+    "expectation_bias": "Signed adjustment to expected demand (guarded to ±0.04).",
+    "why": "1–3 rationale codes; see Appendix rationale table.",
+    "confidence": "Self-reported certainty in [0,1].",
+    "comment": "Optional 280-character note for audit trails."
+}
+
+BANK_NOTES = {
+    "approve": "Binary decision to extend the loan.",
+    "credit_limit_ratio": "Approved share of the requested amount (0–1).",
+    "spread_bps": "Quoted spread over the policy rate (guard window typically 50–500 bps).",
+    "why": "1–3 rationale codes; see Appendix rationale table.",
+    "confidence": "Self-reported certainty in [0,1].",
+    "comment": "Optional 280-character note for audit trails."
+}
+
+WAGE_NOTES = {
+    "direction": "Raise/hold/cut ruling for the wage claim/offer.",
+    "wage_step": "Signed wage delta (guarded to ±0.04 and capped by floors).",
+    "why": "1–3 rationale codes; see Appendix rationale table.",
+    "confidence": "Self-reported certainty in [0,1].",
+    "comment": "Optional 280-character note for audit trails."
+}
+
+
+def load_schema(filename):
+    with (SCHEMA_DIR / filename).open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def describe_schema(schema, notes_map):
+    props = schema["properties"]
+    required = set(schema.get("required", []))
+    rows = []
+    for field, spec in props.items():
+        row = {
+            "Field": f"**{field}**" if field in required else field,
+            "Type": spec.get("type", "object"),
+            "Constraints": [],
+            "Description": notes_map.get(field, "—"),
+        }
+        if "enum" in spec:
+            values = "`, `".join(spec["enum"]) if spec["enum"] else ""
+            row["Constraints"].append(f"Allowed values: `{values}`")
+        if "minimum" in spec or "maximum" in spec:
+            bounds = []
+            if spec.get("minimum") is not None:
+                bounds.append(f"≥ {spec['minimum']}")
+            if spec.get("maximum") is not None:
+                bounds.append(f"≤ {spec['maximum']}")
+            row["Constraints"].append("Range: " + ", ".join(bounds))
+        if "minItems" in spec or "maxItems" in spec:
+            item_bounds = []
+            if spec.get("minItems") is not None:
+                item_bounds.append(f"min {spec['minItems']}")
+            if spec.get("maxItems") is not None:
+                item_bounds.append(f"max {spec['maxItems']}")
+            row["Constraints"].append("Item count: " + ", ".join(item_bounds))
+        if isinstance(spec.get("items"), dict) and spec["items"].get("enum"):
+            item_vals = "`, `".join(spec["items"]["enum"])
+            row["Constraints"].append(f"Items enum: `{item_vals}`")
+        if "maxLength" in spec:
+            row["Constraints"].append(f"Max length: {spec['maxLength']} chars")
+        row["Constraints"] = "; ".join(row["Constraints"]) if row["Constraints"] else "—"
+        rows.append(row)
+    df = pd.DataFrame(rows)
+    return df[["Field", "Type", "Constraints", "Description"]]
+
+firm_schema = load_schema("firm_live_response.schema.json")
+describe_schema(firm_schema, FIRM_NOTES)
+```
+
+## Bank credit response schema
+
+Bank credit decisions extend the underwriting ladder: spreads stay inside the live guard window and approvals remain monotonic in leverage unless the `baseline_guard` rationale justifies clamps.
+
+```{python}
+bank_schema = load_schema("bank_live_response.schema.json")
+describe_schema(bank_schema, BANK_NOTES)
+```
+
+## Wage negotiation response schema
+
+Wage rulings preserve bargaining guardrails: the wage accord enforces ±0.04 deltas (preset-scaled) and statutory floors, with rationale codes documenting why the panel deviated from the baseline proposal.
+
+```{python}
+wage_schema = load_schema("wage_live_response.schema.json")
+describe_schema(wage_schema, WAGE_NOTES)
+```
+
+## Rationale codes
+
+See [issue-151 writer deliverable](prompts/issue-151-writer.md) for the full rationale table shared across firm, bank, and wage prompts.
