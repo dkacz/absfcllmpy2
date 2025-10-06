@@ -1,0 +1,5 @@
+scenario,metric,value
+policy_high,wage_dispersion,0.0
+policy_high,fill_rate,0.9750899934748645
+baseline,wage_dispersion,0.14514114485993135
+baseline,fill_rate,0.34417914049668247
