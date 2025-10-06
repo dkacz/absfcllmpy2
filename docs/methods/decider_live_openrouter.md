@@ -15,14 +15,15 @@ This page documents the Milestone **M6 live mode** for the Decider server. The P
 # Minimal invocation (assumes OPENROUTER_API_KEY is exported)
 python3 tools/decider/server.py \
   --mode live \
-  --openrouter-model-primary openrouter/anthropic/claude-3.5-sonnet \
-  --openrouter-model-fallback openrouter/nousresearch/nous-hermes-2
+  --openrouter-model-primary openrouter/openai/gpt-5-nano \
+  --openrouter-model-fallback openrouter/google/gemini-2.5-flash-lite
 ```
 
 - `--mode live` switches from deterministic stub replies to the OpenRouter adapter (default remains `stub`).
 - Provide the primary slug through `--openrouter-model-primary` or `OPENROUTER_MODEL_PRIMARY`; the fallback slug is optional but strongly recommended.
 - Additional headers are picked up from the environment: `OPENROUTER_HTTP_REFERER` and `OPENROUTER_TITLE` are forwarded to satisfy OpenRouter’s usage policy.
 - The server verifies both slugs using `GET https://openrouter.ai/api/v1/models` on boot. If a slug is missing the server exits with a `model_not_found` error.
+- On startup the server issues a `GET https://openrouter.ai/api/v1/key` call and logs the remaining credits/limits. Disable it with `--skip-openrouter-credit-check` or `OPENROUTER_SKIP_CREDIT_PREFLIGHT=1`.
 - Run with `--deadline-ms` (default 200 ms) to cap per-request latency. The adapter subtracts a small buffer before calling OpenRouter so the overall request still honours the server deadline.
 
 ## Authentication & Headers
@@ -35,6 +36,7 @@ python3 tools/decider/server.py \
 | HTTP Referer | `OPENROUTER_HTTP_REFERER` | Optional; forwarded as `HTTP-Referer` header. |
 | Request title | `OPENROUTER_TITLE` | Optional; forwarded as `X-Title`. |
 | User-Agent | hard-coded `absfcllmpy2-decider` | Matches project telemetry. |
+| Credit preflight opt-out | `--skip-openrouter-credit-check` / `OPENROUTER_SKIP_CREDIT_PREFLIGHT` | Skips the startup `GET /key` credit snapshot (enabled by default). |
 
 All live calls hit `POST https://openrouter.ai/api/v1/chat/completions`. The adapter constructs:
 
@@ -97,6 +99,12 @@ Every live attempt writes to `timing.log` in addition to the existing `[LLM bloc
 [LLM firm] usage_error run=17 tick=42 model=openrouter/primary attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
 ```
 
+When the credit preflight is enabled, startup logs include an informational line summarising the remaining balance, for example:
+
+```
+INFO OpenRouter credit snapshot payload={"credits": 12.5, "limit_remaining": 90, "usage_remaining": 900} elapsed_ms=8.5
+```
+
 - `usage` lines appear on success and capture model slug, attempt label (`primary` or `fallback`), mode (`structured` vs `json`), token counts, and latency.
 - `usage_error` lines are emitted for every failed attempt (timeouts, HTTP errors, schema violations) with zeroed token counts so log parsers can align failures with costs.
 - These entries are appended from `LiveModeRouter._log_usage_line/_log_usage_error`; tests patch the log path to keep the format stable.
@@ -104,7 +112,7 @@ Every live attempt writes to `timing.log` in addition to the existing `[LLM bloc
 ## Reproducibility Checklist
 
 1. **Set credentials:** `export OPENROUTER_API_KEY=sk-...` and any optional headers (`OPENROUTER_HTTP_REFERER`, `OPENROUTER_TITLE`).
-2. **Confirm model access:** `python3 tools/decider/server.py --mode live --openrouter-model-primary <slug> --check`.
+2. **Confirm model access:** `python3 tools/decider/server.py --mode live --openrouter-model-primary <slug> --check`. The run performs the `/models` lookup and emits the credit snapshot log (unless skipped).
 3. **Run live mode:** keep the server running while the Python 2 simulation executes (`python2 code/timing.py`). Toggle the LLM flags in `code/parameter.py` as needed.
 4. **Inspect telemetry:** open `timing.log` to correlate token usage, latency, and fallback reasons with simulation outputs.
 5. **Automated tests:** `python3 -m unittest tests.test_decider_server_live` covers structured-output detection, primary/fallback retries, and baseline fallbacks.

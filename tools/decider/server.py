@@ -77,6 +77,7 @@ SCHEMA_DIR = Path(__file__).with_name("schemas")
 PROMPT_DIR = Path(__file__).with_name("prompts")
 ROOT_DIR = Path(__file__).resolve().parents[2]
 TIMING_LOG_PATH = ROOT_DIR / "timing.log"
+CREDIT_PREFLIGHT_ENV = "OPENROUTER_SKIP_CREDIT_PREFLIGHT"
 SCHEMA_FILES = {
     "/decide/firm": "firm_request.schema.json",
     "/decide/bank": "bank_request.schema.json",
@@ -269,6 +270,53 @@ LIVE_RESPONSE_VALIDATORS = {
 }
 
 
+def _summarise_credit_info(payload: Dict[str, Any]) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {}
+    attributes: Any = payload
+
+    data = payload.get("data") if isinstance(payload, dict) else None
+    if isinstance(data, dict):
+        attributes = data.get("attributes", {})
+    if not isinstance(attributes, dict):
+        attributes = payload
+
+    usage = attributes.get("usage") if isinstance(attributes, dict) else None
+    if isinstance(usage, dict):
+        summary["usage_total"] = usage.get("total")
+        summary["usage_remaining"] = usage.get("remaining")
+
+    limits = None
+    if isinstance(attributes, dict):
+        limits = attributes.get("rate_limit") or attributes.get("limits")
+    if isinstance(limits, dict):
+        summary["limit_total"] = limits.get("limit") or limits.get("total")
+        summary["limit_remaining"] = limits.get("remaining")
+        if "reset" in limits:
+            summary["limit_reset"] = limits.get("reset")
+
+    credits = None
+    if isinstance(attributes, dict):
+        credits = attributes.get("credit_balance")
+        if credits is None:
+            credits = attributes.get("credits")
+    if credits is not None:
+        summary["credits"] = credits
+
+    if not summary:
+        if isinstance(attributes, dict):
+            summary["attributes"] = attributes
+        else:
+            summary["raw"] = payload
+    return summary
+
+
+def _format_credit_summary(summary: Dict[str, Any]) -> str:
+    try:
+        return json.dumps(summary, sort_keys=True, default=str)
+    except Exception:  # pragma: no cover - fallback for unexpected types
+        return str(summary)
+
+
 def _prepare_live_router(args: argparse.Namespace, deadline_ms: int) -> LiveModeRouter:
     primary_model = args.openrouter_model_primary
     if not primary_model:
@@ -291,6 +339,29 @@ def _prepare_live_router(args: argparse.Namespace, deadline_ms: int) -> LiveMode
     slugs = [primary_model]
     if fallback_model:
         slugs.append(fallback_model)
+
+    skip_credit_preflight = getattr(args, "skip_openrouter_credit_check", False)
+    if not skip_credit_preflight:
+        try:
+            credit_payload, credit_elapsed = adapter.key_info(deadline_ms=check_deadline)
+        except OpenRouterError as exc:
+            LOGGER.warning(
+                "OpenRouter credit preflight failed reason=%s detail=%s status=%s",
+                exc.reason,
+                exc.detail,
+                exc.status,
+            )
+        except Exception as exc:  # pragma: no cover - unexpected failure path
+            LOGGER.warning("OpenRouter credit preflight failed error=%s", exc)
+        else:
+            credit_summary = _summarise_credit_info(credit_payload)
+            LOGGER.info(
+                "OpenRouter credit snapshot payload=%s elapsed_ms=%.1f",
+                _format_credit_summary(credit_summary),
+                credit_elapsed,
+            )
+    else:
+        LOGGER.info("OpenRouter credit preflight skipped (flag or env override)")
 
     for slug in slugs:
         try:
@@ -699,6 +770,13 @@ class TickBudgetTracker:
             return True, count
 
 
+def _env_flag(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Local Decider stub server")
     parser.add_argument("--host", default="127.0.0.1", help="Bind host (default: 127.0.0.1)")
@@ -762,6 +840,12 @@ def parse_args() -> argparse.Namespace:
         "--openrouter-referer",
         default=os.getenv("OPENROUTER_HTTP_REFERER"),
         help="Optional HTTP-Referer header for OpenRouter requests."
+    )
+    parser.add_argument(
+        "--skip-openrouter-credit-check",
+        action="store_true",
+        default=_env_flag(CREDIT_PREFLIGHT_ENV),
+        help="Disable OpenRouter credit preflight (GET /api/v1/key)."
     )
     parser.add_argument(
         "--check",

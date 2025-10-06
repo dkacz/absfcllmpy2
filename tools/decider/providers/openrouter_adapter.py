@@ -20,6 +20,7 @@ API_BASE_URL = "https://openrouter.ai/api/v1"
 CHAT_COMPLETIONS_PATH = "/chat/completions"
 MODELS_PATH = "/models"
 DEFAULT_USER_AGENT = "absfcllmpy2-decider"
+KEY_PATH = "/key"
 
 _MIN_TIMEOUT_SECONDS = 0.05
 _DEFAULT_TIMEOUT_SECONDS = 10.0
@@ -156,6 +157,12 @@ class OpenRouterAdapter:
 
         models = self._ensure_model_cache(deadline_ms)
         return slug in models
+
+    def key_info(self, *, deadline_ms: Optional[int] = None) -> Tuple[Dict[str, Any], float]:
+        """Return the JSON payload from ``/key`` along with elapsed milliseconds."""
+
+        data, elapsed_ms = self._request_json("GET", KEY_PATH, deadline_ms=deadline_ms)
+        return data, elapsed_ms
 
     def supports_structured_outputs(
         self, slug: str, *, deadline_ms: Optional[int] = None
