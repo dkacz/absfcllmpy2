@@ -1,0 +1,54 @@
+---
+title: "Experiment A — Wage Acceleration (Country 0)"
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Overview
+Experiment A lowers the wage-adjustment parameter `upsilon` for **country 0** to 80 % of its baseline value starting at tick `t0 = 50`. Both scenarios use `run_id = 0` and run for `ncycle = 250` ticks with the Decider stub providing deterministic responses. The helper script `python3 tools/generate_exp_a_demo.py` produces the metrics in `data/expA_demo/` and the overlay in `figs/expA_demo/`.
+
+::: {.callout-note}
+The ON leg enables the wage hook only; firm pricing and bank credit remain on the baseline path so the experiment isolates the wage-policy change for country 0.
+:::
+
+## Core metrics
+Table @tbl-exp-a summarises wage dispersion and vacancy fill rates for the baseline (`OFF`) and policy (`ON`) runs. Values are rounded to two decimals following the manuscript convention.
+
+```{python}
+#| label: tbl-exp-a
+#| tbl-cap: "Experiment A metrics (run 0, 250 ticks)."
+import pandas as pd
+from pathlib import Path
+
+source = Path("../data/expA_demo/expA_metrics.csv")
+df = pd.read_csv(source)
+ordered = (
+    df.pivot(index="scenario", columns="metric", values="value")
+      .reindex(["baseline", "llm_on"])
+      [["wage_dispersion", "fill_rate"]]
+      .rename(columns={
+          "wage_dispersion": "Wage dispersion",
+          "fill_rate": "Fill rate",
+      })
+)
+formatted = ordered.applymap(lambda x: f"{x:,.2f}")
+scenario_labels = {
+    "baseline": "Baseline (OFF)",
+    "llm_on": "LLM ON (stub)",
+}
+formatted.index = [scenario_labels.get(idx, idx) for idx in formatted.index]
+formatted
+```
+
+## Wage-dispersion overlay
+Figure @fig-exp-a overlays the OFF and ON wage-dispersion series. OFF remains dashed, ON is solid, and the final 50 ticks are shaded to highlight the comparison window used throughout the manuscript. A vertical marker at tick 50 indicates when the policy switch occurs.
+
+![Experiment A — wage dispersion overlay (OFF dashed, ON solid; final 50 ticks shaded)](../figs/expA_demo/expA_wage_dispersion_overlay.png){#fig-exp-a}
+
+## Notes
+- Artifact paths: `data/expA_demo/expA_metrics.csv`, `data/expA_demo/expA_wage_dispersion_series.csv`, `figs/expA_demo/expA_wage_dispersion_overlay.png`.
+- Generator: `python3 tools/generate_exp_a_demo.py` (runs with `RUN_ID=0`, `NCYCLE=250`, `t0=50`).
+- The deterministic stub clamps the ON path, driving wage dispersion to zero; live prompt work (M6-LIVE) will introduce heterogeneous responses.
