@@ -46,6 +46,10 @@ The table above is drawn from `data/_examples/sample_metrics.csv`; future Quarto
 - [A/B overlay overview](ab_overview.qmd) — collects the firm, bank, and wage overlays (OFF dashed, ON solid, final 50 ticks shaded) produced from the `run_id=0`, `ncycle=200` runs.
 - [How to reproduce A/B overlays](howto_ab.qmd) — three-step checklist (stub, `run_ab_demo`, Quarto render) for regenerating the OFF→ON artifacts.
 
+## Appendices
+
+- [Appendix B — JSON response schemas](appendix_schemas.qmd) — field-by-field summary of the firm, bank, and wage live-mode response schemas enforced by the Decider.
+
 ## Ethics & scope
 
 {{< include snippets/ethics_scope.md >}}
