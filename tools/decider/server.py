@@ -43,6 +43,11 @@ try:  # pragma: no cover - import style depends on execution context
 except ImportError:  # pragma: no cover
     from .providers import OpenRouterAdapter, OpenRouterError  # type: ignore
 
+try:  # pragma: no cover - import style depends on execution context
+    from providers.openrouter_adapter import API_BASE_URL
+except ImportError:  # pragma: no cover
+    from .providers.openrouter_adapter import API_BASE_URL  # type: ignore
+
 LOGGER = logging.getLogger("decider.server")
 
 STUB_RESPONSES: Dict[str, Dict[str, Any]] = {
