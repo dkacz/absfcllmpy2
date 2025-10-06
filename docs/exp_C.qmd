@@ -1,0 +1,54 @@
+---
+title: "Experiment C — Coordinated Wage Moderation"
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Overview
+Experiment C applies a coordinated wage-policy shift across **all countries**, reducing `upsilon` to 90 % of baseline at tick `t0 = 50`. The runs share `run_id = 0`, `ncycle = 250`, and use the deterministic Decider stub. Artifacts originate from `python3 tools/generate_exp_c_demo.py`, which saves outputs under `data/expC_demo/` and `figs/expC_demo/`.
+
+::: {.callout-note}
+This coordinated scenario highlights how the guard rails behave when every country tightens wage adjustments simultaneously. Firms and banks remain on the baseline logic; only the wage hook changes.
+:::
+
+## Core metrics
+Table @tbl-exp-c lists the resulting wage dispersion and vacancy fill rates. Figures are rounded to two decimals.
+
+```{python}
+#| label: tbl-exp-c
+#| tbl-cap: "Experiment C metrics (run 0, 250 ticks)."
+import pandas as pd
+from pathlib import Path
+
+source = Path("../data/expC_demo/expC_metrics.csv")
+df = pd.read_csv(source)
+ordered = (
+    df.pivot(index="scenario", columns="metric", values="value")
+      .reindex(["baseline", "policy_low"])
+      [["wage_dispersion", "fill_rate"]]
+      .rename(columns={
+          "wage_dispersion": "Wage dispersion",
+          "fill_rate": "Fill rate",
+      })
+)
+formatted = ordered.applymap(lambda x: f"{x:,.2f}")
+scenario_labels = {
+    "baseline": "Baseline (OFF)",
+    "policy_low": "Policy ON (stub)",
+}
+formatted.index = [scenario_labels.get(idx, idx) for idx in formatted.index]
+formatted
+```
+
+## Wage-dispersion overlay
+Figure @fig-exp-c overlays the wage-dispersion series for the OFF and policy-on runs. OFF remains dashed, ON is solid, the final 50 ticks are shaded, and the vertical line at tick 50 indicates when the reduction takes effect.
+
+![Experiment C — wage dispersion overlay (OFF dashed, ON solid; final 50 ticks shaded)](../figs/expC_demo/expC_wage_dispersion_overlay.png){#fig-exp-c}
+
+## Notes
+- Artifact paths: `data/expC_demo/expC_metrics.csv`, `data/expC_demo/expC_wage_dispersion_series.csv`, `figs/expC_demo/expC_wage_dispersion_overlay.png`.
+- Generator: `python3 tools/generate_exp_c_demo.py` (`RUN_ID=0`, `NCYCLE=250`, `t0=50`).
+- Stub output drives the policy-on dispersion to zero; future live LLM experiments will explore heterogeneous adjustments across the monetary union.

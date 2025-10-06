@@ -46,6 +46,12 @@ The table above is drawn from `data/_examples/sample_metrics.csv`; future Quarto
 - [A/B overlay overview](ab_overview.qmd) — collects the firm, bank, and wage overlays (OFF dashed, ON solid, final 50 ticks shaded) produced from the `run_id=0`, `ncycle=200` runs.
 - [How to reproduce A/B overlays](howto_ab.qmd) — three-step checklist (stub, `run_ab_demo`, Quarto render) for regenerating the OFF→ON artifacts.
 
+## Milestone M7 — Experiments A/B/C (small horizon)
+
+- [Experiment A — Wage Acceleration (Country 0)](exp_A.qmd) — `run_id=0`, `ncycle=250`; `python3 tools/generate_exp_a_demo.py` drops country 0 `upsilon` to 80 % at `t0=50` and exports `data/expA_demo/*`, `figs/expA_demo/*`.
+- [Experiment B — Wage Moderation (Country 0)](exp_B.qmd) — `run_id=0`, `ncycle=250`; `python3 tools/generate_exp_b_demo.py` lifts country 0 `upsilon` to 120 % at `t0=50` and exports `data/expB_demo/*`, `figs/expB_demo/*`.
+- [Experiment C — Coordinated Wage Moderation](exp_C.qmd) — `run_id=0`, `ncycle=250`; `python3 tools/generate_exp_c_demo.py` lowers all-country `upsilon` to 90 % at `t0=50` and exports `data/expC_demo/*`, `figs/expC_demo/*`.
+
 ## Appendices
 
 - [Appendix B — JSON response schemas](appendix_schemas.qmd) — field-by-field summary of the firm, bank, and wage live-mode response schemas enforced by the Decider.

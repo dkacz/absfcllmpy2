@@ -1,0 +1,54 @@
+---
+title: "Experiment B — Wage Moderation (Country 0)"
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Overview
+Experiment B raises the wage-adjustment parameter `upsilon` for **country 0** to 120 % of its baseline value at tick `t0 = 50`. Both legs share `run_id = 0` and `ncycle = 250`; the Decider stub remains deterministic. Metrics and overlays are generated with `python3 tools/generate_exp_b_demo.py`, which writes artifacts to `data/expB_demo/` and `figs/expB_demo/`.
+
+::: {.callout-note}
+Only the wage hook for country 0 is modified. Firm pricing and bank credit continue to follow the baseline rules so the effects stem solely from the higher wage responsiveness.
+:::
+
+## Core metrics
+Table @tbl-exp-b reports wage dispersion and vacancy fill rates for the OFF and policy-on runs. Values are rendered to two decimals per the project standard.
+
+```{python}
+#| label: tbl-exp-b
+#| tbl-cap: "Experiment B metrics (run 0, 250 ticks)."
+import pandas as pd
+from pathlib import Path
+
+source = Path("../data/expB_demo/expB_metrics.csv")
+df = pd.read_csv(source)
+ordered = (
+    df.pivot(index="scenario", columns="metric", values="value")
+      .reindex(["baseline", "policy_high"])
+      [["wage_dispersion", "fill_rate"]]
+      .rename(columns={
+          "wage_dispersion": "Wage dispersion",
+          "fill_rate": "Fill rate",
+      })
+)
+formatted = ordered.applymap(lambda x: f"{x:,.2f}")
+scenario_labels = {
+    "baseline": "Baseline (OFF)",
+    "policy_high": "Policy ON (stub)",
+}
+formatted.index = [scenario_labels.get(idx, idx) for idx in formatted.index]
+formatted
+```
+
+## Wage-dispersion overlay
+Figure @fig-exp-b displays the OFF and ON wage-dispersion series with the usual styling (OFF dashed, ON solid, final 50 ticks shaded). Tick 50 marks the point where the higher `upsilon` takes effect.
+
+![Experiment B — wage dispersion overlay (OFF dashed, ON solid; final 50 ticks shaded)](../figs/expB_demo/expB_wage_dispersion_overlay.png){#fig-exp-b}
+
+## Notes
+- Artifact paths: `data/expB_demo/expB_metrics.csv`, `data/expB_demo/expB_wage_dispersion_series.csv`, `figs/expB_demo/expB_wage_dispersion_overlay.png`.
+- Generator: `python3 tools/generate_exp_b_demo.py` (`RUN_ID=0`, `NCYCLE=250`, `t0=50`).
+- Stub behaviour dampens the ON leg to the guard rails; live prompts will inject heterogeneity once M6-LIVE scenarios run.
