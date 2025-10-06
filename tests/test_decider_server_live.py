@@ -4,6 +4,8 @@ import time
 import unittest
 from http import HTTPStatus
 from pathlib import Path
+from types import SimpleNamespace
+from unittest import mock
 
 from tools.decider import server
 from tools.decider.providers.openrouter_adapter import OpenRouterError
@@ -129,6 +131,24 @@ class DummyAdapter(object):
         self.marked_unsupported = True
 
 
+class CreditAdapterStub(object):
+    def __init__(self, *, key_info_result, key_info_exc=None):
+        self.key_info_result = key_info_result
+        self.key_info_exc = key_info_exc
+        self.key_info_calls = []
+        self.model_exists_calls = []
+
+    def key_info(self, *, deadline_ms=None):
+        self.key_info_calls.append(deadline_ms)
+        if self.key_info_exc is not None:
+            raise self.key_info_exc
+        return self.key_info_result
+
+    def model_exists(self, slug, deadline_ms=None):
+        self.model_exists_calls.append((slug, deadline_ms))
+        return True
+
+
 class DeciderServerLiveTests(unittest.TestCase):
     def setUp(self):
         server.CACHE.clear()
@@ -173,6 +193,19 @@ class DeciderServerLiveTests(unittest.TestCase):
                 key, value = token.split("=", 1)
                 fields[key] = value
         return fields
+
+    @staticmethod
+    def _live_args(**overrides):
+        base = {
+            "openrouter_model_primary": "primary-model",
+            "openrouter_model_fallback": None,
+            "openrouter_base_url": "https://openrouter.ai/api/v1",
+            "openrouter_referer": None,
+            "openrouter_title": None,
+            "skip_openrouter_credit_check": False,
+        }
+        base.update(overrides)
+        return SimpleNamespace(**base)
 
     def test_stub_mode_returns_stub_response(self):
         handler = self._make_handler(mode="stub")
@@ -451,6 +484,51 @@ class DeciderServerLiveTests(unittest.TestCase):
         self.assertEqual(body["error"], "llm_live_failed")
         attempts = body["detail"]["attempts"]
         self.assertEqual(attempts[0]["reason"], "schema_error")
+
+    def test_prepare_live_router_logs_credit_snapshot(self):
+        args = self._live_args()
+        credit_payload = {
+            "data": {
+                "attributes": {
+                    "usage": {"total": 1000, "remaining": 900},
+                    "rate_limit": {"limit": 100, "remaining": 90, "reset": "soon"},
+                    "credit_balance": 12.5,
+                }
+            }
+        }
+        adapter = CreditAdapterStub(key_info_result=(credit_payload, 8.5))
+        with mock.patch("tools.decider.server.OpenRouterAdapter", return_value=adapter):
+            with self.assertLogs(server.LOGGER, level="INFO") as captured:
+                router = server._prepare_live_router(args, 200)
+        self.assertIsInstance(router, server.LiveModeRouter)
+        expected_deadline = max(50, 200 - server.LIVE_BUFFER_MS)
+        self.assertEqual(adapter.key_info_calls, [expected_deadline])
+        self.assertEqual(adapter.model_exists_calls, [("primary-model", expected_deadline)])
+        joined_logs = "\n".join(captured.output)
+        self.assertIn("OpenRouter credit snapshot", joined_logs)
+
+    def test_prepare_live_router_handles_credit_preflight_error(self):
+        args = self._live_args()
+        adapter = CreditAdapterStub(
+            key_info_result=None,
+            key_info_exc=OpenRouterError("http_error", detail="quota", status=429),
+        )
+        with mock.patch("tools.decider.server.OpenRouterAdapter", return_value=adapter):
+            with self.assertLogs(server.LOGGER, level="WARNING") as captured:
+                router = server._prepare_live_router(args, 200)
+        self.assertIsInstance(router, server.LiveModeRouter)
+        self.assertEqual(len(adapter.key_info_calls), 1)
+        self.assertIn("OpenRouter credit preflight failed", "\n".join(captured.output))
+
+    def test_prepare_live_router_skips_credit_preflight_when_flag_set(self):
+        args = self._live_args(skip_openrouter_credit_check=True)
+        adapter = CreditAdapterStub(key_info_result=({}, 3.0))
+        with mock.patch("tools.decider.server.OpenRouterAdapter", return_value=adapter):
+            with self.assertLogs(server.LOGGER, level="INFO") as captured:
+                router = server._prepare_live_router(args, 200)
+        self.assertIsInstance(router, server.LiveModeRouter)
+        self.assertEqual(adapter.key_info_calls, [])
+        self.assertIn("credit preflight skipped", "\n".join(captured.output))
 
 
 if __name__ == "__main__":
