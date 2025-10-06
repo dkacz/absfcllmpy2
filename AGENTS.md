@@ -65,13 +65,13 @@ Run these from the repo root; keep the Decider stub in its own terminal while th
 
    ```bash
    export OPENROUTER_API_KEY=sk-...
-   export OPENROUTER_MODEL_PRIMARY=openrouter/anthropic/claude-3.5-sonnet      # required
-   export OPENROUTER_MODEL_FALLBACK=openrouter/nousresearch/nous-hermes-2      # optional but recommended
+   export OPENROUTER_MODEL_PRIMARY=openrouter/openai/gpt-5-nano                # required
+   export OPENROUTER_MODEL_FALLBACK=openrouter/google/gemini-2.5-flash-lite    # optional but recommended
    export OPENROUTER_HTTP_REFERER="https://absfcllmpy2.local"                 # optional
    export OPENROUTER_TITLE="absfcllmpy2 live dev"                             # optional
    ```
 
-2. **Pre-flight credit check.** `curl -H "Authorization: Bearer $OPENROUTER_API_KEY" https://openrouter.ai/api/v1/key` and paste the remaining-credit JSON into `timing.log` (or your run notes) before starting the simulation.
+2. **Credit snapshot (automatic + optional manual).** When live mode starts the Decider issues `GET /api/v1/key` and logs the remaining credits/limits. Leave the log line in place for your run notes. You can still capture an explicit snapshot with `curl -H "Authorization: Bearer $OPENROUTER_API_KEY" https://openrouter.ai/api/v1/key` if you want to paste the JSON into `timing.log`.
 
 3. **Model check (one-shot).**
 
@@ -96,6 +96,7 @@ Run these from the repo root; keep the Decider stub in its own terminal while th
    ```
 
    The server proxies firm, bank, and wage calls through OpenRouter while honouring the guard stack (`δ = 0.04`, unit-cost floor, spread clamps). Model swapping happens entirely inside the Decider; the Python 2 simulation code remains unchanged.
+   - To skip the automatic credit snapshot, pass `--skip-openrouter-credit-check` or export `OPENROUTER_SKIP_CREDIT_PREFLIGHT=1` before launching the server.
 
 5. **Run the simulation (terminal #2).** Enable the relevant `use_llm_*` toggles (via `code/parameter.py` or runner scripts) and execute `python2 code/timing.py` or the appropriate `tools/generate_*_ab.py`. Keep the Decider window open until the run completes.
 
