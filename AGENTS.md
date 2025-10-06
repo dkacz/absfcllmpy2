@@ -103,3 +103,21 @@ Run these from the repo root; keep the Decider stub in its own terminal while th
 6. **Inspect telemetry.** `timing.log` now includes `[LLM block] usage` / `usage_error` lines (prompt tokens, completion tokens, elapsed ms, model slug). Append the credit snapshot and note any fallback reasons when sharing artifacts.
 
 Additional implementation details live in `docs/methods/decider_live_openrouter.md`. Capture any provider changes or new prompts via GitHub issues so the backlog stays authoritative.
+
+### Long runs & manual scheduling
+
+Longer simulations should be coordinated with the operator so they can keep an eye on runtime and logs. Use the commands below as reference points when planning Monte Carlo or sensitivity sweeps.
+
+| Scenario | Command (run from repo root) | Horizon / seeds | Expected wall-clock | Notes |
+| --- | --- | --- | --- | --- |
+| Full baseline sweep | `python2 code/timing.py` | `ncycle=1001`, `Lrun=0..49` (defaults) | ~45–60 min | Writes seed folders under `code/data/…`, appends toggle snapshot + counters to `timing.log`. Ask before launching; consumes a full core. |
+| A/B overlay refresh | `python3 tools/generate_firm_ab.py`<br>`python3 tools/generate_bank_ab.py`<br>`python3 tools/generate_wage_ab.py` | `run_id=0`, `ncycle=200` | ~6–8 min each | Helper auto-starts the stub, runs OFF/ON, emits CSV + overlay PNG. Safe for local smoke tests. |
+| Experiment demos (M7) | `python3 tools/generate_exp_a_demo.py`<br>`python3 tools/generate_exp_b_demo.py`<br>`python3 tools/generate_exp_c_demo.py` | `run_id=0`, `ncycle=250`, policy at `t0=50` | ~12–15 min each | Requires stub in a separate terminal (script reuses it). Produces `data/exp*_demo/` CSVs and wage-overlay plots. |
+| Sensitivity stubs (coming in M8) | `python3 tools/generate_*` runners (to be added) | See issue briefs | 15–30 min | Coordinate before launching once the scripts land; many sweeps collect multiple OFF/ON pairs. |
+
+**Coordination checklist**
+
+- Before scheduling any run expected to exceed ~15 minutes, drop a quick note in the issue or to the operator confirming start/stop plans.
+- Keep the Decider stub (or live server) in a dedicated terminal. For multi-run batches, restart the stub if it starts logging timeouts.
+- Always capture the relevant log snippets: toggle snapshot lines from `timing.log`, usage counters, and any `usage_error` entries for live runs.
+- After a long run completes, note the runtime band and any deviations in the issue comment so future operators can plan accordingly.
