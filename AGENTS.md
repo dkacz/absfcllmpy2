@@ -58,3 +58,47 @@ Run these from the repo root; keep the Decider stub in its own terminal while th
 - `Parameter.llm_timeout_ms` → default `200` (ms); convert to seconds for the Py2 client (`timeout = ms / 1000.0`).
 - `Parameter.llm_batch` → default `False`; batch mode is a future milestone, leave off for now.
 - On every run `code/timing.py` appends the current toggle state to `timing.log` (and prints it to stdout) so artifacts show which configuration produced them.
+
+### Live Mode — OpenRouter Quickstart (M6)
+
+1. **Set credentials & headers.** Export the required key and (optional) headers before launching the Decider:
+
+   ```bash
+   export OPENROUTER_API_KEY=sk-...
+   export OPENROUTER_MODEL_PRIMARY=openrouter/anthropic/claude-3.5-sonnet      # required
+   export OPENROUTER_MODEL_FALLBACK=openrouter/nousresearch/nous-hermes-2      # optional but recommended
+   export OPENROUTER_HTTP_REFERER="https://absfcllmpy2.local"                 # optional
+   export OPENROUTER_TITLE="absfcllmpy2 live dev"                             # optional
+   ```
+
+2. **Pre-flight credit check.** `curl -H "Authorization: Bearer $OPENROUTER_API_KEY" https://openrouter.ai/api/v1/key` and paste the remaining-credit JSON into `timing.log` (or your run notes) before starting the simulation.
+
+3. **Model check (one-shot).**
+
+   ```bash
+   python3 tools/decider/server.py \
+     --mode live \
+     --openrouter-model-primary "$OPENROUTER_MODEL_PRIMARY" \
+     --openrouter-model-fallback "$OPENROUTER_MODEL_FALLBACK" \
+     --deadline-ms 200 \
+     --check
+   ```
+
+   This verifies both slugs via `GET /api/v1/models`, pings `/healthz`, prints the status, and exits. Fix any `model_not_found` or auth errors before continuing.
+
+4. **Run the live Decider (terminal #1).**
+
+   ```bash
+   python3 tools/decider/server.py \
+     --mode live \
+     --openrouter-model-primary "$OPENROUTER_MODEL_PRIMARY" \
+     --openrouter-model-fallback "$OPENROUTER_MODEL_FALLBACK"
+   ```
+
+   The server proxies firm, bank, and wage calls through OpenRouter while honouring the guard stack (`δ = 0.04`, unit-cost floor, spread clamps). Model swapping happens entirely inside the Decider; the Python 2 simulation code remains unchanged.
+
+5. **Run the simulation (terminal #2).** Enable the relevant `use_llm_*` toggles (via `code/parameter.py` or runner scripts) and execute `python2 code/timing.py` or the appropriate `tools/generate_*_ab.py`. Keep the Decider window open until the run completes.
+
+6. **Inspect telemetry.** `timing.log` now includes `[LLM block] usage` / `usage_error` lines (prompt tokens, completion tokens, elapsed ms, model slug). Append the credit snapshot and note any fallback reasons when sharing artifacts.
+
+Additional implementation details live in `docs/methods/decider_live_openrouter.md`. Capture any provider changes or new prompts via GitHub issues so the backlog stays authoritative.
