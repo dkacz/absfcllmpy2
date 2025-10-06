@@ -36,6 +36,68 @@ formatted = ordered.applymap(lambda x: f"{x:,.2f}")
 formatted
 ```
 
+## Decision rationales
+Table @tbl-firm-why summarises the share of firm decisions assigned to each why-code. The table reads straight from `data/firm/firm_ab_why.csv` when live prompts are enabled and falls back to a stub note when no why-code data is available.
+
+```{python}
+#| label: tbl-firm-why
+#| tbl-cap: "Firm why-code distribution (run 0, 200 ticks)."
+import pandas as pd
+from pathlib import Path
+from IPython.display import Markdown, display
+
+why_path = Path("../data/firm/firm_ab_why.csv")
+why_table = None
+
+if not why_path.exists():
+    display(Markdown("""::: {.callout-note}
+No firm why-code data captured for this run. Launch the live Decider (M6-LIVE) to populate `data/firm/firm_ab_why.csv`.
+:::
+"""))
+else:
+    raw = pd.read_csv(why_path)
+    if raw.empty or raw.get("count", pd.Series([0])).sum() <= 0:
+        display(Markdown("""::: {.callout-note}
+Firm why-code counts are zero, indicating the deterministic stub path. Run live prompts to populate the table.
+:::
+"""))
+    else:
+        table = raw.copy()
+        if "scenario" not in table.columns or "why_code" not in table.columns:
+            display(Markdown("""::: {.callout-warning}
+Unexpected schema in `data/firm/firm_ab_why.csv`; expected `scenario`, `why_code`, `count`, and optional `share` columns.
+:::
+"""))
+        else:
+            table["scenario"] = table["scenario"].astype(str)
+            table["why_code"] = table["why_code"].astype(str)
+            if "count" in table.columns:
+                table["count"] = pd.to_numeric(table["count"], errors="coerce").fillna(0).astype(int)
+            else:
+                table["count"] = 0
+            if "share" in table.columns:
+                table["share"] = pd.to_numeric(table["share"], errors="coerce")
+            else:
+                totals = table.groupby("scenario")["count"].transform(lambda s: s.sum() if s.sum() > 0 else 0)
+                with pd.option_context('mode.use_inf_as_na', True):
+                    table["share"] = table["count"].where(totals > 0, other=0) / totals.replace({0: pd.NA})
+            table["share"] = table["share"].fillna(0)
+            scenario_labels = {
+                "baseline": "Baseline (OFF)",
+                "llm_on": "LLM ON",
+            }
+            table["Scenario"] = table["scenario"].map(scenario_labels).fillna(table["scenario"].str.title())
+            table["Why code"] = table["why_code"]
+            table["Decisions"] = table["count"]
+            table["Share"] = table["share"].map(lambda x: f"{x * 100:.1f}%")
+            cols = ["Scenario", "Why code", "Decisions", "Share"]
+            table = table[cols].sort_values(["Scenario", "Decisions"], ascending=[True, False])
+            why_table = table.reset_index(drop=True)
+
+if why_table is not None:
+    why_table
+```
+
 ## Price-dispersion overlay
 Figure @fig-firm-ab overlays the OFF and ON time series. The OFF path is dashed, the ON path is solid, and the final 50 ticks are shaded to highlight the comparison window used in the manuscript.
 
