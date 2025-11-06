@@ -18,3 +18,612 @@
 [LLM firm] counters name=live_llm_test run=42 llm=on calls=2 fallbacks=0 timeouts=0
 [LLM bank] counters name=live_llm_test run=42 llm=off calls=0 fallbacks=0 timeouts=0
 [LLM wage] counters name=live_llm_test run=42 llm=off calls=0 fallbacks=0 timeouts=0
+[2025-11-06 16:46:55] LLM toggles server=http://127.0.0.1:9000 timeout_ms=90000 batch=off firm=off bank=off wage=off
+[LLM firm] counters name=deterministic_baseline run=42 llm=off calls=0 fallbacks=0 timeouts=0
+[LLM bank] counters name=deterministic_baseline run=42 llm=off calls=0 fallbacks=0 timeouts=0
+[LLM wage] counters name=deterministic_baseline run=42 llm=off calls=0 fallbacks=0 timeouts=0
+[2025-11-06 16:47:11] LLM toggles server=http://127.0.0.1:9000 timeout_ms=90000 batch=off firm=on bank=on wage=on
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=627 usage_completion_tokens=107 elapsed_ms=785.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=627 usage_completion_tokens=116 elapsed_ms=723.4
+[LLM firm] usage run=42 tick=1 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=749 usage_completion_tokens=142 elapsed_ms=1018.3
+[LLM firm] usage run=42 tick=1 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=855 usage_completion_tokens=144 elapsed_ms=912.6
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=627 usage_completion_tokens=141 elapsed_ms=804.1
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=627 usage_completion_tokens=116 elapsed_ms=647.7
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=627 usage_completion_tokens=118 elapsed_ms=963.3
+[LLM wage] usage run=42 tick=1 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=627 usage_completion_tokens=108 elapsed_ms=789.3
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=633 usage_completion_tokens=101 elapsed_ms=618.9
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=633 usage_completion_tokens=102 elapsed_ms=682.4
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=633 usage_completion_tokens=120 elapsed_ms=669.3
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=628 usage_completion_tokens=119 elapsed_ms=684.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=726 usage_completion_tokens=114 elapsed_ms=772.8
+[LLM wage] usage run=42 tick=1 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=700 usage_completion_tokens=108 elapsed_ms=795.4
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=642 usage_completion_tokens=117 elapsed_ms=970.9
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=726 usage_completion_tokens=107 elapsed_ms=684.6
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=726 usage_completion_tokens=107 elapsed_ms=982.1
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=726 usage_completion_tokens=109 elapsed_ms=900.1
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=643 usage_completion_tokens=123 elapsed_ms=720.9
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=747 usage_completion_tokens=139 elapsed_ms=918.6
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=747 usage_completion_tokens=129 elapsed_ms=892.6
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=747 usage_completion_tokens=124 elapsed_ms=755.4
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=753 usage_completion_tokens=115 elapsed_ms=769.2
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=853 usage_completion_tokens=133 elapsed_ms=1071.3
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=748 usage_completion_tokens=128 elapsed_ms=753.2
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=883 usage_completion_tokens=121 elapsed_ms=796.7
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=869 usage_completion_tokens=121 elapsed_ms=886.3
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=747 usage_completion_tokens=112 elapsed_ms=833.5
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=869 usage_completion_tokens=115 elapsed_ms=730.9
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=886 usage_completion_tokens=125 elapsed_ms=711.9
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=869 usage_completion_tokens=119 elapsed_ms=781.3
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=748 usage_completion_tokens=136 elapsed_ms=846.8
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1001 usage_completion_tokens=184 elapsed_ms=1036.1
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1072 usage_completion_tokens=151 elapsed_ms=875.8
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1094 usage_completion_tokens=176 elapsed_ms=828.9
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1119 usage_completion_tokens=165 elapsed_ms=1045.2
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1089 usage_completion_tokens=176 elapsed_ms=977.7
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1119 usage_completion_tokens=161 elapsed_ms=969.2
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1091 usage_completion_tokens=160 elapsed_ms=780.8
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1121 usage_completion_tokens=146 elapsed_ms=953.4
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1093 usage_completion_tokens=180 elapsed_ms=876.0
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1119 usage_completion_tokens=171 elapsed_ms=932.4
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1096 usage_completion_tokens=145 elapsed_ms=985.4
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1120 usage_completion_tokens=153 elapsed_ms=1869.0
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1062 usage_completion_tokens=138 elapsed_ms=894.8
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1093 usage_completion_tokens=155 elapsed_ms=726.9
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1115 usage_completion_tokens=147 elapsed_ms=824.6
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1094 usage_completion_tokens=175 elapsed_ms=912.2
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1094 usage_completion_tokens=173 elapsed_ms=941.0
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1120 usage_completion_tokens=162 elapsed_ms=789.1
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1092 usage_completion_tokens=158 elapsed_ms=1059.8
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1152 usage_completion_tokens=166 elapsed_ms=1062.3
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1128 usage_completion_tokens=165 elapsed_ms=1131.6
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1091 usage_completion_tokens=162 elapsed_ms=864.7
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1090 usage_completion_tokens=136 elapsed_ms=859.8
+[LLM bank] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1116 usage_completion_tokens=155 elapsed_ms=832.8
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=710 usage_completion_tokens=87 elapsed_ms=594.9
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=712 usage_completion_tokens=92 elapsed_ms=601.7
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=714 usage_completion_tokens=86 elapsed_ms=628.9
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=714 usage_completion_tokens=101 elapsed_ms=703.7
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=716 usage_completion_tokens=104 elapsed_ms=799.5
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=714 usage_completion_tokens=100 elapsed_ms=698.1
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=640 usage_completion_tokens=112 elapsed_ms=653.7
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=712 usage_completion_tokens=100 elapsed_ms=697.0
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=627 usage_completion_tokens=114 elapsed_ms=648.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=657 usage_completion_tokens=111 elapsed_ms=675.5
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=657 usage_completion_tokens=110 elapsed_ms=727.8
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=687 usage_completion_tokens=99 elapsed_ms=677.1
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=657 usage_completion_tokens=97 elapsed_ms=684.6
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=683 usage_completion_tokens=86 elapsed_ms=656.5
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=655 usage_completion_tokens=100 elapsed_ms=707.5
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=714 usage_completion_tokens=92 elapsed_ms=754.8
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=708 usage_completion_tokens=119 elapsed_ms=1201.9
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=714 usage_completion_tokens=104 elapsed_ms=761.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=714 usage_completion_tokens=118 elapsed_ms=722.4
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=712 usage_completion_tokens=105 elapsed_ms=977.2
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=712 usage_completion_tokens=106 elapsed_ms=724.9
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=712 usage_completion_tokens=94 elapsed_ms=722.8
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=685 usage_completion_tokens=114 elapsed_ms=779.3
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=687 usage_completion_tokens=92 elapsed_ms=709.3
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=711 usage_completion_tokens=90 elapsed_ms=613.0
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=687 usage_completion_tokens=104 elapsed_ms=721.9
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=657 usage_completion_tokens=105 elapsed_ms=771.1
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=711 usage_completion_tokens=103 elapsed_ms=675.2
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=627 usage_completion_tokens=113 elapsed_ms=692.1
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=713 usage_completion_tokens=110 elapsed_ms=701.8
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=715 usage_completion_tokens=114 elapsed_ms=832.9
+[LLM wage] usage run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=739 usage_completion_tokens=104 elapsed_ms=630.5
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=894 usage_completion_tokens=113 elapsed_ms=745.9
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=913 usage_completion_tokens=111 elapsed_ms=787.4
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=896 usage_completion_tokens=110 elapsed_ms=795.4
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=898 usage_completion_tokens=120 elapsed_ms=868.6
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=898 usage_completion_tokens=124 elapsed_ms=811.3
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=894 usage_completion_tokens=124 elapsed_ms=957.8
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=894 usage_completion_tokens=110 elapsed_ms=752.7
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=896 usage_completion_tokens=130 elapsed_ms=970.4
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=818 usage_completion_tokens=111 elapsed_ms=693.5
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=913 usage_completion_tokens=121 elapsed_ms=798.5
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=848 usage_completion_tokens=113 elapsed_ms=649.1
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=863 usage_completion_tokens=132 elapsed_ms=985.9
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=817 usage_completion_tokens=106 elapsed_ms=740.7
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=817 usage_completion_tokens=111 elapsed_ms=683.4
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=903 usage_completion_tokens=114 elapsed_ms=892.2
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=963 usage_completion_tokens=113 elapsed_ms=802.5
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=819 usage_completion_tokens=121 elapsed_ms=977.2
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=937 usage_completion_tokens=114 elapsed_ms=671.4
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=915 usage_completion_tokens=126 elapsed_ms=1473.2
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=880 usage_completion_tokens=112 elapsed_ms=776.5
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=816 usage_completion_tokens=119 elapsed_ms=758.7
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=916 usage_completion_tokens=123 elapsed_ms=693.8
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=915 usage_completion_tokens=127 elapsed_ms=765.4
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=915 usage_completion_tokens=123 elapsed_ms=754.7
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=888 usage_completion_tokens=118 elapsed_ms=815.4
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=912 usage_completion_tokens=118 elapsed_ms=823.7
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=894 usage_completion_tokens=116 elapsed_ms=681.8
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=906 usage_completion_tokens=118 elapsed_ms=736.7
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=911 usage_completion_tokens=130 elapsed_ms=753.9
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=892 usage_completion_tokens=119 elapsed_ms=748.9
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=878 usage_completion_tokens=109 elapsed_ms=630.0
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=817 usage_completion_tokens=113 elapsed_ms=711.0
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=891 usage_completion_tokens=121 elapsed_ms=705.5
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=875 usage_completion_tokens=121 elapsed_ms=1042.6
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=892 usage_completion_tokens=119 elapsed_ms=879.1
+[LLM firm] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=893 usage_completion_tokens=117 elapsed_ms=711.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1135 usage_completion_tokens=146 elapsed_ms=759.4
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1137 usage_completion_tokens=162 elapsed_ms=7595.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1135 usage_completion_tokens=131 elapsed_ms=886.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1134 usage_completion_tokens=152 elapsed_ms=970.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1090 usage_completion_tokens=156 elapsed_ms=884.4
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1091 usage_completion_tokens=145 elapsed_ms=833.5
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1141 usage_completion_tokens=159 elapsed_ms=898.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1143 usage_completion_tokens=161 elapsed_ms=893.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1091 usage_completion_tokens=135 elapsed_ms=868.1
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1093 usage_completion_tokens=139 elapsed_ms=722.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1132 usage_completion_tokens=159 elapsed_ms=1224.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1121 usage_completion_tokens=143 elapsed_ms=885.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1089 usage_completion_tokens=128 elapsed_ms=815.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1139 usage_completion_tokens=156 elapsed_ms=842.3
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1119 usage_completion_tokens=167 elapsed_ms=903.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1124 usage_completion_tokens=141 elapsed_ms=967.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1171 usage_completion_tokens=145 elapsed_ms=804.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1191 usage_completion_tokens=140 elapsed_ms=827.2
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1172 usage_completion_tokens=150 elapsed_ms=826.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1169 usage_completion_tokens=136 elapsed_ms=952.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1171 usage_completion_tokens=156 elapsed_ms=917.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1119 usage_completion_tokens=156 elapsed_ms=834.5
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1133 usage_completion_tokens=154 elapsed_ms=833.5
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1122 usage_completion_tokens=138 elapsed_ms=810.1
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1136 usage_completion_tokens=149 elapsed_ms=970.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1123 usage_completion_tokens=138 elapsed_ms=985.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1127 usage_completion_tokens=141 elapsed_ms=782.2
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1119 usage_completion_tokens=154 elapsed_ms=882.5
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1128 usage_completion_tokens=157 elapsed_ms=947.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1123 usage_completion_tokens=165 elapsed_ms=1586.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1121 usage_completion_tokens=164 elapsed_ms=836.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1139 usage_completion_tokens=148 elapsed_ms=764.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1123 usage_completion_tokens=159 elapsed_ms=1188.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1138 usage_completion_tokens=153 elapsed_ms=1029.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1120 usage_completion_tokens=139 elapsed_ms=820.1
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1120 usage_completion_tokens=151 elapsed_ms=887.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1122 usage_completion_tokens=157 elapsed_ms=865.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1122 usage_completion_tokens=163 elapsed_ms=908.2
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1134 usage_completion_tokens=159 elapsed_ms=1045.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1135 usage_completion_tokens=158 elapsed_ms=995.5
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1164 usage_completion_tokens=168 elapsed_ms=1164.1
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1162 usage_completion_tokens=149 elapsed_ms=838.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1164 usage_completion_tokens=165 elapsed_ms=961.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1164 usage_completion_tokens=177 elapsed_ms=931.3
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1176 usage_completion_tokens=144 elapsed_ms=1220.2
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1132 usage_completion_tokens=165 elapsed_ms=900.3
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1119 usage_completion_tokens=161 elapsed_ms=821.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1119 usage_completion_tokens=137 elapsed_ms=811.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1119 usage_completion_tokens=137 elapsed_ms=785.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1117 usage_completion_tokens=173 elapsed_ms=882.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1131 usage_completion_tokens=158 elapsed_ms=851.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1167 usage_completion_tokens=162 elapsed_ms=944.4
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1179 usage_completion_tokens=148 elapsed_ms=945.5
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1167 usage_completion_tokens=136 elapsed_ms=1005.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1167 usage_completion_tokens=153 elapsed_ms=979.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1167 usage_completion_tokens=142 elapsed_ms=862.4
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1154 usage_completion_tokens=155 elapsed_ms=976.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1154 usage_completion_tokens=168 elapsed_ms=975.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1154 usage_completion_tokens=140 elapsed_ms=924.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1167 usage_completion_tokens=126 elapsed_ms=714.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1157 usage_completion_tokens=140 elapsed_ms=917.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1164 usage_completion_tokens=153 elapsed_ms=761.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1181 usage_completion_tokens=171 elapsed_ms=868.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1173 usage_completion_tokens=160 elapsed_ms=770.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1173 usage_completion_tokens=131 elapsed_ms=976.2
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1173 usage_completion_tokens=142 elapsed_ms=845.2
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1163 usage_completion_tokens=141 elapsed_ms=790.2
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1163 usage_completion_tokens=147 elapsed_ms=721.4
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1168 usage_completion_tokens=151 elapsed_ms=918.5
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1167 usage_completion_tokens=142 elapsed_ms=740.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1179 usage_completion_tokens=150 elapsed_ms=789.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1151 usage_completion_tokens=145 elapsed_ms=885.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1152 usage_completion_tokens=131 elapsed_ms=808.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1150 usage_completion_tokens=145 elapsed_ms=958.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1150 usage_completion_tokens=138 elapsed_ms=852.4
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1168 usage_completion_tokens=165 elapsed_ms=898.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1169 usage_completion_tokens=150 elapsed_ms=878.3
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1167 usage_completion_tokens=162 elapsed_ms=876.1
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1180 usage_completion_tokens=144 elapsed_ms=794.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1167 usage_completion_tokens=144 elapsed_ms=892.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1122 usage_completion_tokens=155 elapsed_ms=834.3
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1138 usage_completion_tokens=130 elapsed_ms=783.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1137 usage_completion_tokens=163 elapsed_ms=956.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1124 usage_completion_tokens=193 elapsed_ms=1026.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1123 usage_completion_tokens=180 elapsed_ms=841.3
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1123 usage_completion_tokens=158 elapsed_ms=821.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1118 usage_completion_tokens=162 elapsed_ms=795.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1122 usage_completion_tokens=164 elapsed_ms=1034.1
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1126 usage_completion_tokens=167 elapsed_ms=1141.5
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1139 usage_completion_tokens=146 elapsed_ms=887.4
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1141 usage_completion_tokens=134 elapsed_ms=1055.2
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1125 usage_completion_tokens=143 elapsed_ms=741.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1135 usage_completion_tokens=132 elapsed_ms=1081.3
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1121 usage_completion_tokens=146 elapsed_ms=758.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1119 usage_completion_tokens=159 elapsed_ms=872.5
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1126 usage_completion_tokens=140 elapsed_ms=815.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1136 usage_completion_tokens=152 elapsed_ms=866.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1125 usage_completion_tokens=203 elapsed_ms=1081.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1170 usage_completion_tokens=127 elapsed_ms=767.3
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1170 usage_completion_tokens=154 elapsed_ms=851.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1172 usage_completion_tokens=144 elapsed_ms=751.3
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1166 usage_completion_tokens=167 elapsed_ms=1146.2
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1189 usage_completion_tokens=158 elapsed_ms=916.5
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1132 usage_completion_tokens=148 elapsed_ms=912.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1118 usage_completion_tokens=153 elapsed_ms=1055.2
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1118 usage_completion_tokens=134 elapsed_ms=786.4
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1118 usage_completion_tokens=155 elapsed_ms=841.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1118 usage_completion_tokens=151 elapsed_ms=866.1
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1134 usage_completion_tokens=156 elapsed_ms=781.4
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1120 usage_completion_tokens=163 elapsed_ms=942.5
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1118 usage_completion_tokens=157 elapsed_ms=850.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1138 usage_completion_tokens=158 elapsed_ms=824.4
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1124 usage_completion_tokens=164 elapsed_ms=844.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1122 usage_completion_tokens=140 elapsed_ms=750.1
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1138 usage_completion_tokens=163 elapsed_ms=911.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1147 usage_completion_tokens=154 elapsed_ms=1078.5
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1156 usage_completion_tokens=173 elapsed_ms=905.6
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1142 usage_completion_tokens=176 elapsed_ms=943.4
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1145 usage_completion_tokens=174 elapsed_ms=1097.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1147 usage_completion_tokens=161 elapsed_ms=1056.9
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1146 usage_completion_tokens=157 elapsed_ms=894.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1136 usage_completion_tokens=147 elapsed_ms=1069.2
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1120 usage_completion_tokens=167 elapsed_ms=1171.8
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1138 usage_completion_tokens=155 elapsed_ms=1219.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1125 usage_completion_tokens=180 elapsed_ms=1038.2
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1127 usage_completion_tokens=181 elapsed_ms=1038.7
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1122 usage_completion_tokens=153 elapsed_ms=999.3
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1130 usage_completion_tokens=176 elapsed_ms=1067.0
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1122 usage_completion_tokens=154 elapsed_ms=937.5
+[LLM bank] usage run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=1123 usage_completion_tokens=199 elapsed_ms=987.6
+[2025-11-06 16:59:17] LLM toggles server=http://127.0.0.1:9000 timeout_ms=90000 batch=off firm=off bank=off wage=off
+[LLM firm] counters name=deterministic_baseline run=42 llm=off calls=0 fallbacks=0 timeouts=0
+[LLM bank] counters name=deterministic_baseline run=42 llm=off calls=0 fallbacks=0 timeouts=0
+[LLM wage] counters name=deterministic_baseline run=42 llm=off calls=0 fallbacks=0 timeouts=0
+[2025-11-06 16:59:35] LLM toggles server=http://127.0.0.1:9000 timeout_ms=90000 batch=off firm=on bank=on wage=on
+[LLM firm] counters name=full_llm run=42 llm=on calls=16040 fallbacks=16040 timeouts=0
+[LLM bank] counters name=full_llm run=42 llm=on calls=165924 fallbacks=165924 timeouts=0
+[LLM wage] counters name=full_llm run=42 llm=on calls=18040 fallbacks=18040 timeouts=0
+[2025-11-06 17:11:28] LLM toggles server=http://127.0.0.1:9000 timeout_ms=90000 batch=off firm=on bank=on wage=on
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=1 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=1 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=1 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=1 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=2 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM firm] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=http_error status=503 usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM bank] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=0 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
+[LLM wage] usage_error run=42 tick=3 model=google/gemini-2.5-flash-lite attempt=primary reason=timeout status=n/a usage_prompt_tokens=0 usage_completion_tokens=0 elapsed_ms=0.0
