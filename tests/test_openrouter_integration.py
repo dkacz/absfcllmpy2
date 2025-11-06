@@ -218,6 +218,10 @@ class OpenRouterIntegrationTests(unittest.TestCase):
             print(f"\n  Decision: {decision['direction']}, "
                   f"step: {decision['price_step']:.3f}, "
                   f"confidence: {decision['confidence']:.2f}")
+            print(f"  Why: {decision.get('why', [])}")
+            if 'comment' in decision:
+                print(f"  Comment: {decision['comment']}")
+            print(f"  Full decision: {decision}")
             print(f"  Tokens: {meta['usage'].get('prompt_tokens', 0)} prompt, "
                   f"{meta['usage'].get('completion_tokens', 0)} completion")
             print(f"  Elapsed: {meta['elapsed_ms']:.1f}ms")
@@ -285,6 +289,10 @@ class OpenRouterIntegrationTests(unittest.TestCase):
             print(f"\n  Approve: {decision['approve']}, "
                   f"limit: {decision['credit_limit_ratio']:.2f}, "
                   f"spread: {decision['spread_bps']:.0f}bps")
+            print(f"  Why: {decision.get('why', [])}")
+            if 'comment' in decision:
+                print(f"  Comment: {decision['comment']}")
+            print(f"  Full decision: {decision}")
             print(f"  Tokens: {meta['usage'].get('prompt_tokens', 0)} prompt, "
                   f"{meta['usage'].get('completion_tokens', 0)} completion")
 
@@ -346,6 +354,10 @@ class OpenRouterIntegrationTests(unittest.TestCase):
 
             print(f"\n  Direction: {decision['direction']}, "
                   f"step: {decision['wage_step']:.3f}")
+            print(f"  Why: {decision.get('why', [])}")
+            if 'comment' in decision:
+                print(f"  Comment: {decision['comment']}")
+            print(f"  Full decision: {decision}")
             print(f"  Tokens: {meta['usage'].get('prompt_tokens', 0)} prompt, "
                   f"{meta['usage'].get('completion_tokens', 0)} completion")
 
