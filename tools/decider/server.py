@@ -154,6 +154,11 @@ class LivePrompt(object):
                 if isinstance(value, (str, int, float, bool)):
                     template_vars[key] = value
 
+        # Provide defaults for optional wage fields
+        if "wage_floor" in template_vars and "wage_ceiling" not in template_vars:
+            # If wage_ceiling is missing, indicate it's uncapped
+            template_vars["wage_ceiling"] = "uncapped"
+
         return self.user_template.format(**template_vars)
 
 
