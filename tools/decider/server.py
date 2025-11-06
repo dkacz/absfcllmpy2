@@ -124,7 +124,32 @@ class LivePrompt(object):
 
     def build_user(self, payload: Dict[str, Any]) -> str:
         payload_json = json.dumps(payload, sort_keys=True, indent=2)
-        return self.user_template.format(payload_json=payload_json)
+
+        # Build template variables by flattening payload
+        template_vars = {"payload_json": payload_json}
+
+        # Add top-level payload fields
+        for key, value in payload.items():
+            if isinstance(value, (str, int, float, bool)):
+                template_vars[key] = value
+
+        # Add nested fields commonly used in prompts
+        if "baseline" in payload and isinstance(payload["baseline"], dict):
+            if "price" in payload["baseline"]:
+                template_vars["baseline_price"] = payload["baseline"]["price"]
+            if "expected_demand" in payload["baseline"]:
+                template_vars["baseline_demand"] = payload["baseline"]["expected_demand"]
+
+        if "guards" in payload and isinstance(payload["guards"], dict):
+            for key, value in payload["guards"].items():
+                template_vars[key] = value
+
+        if "borrower" in payload and isinstance(payload["borrower"], dict):
+            for key, value in payload["borrower"].items():
+                if isinstance(value, (str, int, float, bool)):
+                    template_vars[key] = value
+
+        return self.user_template.format(**template_vars)
 
 
 def _load_live_prompt(filename: str) -> Tuple[LivePrompt, Optional[jsonschema.Draft7Validator]]:
