@@ -1,0 +1,1 @@
+Waiting 5 seconds to avoid rate limiting... sleep 5 echo Starting Python 2 simulation with live LLM calls... /tmp/Python-2.7.18/python run_live_simulation.py

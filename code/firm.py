@@ -237,8 +237,14 @@ class Firm:
           if not isinstance(decision,dict):
              return False
           direction=decision.get('direction')
-          if direction not in ('up','down','hold'):
+          # Accept both old format (up/down/hold) and new format (raise/cut/hold)
+          if direction not in ('up','down','hold','raise','cut'):
              return False
+          # Normalize to internal format
+          if direction == 'raise':
+             decision['direction'] = 'up'
+          elif direction == 'cut':
+             decision['direction'] = 'down'
           try:
              decision['price_step']=float(decision.get('price_step',0.0))
           except (TypeError,ValueError):

@@ -36,7 +36,7 @@ para.use_llm_wage = False  # Disabled to reduce API calls
 
 # Point to our live decider server
 para.llm_server_url = 'http://127.0.0.1:9000'
-para.llm_timeout_ms = 45000  # 45 seconds timeout
+para.llm_timeout_ms = 90000  # 90 seconds timeout (longer for API calls)
 para.llm_batch = False
 
 # Output directory

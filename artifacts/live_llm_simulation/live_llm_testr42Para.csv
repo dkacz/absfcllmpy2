@@ -2,7 +2,7 @@ parameter,values
 llm_batch,False
 xi,0.003
 cDisposableIncome,0.9
-llm_timeout_ms,45000
+llm_timeout_ms,90000
 weSeedRun,yes
 bound,10
 printAgent,no

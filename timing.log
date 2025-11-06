@@ -7,3 +7,14 @@
 [LLM firm] counters name=live_llm_test run=42 llm=on calls=2 fallbacks=2 timeouts=0
 [LLM bank] counters name=live_llm_test run=42 llm=off calls=0 fallbacks=0 timeouts=0
 [LLM wage] counters name=live_llm_test run=42 llm=off calls=0 fallbacks=0 timeouts=0
+[LLM firm] usage run=0 tick=0 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=684 usage_completion_tokens=142 elapsed_ms=805.5
+[2025-11-06 16:36:08] LLM toggles server=http://127.0.0.1:9000 timeout_ms=90000 batch=off firm=on bank=off wage=off
+[LLM firm] usage run=42 tick=1 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=747 usage_completion_tokens=120 elapsed_ms=848.5
+[LLM firm] usage run=42 tick=1 model=google/gemini-2.5-flash-lite attempt=primary mode=json usage_prompt_tokens=749 usage_completion_tokens=118 elapsed_ms=874.5
+[LLM firm] counters name=live_llm_test run=42 llm=on calls=2 fallbacks=2 timeouts=0
+[LLM bank] counters name=live_llm_test run=42 llm=off calls=0 fallbacks=0 timeouts=0
+[LLM wage] counters name=live_llm_test run=42 llm=off calls=0 fallbacks=0 timeouts=0
+[2025-11-06 16:37:39] LLM toggles server=http://127.0.0.1:9000 timeout_ms=90000 batch=off firm=on bank=off wage=off
+[LLM firm] counters name=live_llm_test run=42 llm=on calls=2 fallbacks=0 timeouts=0
+[LLM bank] counters name=live_llm_test run=42 llm=off calls=0 fallbacks=0 timeouts=0
+[LLM wage] counters name=live_llm_test run=42 llm=off calls=0 fallbacks=0 timeouts=0
