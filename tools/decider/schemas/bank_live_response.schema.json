@@ -7,7 +7,6 @@
     "approve",
     "credit_limit_ratio",
     "spread_bps",
-    "why",
     "confidence"
   ],
   "properties": {
@@ -22,11 +21,21 @@
     "spread_bps": {
       "type": "number"
     },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "risk_analysis": {
+      "type": "string",
+      "description": "Natural language credit risk assessment (2-4 sentences)"
+    },
     "why": {
       "type": "array",
       "minItems": 1,
       "maxItems": 3,
       "uniqueItems": true,
+      "description": "DEPRECATED: Use 'risk_analysis' field instead",
       "items": {
         "type": "string",
         "enum": [
@@ -40,14 +49,14 @@
         ]
       }
     },
-    "confidence": {
-      "type": "number",
-      "minimum": 0,
-      "maximum": 1
-    },
     "comment": {
       "type": "string",
-      "maxLength": 280
+      "maxLength": 280,
+      "description": "DEPRECATED: Use 'risk_analysis' field instead"
     }
-  }
+  },
+  "oneOf": [
+    {"required": ["risk_analysis"]},
+    {"required": ["why"]}
+  ]
 }

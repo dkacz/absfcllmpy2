@@ -149,6 +149,11 @@ class LivePrompt(object):
                 if isinstance(value, (str, int, float, bool)):
                     template_vars[key] = value
 
+        if "constraints" in payload and isinstance(payload["constraints"], dict):
+            for key, value in payload["constraints"].items():
+                if isinstance(value, (str, int, float, bool)):
+                    template_vars[key] = value
+
         return self.user_template.format(**template_vars)
 
 
@@ -199,18 +204,28 @@ def _validate_firm_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
     except jsonschema.ValidationError as exc:
         raise ValueError("firm decision schema violation: %s" % exc.message)
 
+    # Support both new format (reasoning) and old format (why codes)
     why_codes = [str(code) for code in decision.get("why", [])]
     normalised = {
         "direction": str(decision["direction"]),
         "price_step": float(decision["price_step"]),
         "expectation_bias": float(decision["expectation_bias"]),
-        "why": why_codes,
         "confidence": float(decision["confidence"]),
     }
+
+    # New format: natural language reasoning
+    if "reasoning" in decision:
+        normalised["reasoning"] = str(decision["reasoning"])
+
+    # Old format: why codes (backward compatibility)
     if why_codes:
+        normalised["why"] = why_codes
         normalised["why_code"] = why_codes[0]
+
+    # Deprecated comment field
     if "comment" in decision:
         normalised["comment"] = str(decision["comment"])
+
     return normalised
 
 
@@ -228,13 +243,22 @@ def _validate_bank_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
             "approve": bool(decision["approve"]),
             "credit_limit_ratio": float(decision["credit_limit_ratio"]),
             "spread_bps": float(decision["spread_bps"]),
-            "why": why_codes,
             "confidence": float(decision["confidence"]),
         }
+
+        # Support new format: natural language risk analysis
+        if "risk_analysis" in decision:
+            normalised["risk_analysis"] = str(decision["risk_analysis"])
+
+        # Support old format: why codes (backward compatibility)
         if why_codes:
+            normalised["why"] = why_codes
             normalised["why_code"] = why_codes[0]
+
+        # Deprecated comment field
         if "comment" in decision:
             normalised["comment"] = str(decision["comment"])
+
         return normalised
 
     result = dict(decision)
@@ -268,13 +292,22 @@ def _validate_wage_decision(decision: Dict[str, Any]) -> Dict[str, Any]:
         normalised = {
             "direction": str(decision["direction"]),
             "wage_step": float(decision["wage_step"]),
-            "why": why_codes,
             "confidence": float(decision["confidence"]),
         }
+
+        # Support new format: natural language labor market assessment
+        if "labor_market_assessment" in decision:
+            normalised["labor_market_assessment"] = str(decision["labor_market_assessment"])
+
+        # Support old format: why codes (backward compatibility)
         if why_codes:
+            normalised["why"] = why_codes
             normalised["why_code"] = why_codes[0]
+
+        # Deprecated comment field
         if "comment" in decision:
             normalised["comment"] = str(decision["comment"])
+
         return normalised
     result = dict(decision)
     direction = result.get("direction")

@@ -6,7 +6,6 @@
   "required": [
     "direction",
     "wage_step",
-    "why",
     "confidence"
   ],
   "properties": {
@@ -19,11 +18,21 @@
       "minimum": -0.04,
       "maximum": 0.04
     },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "labor_market_assessment": {
+      "type": "string",
+      "description": "Natural language labor market analysis (2-4 sentences)"
+    },
     "why": {
       "type": "array",
       "minItems": 1,
       "maxItems": 3,
       "uniqueItems": true,
+      "description": "DEPRECATED: Use 'labor_market_assessment' field instead",
       "items": {
         "type": "string",
         "enum": [
@@ -36,14 +45,14 @@
         ]
       }
     },
-    "confidence": {
-      "type": "number",
-      "minimum": 0,
-      "maximum": 1
-    },
     "comment": {
       "type": "string",
-      "maxLength": 280
+      "maxLength": 280,
+      "description": "DEPRECATED: Use 'labor_market_assessment' field instead"
     }
-  }
+  },
+  "oneOf": [
+    {"required": ["labor_market_assessment"]},
+    {"required": ["why"]}
+  ]
 }
