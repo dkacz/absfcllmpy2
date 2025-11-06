@@ -1,0 +1,181 @@
+================================================================================
+RUNNING ABSFC SIMULATION WITH LIVE LLM CALLS
+================================================================================
+
+Configuration:
+  Cycles: 2 (very short to minimize API calls)
+  Countries: 2
+  Consumers per country: 5
+  LLM Firm Pricing: True
+  LLM Bank Credit: False
+  LLM Wage: False
+  Decider Server: http://127.0.0.1:9000
+
+--------------------------------------------------------------------------------
+
+[2025-11-06 12:49:49] LLM toggles server=http://127.0.0.1:9000 timeout_ms=45000 batch=off firm=on bank=off wage=off
+
+name  live_llm_test ---- run 42  --- t  0
+
+self.ide C0n0
+self.wageDemanded (previous) 1.0
+candidate_wage 1.0
+self.pastWage 1.0
+self.l 0
+self.ls 1.0
+random_draw 0.198837650687
+threshold 0.7
+growth_rate 0.0
+direction stay
+self.LpastEmployment [0, 0, 0, 0, 0, 0, 0, 0]
+
+country  0 LC  0
+country  0 unemployment  1.0
+country  0 average wage 1.0
+country  0 average Price  1.0
+country  0 w/p  1.0
+country  0 productivity  1.0
+country  0 avPhi  0
+country  0 wage share  1.0
+country  0 z  0.0
+country  0 zPhi  -1.0
+country  0 avPCTradable  1.0
+country  0 bank NW  0
+country  0 firm NW  0
+country  0 firm Tradable NW 0
+country  0 n. bank  0
+country  0 n. firm NW 0
+country  0 n.firm Tradable  0
+country  0 taxRate  0.4
+country  0 Y  0
+country  0 realY  0.0
+country  0 w/phi Tradable 0.0
+country  0 labPolicy  no
+country  0 whichPolicy  nn
+
+country  1 LC  0
+country  1 unemployment  1.0
+country  1 average wage 1.0
+country  1 average Price  1.0
+country  1 w/p  1.0
+country  1 productivity  1.0
+country  1 avPhi  0
+country  1 wage share  1.0
+country  1 z  0.0
+country  1 zPhi  -1.0
+country  1 avPCTradable  1.0
+country  1 bank NW  0
+country  1 firm NW  0
+country  1 firm Tradable NW 0
+country  1 n. bank  0
+country  1 n. firm NW 0
+country  1 n.firm Tradable  0
+country  1 taxRate  0.4
+country  1 Y  0
+country  1 realY  0.0
+country  1 w/phi Tradable 0.0
+country  1 labPolicy  no
+country  1 whichPolicy  nn
+
+name  live_llm_test ---- run 42  --- t  1
+
+self.ide C0n0
+self.wageDemanded (previous) 1.0
+candidate_wage 1.0
+self.pastWage 1.0
+self.l 0
+self.ls 1.0
+random_draw 0.246627507694
+threshold 0.137838172643
+growth_rate 0.0
+direction down
+self.LpastEmployment [0, 0, 0, 0, 0, 0, 0, 0]
+[LLM firm] fallback: http_error
+[LLM firm] fallback: http_error
+
+country  0 LC  5.0
+country  0 unemployment  0.0
+country  0 average wage 1.0
+country  0 average Price  1.0
+country  0 w/p  1.0
+country  0 productivity  1.0
+country  0 avPhi  1.0
+country  0 wage share  1.0
+country  0 z  0.0
+country  0 zPhi  0.0
+country  0 avPCTradable  1.0
+country  0 Credit/Y  0.0
+country  0 bank NW  0
+country  0 firm NW  10.0
+country  0 firm Tradable NW 10
+country  0 n. bank  0
+country  0 n. firm NW 1
+country  0 n.firm Tradable  1
+country  0 taxRate  0.4
+country  0 Y  5.0
+country  0 realY  5.0
+country  0 w/phi Tradable 1.0
+country  0 debt/Y  79.6
+country  0 G/Y 40.0
+country  0 deficit/Y  39.6
+country  0 (X+M)/Y  1.0
+country  0 HI  1.0
+country  0 TBC/Y  1.66666666667
+country  0 self.McountryYL[country] 1.0
+country  0 labPolicy  no
+country  0 whichPolicy  nn
+
+country  1 LC  5.0
+country  1 unemployment  0.0
+country  1 average wage 1.0
+country  1 average Price  1.0
+country  1 w/p  1.0
+country  1 productivity  1.0
+country  1 avPhi  1.0
+country  1 wage share  1.0
+country  1 z  0.0
+country  1 zPhi  0.0
+country  1 avPCTradable  1.0
+country  1 Credit/Y  0.0
+country  1 bank NW  0
+country  1 firm NW  10.0
+country  1 firm Tradable NW 0
+country  1 n. bank  0
+country  1 n. firm NW 1
+country  1 n.firm Tradable  0
+country  1 taxRate  0.4
+country  1 Y  5.0
+country  1 realY  5.0
+country  1 w/phi Tradable 0.0
+country  1 debt/Y  79.6
+country  1 G/Y 40.0
+country  1 deficit/Y  39.6
+country  1 (X+M)/Y  1.0
+country  1 HI  1.0
+country  1 TBC/Y  -0.833333333333
+country  1 self.McountryYL[country] 1.0
+country  1 labPolicy  no
+country  1 whichPolicy  nn
+[LLM firm] counters name=live_llm_test run=42 llm=on calls=2 fallbacks=2 timeouts=0
+[LLM bank] counters name=live_llm_test run=42 llm=off calls=0 fallbacks=0 timeouts=0
+[LLM wage] counters name=live_llm_test run=42 llm=off calls=0 fallbacks=0 timeouts=0
+
+the end
+
+--------------------------------------------------------------------------------
+
+================================================================================
+SIMULATION COMPLETED SUCCESSFULLY!
+================================================================================
+
+LLM Usage Statistics:
+  FIRM  (ENABLED ): 2 calls, 2 fallbacks, 0 timeouts
+  BANK  (DISABLED): 0 calls, 0 fallbacks, 0 timeouts
+  WAGE  (DISABLED): 0 calls, 0 fallbacks, 0 timeouts
+
+Output directory: /home/user/absfcllmpy2/artifacts/live_llm_simulation
+
+================================================================================
+SUCCESS! The simulation made actual LLM calls!
+The realistic role-playing prompts worked in production!
+================================================================================
